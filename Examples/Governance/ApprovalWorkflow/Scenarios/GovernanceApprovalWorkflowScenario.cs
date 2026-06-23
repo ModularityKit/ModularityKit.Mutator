@@ -1,6 +1,7 @@
 using ModularityKit.Mutator.Abstractions.Context;
 using ModularityKit.Mutator.Abstractions.Intent;
 using ModularityKit.Mutator.Abstractions.Policies;
+using ModularityKit.Mutator.Governance.Abstractions.Requests.Factory;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 using ModularityKit.Mutator.Governance.Runtime.Approval.Execution;
 using ModularityKit.Mutator.Governance.Runtime.Storage;
@@ -45,7 +46,7 @@ internal static class GovernanceApprovalWorkflowScenario
 
     private static MutationRequest CreateApprovalRequest()
     {
-        return MutationRequest.PendingApproval(
+        return MutationRequestFactory.PendingApproval(
             stateId: "tenant-42:roles",
             stateType: "IamRoleState",
             mutationType: "GrantRoleMutation",

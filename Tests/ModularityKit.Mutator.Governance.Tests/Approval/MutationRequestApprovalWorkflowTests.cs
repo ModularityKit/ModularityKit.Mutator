@@ -5,6 +5,7 @@ using ModularityKit.Mutator.Governance.Abstractions.Approval.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Exceptions.Approval;
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Decisions;
+using ModularityKit.Mutator.Governance.Abstractions.Requests.Factory;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 using ModularityKit.Mutator.Governance.Runtime.Approval.Execution;
 using ModularityKit.Mutator.Governance.Runtime.Storage;
@@ -17,7 +18,7 @@ public sealed class MutationRequestApprovalWorkflowTests
     [Fact]
     public void PendingApproval_maps_policy_requirements_into_visible_request_approval_requirements()
     {
-        var request = MutationRequest.PendingApproval(
+        var request = MutationRequestFactory.PendingApproval(
             stateId: "tenant-42:roles",
             stateType: "IamRoleState",
             mutationType: "GrantRoleMutation",
@@ -141,7 +142,7 @@ public sealed class MutationRequestApprovalWorkflowTests
 
     private static MutationRequest CreateMultiStepApprovalRequest()
     {
-        return MutationRequest.PendingApproval(
+        return MutationRequestFactory.PendingApproval(
             stateId: "tenant-42:roles",
             stateType: "IamRoleState",
             mutationType: "GrantRoleMutation",

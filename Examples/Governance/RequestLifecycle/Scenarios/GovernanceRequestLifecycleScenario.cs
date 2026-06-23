@@ -2,6 +2,7 @@ using ModularityKit.Mutator.Abstractions.Context;
 using ModularityKit.Mutator.Abstractions.Intent;
 using ModularityKit.Mutator.Abstractions.Policies;
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
+using ModularityKit.Mutator.Governance.Abstractions.Requests.Factory;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 using ModularityKit.Mutator.Governance.Runtime.Lifecycle.Execution;
 using ModularityKit.Mutator.Governance.Runtime.Storage;
@@ -17,7 +18,7 @@ internal static class GovernanceRequestLifecycleScenario
 
         var submittedAt = DateTimeOffset.UtcNow;
 
-        var quotaApprovalRequest = MutationRequest.Pending(
+        var quotaApprovalRequest = MutationRequestFactory.Pending(
             stateId: "tenant-42:quota",
             stateType: "QuotaPolicy",
             mutationType: "IncreaseQuotaMutation",
@@ -40,7 +41,7 @@ internal static class GovernanceRequestLifecycleScenario
                 ["TenantId"] = "tenant-42"
             });
 
-        var scheduledRequest = MutationRequest.Pending(
+        var scheduledRequest = MutationRequestFactory.Pending(
             stateId: "tenant-42:quota",
             stateType: "QuotaPolicy",
             mutationType: "ResetQuotaMutation",
@@ -55,7 +56,7 @@ internal static class GovernanceRequestLifecycleScenario
             expectedStateVersion: "v12",
             expiresAt: submittedAt.AddMinutes(-5));
 
-        var externalCheckRequest = MutationRequest.Approved(
+        var externalCheckRequest = MutationRequestFactory.Approved(
             stateId: "tenant-99:flags",
             stateType: "FeatureFlagState",
             mutationType: "EnableFeatureMutation",
