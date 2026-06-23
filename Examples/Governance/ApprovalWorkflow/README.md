@@ -1,6 +1,6 @@
 # Governance ApprovalWorkflow
 
-This example shows the governance approval workflow built on top of `MutationRequest.PendingApproval(...)` and `MutationRequestApprovalWorkflowManager`.
+This example shows the governance approval workflow built on top of `MutationRequestFactory.PendingApproval(...)` and `MutationRequestApprovalWorkflowManager`.
 
 It demonstrates:
 

@@ -23,6 +23,7 @@ The projects are intentionally small and focused. Each one demonstrates a differ
 | Example | Focus | Readme |
 | --- | --- | --- |
 | `RequestLifecycle` | pending requests, lifecycle transitions, expiration, and cancellation | [`Examples/Governance/RequestLifecycle/README.md`](Governance/RequestLifecycle/README.md) |
+| `GovernedExecution` | approved request -> resolution -> execution -> executed decision | [`Examples/Governance/GovernedExecution/README.md`](Governance/GovernedExecution/README.md) |
 | `DecisionTaxonomy` | lifecycle, approval, and version-resolution decision categories | [`Examples/Governance/DecisionTaxonomy/README.md`](Governance/DecisionTaxonomy/README.md) |
 | `ApprovalWorkflow` | request-level approvals, multi-step sign-off, and governed approval actions | [`Examples/Governance/ApprovalWorkflow/README.md`](Governance/ApprovalWorkflow/README.md) |
 | `VersionedResolution` | stale request handling and expected state version semantics | [`Examples/Governance/VersionedResolution/README.md`](Governance/VersionedResolution/README.md) |
@@ -54,6 +55,7 @@ dotnet build Examples/Core/FeatureFlags/FeatureFlags.csproj -c Release
 dotnet build Examples/Core/IamRoles/IamRoles.csproj -c Release
 dotnet build Examples/Core/WorkflowApprovals/WorkflowApprovals.csproj -c Release
 dotnet build Examples/Governance/RequestLifecycle/RequestLifecycle.csproj -c Release
+dotnet build Examples/Governance/GovernedExecution/GovernedExecution.csproj -c Release
 dotnet build Examples/Governance/DecisionTaxonomy/DecisionTaxonomy.csproj -c Release
 dotnet build Examples/Governance/ApprovalWorkflow/ApprovalWorkflow.csproj -c Release
 dotnet build Examples/Governance/VersionedResolution/VersionedResolution.csproj -c Release
@@ -71,6 +73,7 @@ dotnet run --project Examples/Core/FeatureFlags/FeatureFlags.csproj
 dotnet run --project Examples/Core/IamRoles/IamRoles.csproj
 dotnet run --project Examples/Core/WorkflowApprovals/WorkflowApprovals.csproj
 dotnet run --project Examples/Governance/RequestLifecycle/RequestLifecycle.csproj
+dotnet run --project Examples/Governance/GovernedExecution/GovernedExecution.csproj
 dotnet run --project Examples/Governance/DecisionTaxonomy/DecisionTaxonomy.csproj
 dotnet run --project Examples/Governance/ApprovalWorkflow/ApprovalWorkflow.csproj
 dotnet run --project Examples/Governance/VersionedResolution/VersionedResolution.csproj
@@ -136,6 +139,12 @@ See [`Core/WorkflowApprovals/README.md`](Core/WorkflowApprovals/README.md).
 Shows the governance runtime as a request lifecycle system instead of an immediate execution path. This is the example to read if you want to understand pending requests, approval, cancellation, and expiration.
 
 See [`Governance/RequestLifecycle/README.md`](Governance/RequestLifecycle/README.md).
+
+### GovernedExecution
+
+Shows the full governed execution loop from approved request to version resolution, core mutation execution, and terminal executed decision.
+
+See [`Governance/GovernedExecution/README.md`](Governance/GovernedExecution/README.md).
 
 ### ApprovalWorkflow
 

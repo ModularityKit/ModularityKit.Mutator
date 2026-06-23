@@ -9,6 +9,7 @@
     <Project Path="Examples/Core/IamRoles/IamRoles.csproj" />
     <Project Path="Examples/Core/WorkflowApprovals/WorkflowApprovals.csproj" />
     <Project Path="Examples/Governance/ApprovalWorkflow/ApprovalWorkflow.csproj" />
+    <Project Path="Examples/Governance/GovernedExecution/GovernedExecution.csproj" />
     <Project Path="Examples/Governance/DecisionTaxonomy/DecisionTaxonomy.csproj" />
     <Project Path="Examples/Governance/RequestLifecycle/RequestLifecycle.csproj" />
     <Project Path="Examples/Governance/VersionedResolution/VersionedResolution.csproj" />

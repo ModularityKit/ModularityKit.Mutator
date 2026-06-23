@@ -1,6 +1,7 @@
 using ModularityKit.Mutator.Abstractions.Context;
 using ModularityKit.Mutator.Abstractions.Intent;
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
+using ModularityKit.Mutator.Governance.Abstractions.Requests.Factory;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 
 namespace ModularityKit.Mutator.Governance.Tests.TestSupport;
@@ -9,7 +10,7 @@ internal static class MutationRequestTestFactory
 {
     public static MutationRequest CreatePendingRequest()
     {
-        return MutationRequest.Pending(
+        return MutationRequestFactory.Pending(
             stateId: "tenant-42:quota",
             stateType: "QuotaPolicy",
             mutationType: "IncreaseQuotaMutation",
@@ -26,7 +27,7 @@ internal static class MutationRequestTestFactory
 
     public static MutationRequest CreateApprovedSecurityRequest(string expectedStateVersion)
     {
-        return MutationRequest.Approved(
+        return MutationRequestFactory.Approved(
             stateId: "tenant-42:roles",
             stateType: "IamRoleState",
             mutationType: "GrantRoleMutation",

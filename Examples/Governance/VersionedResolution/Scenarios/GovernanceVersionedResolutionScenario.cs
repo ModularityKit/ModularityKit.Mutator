@@ -1,5 +1,6 @@
 using ModularityKit.Mutator.Abstractions.Context;
 using ModularityKit.Mutator.Abstractions.Intent;
+using ModularityKit.Mutator.Governance.Abstractions.Requests.Factory;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Resolution.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Resolution.Strategies;
@@ -62,7 +63,7 @@ internal static class GovernanceVersionedResolutionScenario
 
     private static MutationRequest CreateApprovedRequest(string expectedStateVersion)
     {
-        return MutationRequest.Approved(
+        return MutationRequestFactory.Approved(
             stateId: "tenant-42:roles",
             stateType: "IamRoleState",
             mutationType: "GrantRoleMutation",
