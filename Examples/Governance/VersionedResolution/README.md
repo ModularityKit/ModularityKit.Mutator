@@ -36,7 +36,7 @@ var resolver = new MutationRequestVersionResolver();
 var manager = new MutationRequestVersionResolutionManager(store, resolver);
 
 var request = await store.Create(
-    MutationRequest.Approved(
+    MutationRequestFactory.Approved(
         stateId: "tenant-42:roles",
         stateType: "IamRoleState",
         mutationType: "GrantRoleMutation",

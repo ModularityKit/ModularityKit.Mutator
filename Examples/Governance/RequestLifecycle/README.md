@@ -6,7 +6,7 @@ It focuses on `MutationRequest`, `IMutationRequestStore`, and `MutationRequestLi
 
 ## What it demonstrates
 
-- creating governed requests with `MutationRequest.Pending(...)` and `MutationRequest.Approved(...)`
+- creating governed requests with `MutationRequestFactory.Pending(...)` and `MutationRequestFactory.Approved(...)`
 - storing requests in `InMemoryMutationRequestStore`
 - moving requests through the lifecycle with `MutationRequestLifecycleManager`
 - listing pending requests globally and by `StateId`
