@@ -2,7 +2,7 @@
 
 This document captures the most valuable next steps for `ModularityKit.Mutator` based on the current state of the API, runtime, and examples.
 
-The goal is not to add features for their own sake. The goal is to close gaps between the public model and the runtime behavior, then extend the engine into a more complete governance platform for state mutations.
+The goal is not to add features for their own sake. The goal is to close gaps between the public model and the runtime behavior, then complete the governed execution loop and extend the engine into a more operational governance platform for state mutations.
 
 ## Principles
 
@@ -15,102 +15,120 @@ The goal is not to add features for their own sake. The goal is to close gaps be
 
 These areas already exist in the model but are only partially realized in the runtime:
 
-- `PolicyRequirement` exists, but there is no approval lifecycle around it.
+- Governance now has request lifecycle, approval workflow, and version resolution primitives, but the end-to-end execution loop is still incomplete.
 - `MutationIntent.IsReversible` exists, but there is no undo or compensation mechanism.
-- `MutationEngineOptions.MaxConcurrentMutations` exists, but concurrency control is not enforced in runtime execution.
+- `MutationEngineOptions.MaxConcurrentMutations` exists, but concurrency control is not enforced in core mutation execution.
 - `MutationIntent.EstimatedBlastRadius`, `Tags`, and `Metadata` exist, but the engine does not yet use them for governance or query workflows.
-- The project has examples and benchmarks, but no dedicated test project yet.
+- Approved governance requests do not yet flow through a single runtime path that performs version resolution, mutation execution, audit/history persistence, and terminal executed-state recording.
 
-## v1.1 Governance Runtime
+## v1.1 Governance Runtime Hardening
 
-Focus: establish a first-class governance runtime centered around mutation requests, pending execution, and version-aware decision making.
+Focus: close the governed execution loop and harden the current governance runtime rather than introducing the first lifecycle concepts.
 
-### 1. Pending Mutation Lifecycle
+### 1. Governed Execution Manager
 
-Add a first-class lifecycle around deferred mutation requests.
-
-Scope:
-
-- Introduce a `PendingMutation` or `MutationRequest` model for governed execution.
-- Support pending reasons beyond approval, such as external checks, scheduling, or dependencies.
-- Support approval expiration and explicit cancellation.
-- Persist approval decisions and approval history.
-- Define re-execution rules when a pending mutation is resolved against a newer state version.
-- Support listing and resolving pending mutation records.
-
-Why this matters:
-
-- Approval workflow is only one specialization of pending execution.
-- A single `PendingApproval` status in `MutationResult` is not enough once the engine owns a real governance process.
-
-### 2. Approval Workflow for `PolicyRequirement`
-
-Add first-class support for approval-based policy outcomes.
+Add a first-class runtime path that executes approved governance requests end to end.
 
 Scope:
 
-- Introduce a pending approval result state for blocked mutations that require action rather than hard denial.
-- Persist approval requirements to audit and history.
-- Add follow-up mutations such as `ApproveRequirement` and `RejectRequirement`.
-- Support multi-step approvals such as two-man approval and role-based approval chains.
+- Introduce a `GovernanceExecutionManager` or equivalent orchestration runtime for approved requests.
+- Always perform version resolution before executing an approved request.
+- Execute the underlying mutation through the core runtime once the request is still valid.
+- Record execution outcome, resulting state version, and terminal request decision.
+- Mark requests as `Executed`, rejected as stale, or sent back into a renewed approval / revalidation path.
+- Ensure audit and history flows capture both request-level and execution-level outcomes.
 
 Why this matters:
 
-- The policy model already supports `RequireApproval`.
-- This turns the engine from allow/deny enforcement into an actual governance workflow engine.
+- Governance runtime already knows how to hold, approve, reject, expire, and version-check requests.
+- The biggest missing behavior is the actual transition from approved request to governed mutation execution.
 
-### 3. Versioned Execution and Concurrency Control
+### 2. Approval Workflow Hardening
 
-Add explicit optimistic concurrency handling around mutation execution.
+Harden the approval model now that first-class approval workflow exists.
 
 Scope:
 
-- Introduce version-aware mutation execution based on `stateId` and expected version.
-- Use `ConcurrencyException` as a real runtime outcome instead of a dormant abstraction.
-- Add optional lock-per-state execution for high-contention scenarios.
-- Define how batch execution behaves when a mid-batch concurrency conflict occurs.
+- Replace generic approval failure paths with explicit domain exceptions and outcomes where they still leak through.
+- Add approval groups, role-oriented approver targeting, and richer requirement assignment semantics.
+- Support quorum or `N-of-M` approvals rather than only linear step completion.
+- Add timeout / expiration policies that are specific to approval requirements, not only request-level pending expiration.
+- Introduce a richer rejection reason model for auditability and later query support.
 
 Why this matters:
 
-- The library claims deterministic and async-safe behavior.
-- Without explicit concurrency semantics, that promise is incomplete for shared state workloads.
+- Approval workflow is no longer hypothetical.
+- The next investment is making it operationally expressive rather than merely present.
+
+### 3. Version Resolution Semantics Hardening
+
+Harden the stale-request and revalidation semantics that now exist in the governance runtime.
+
+Scope:
+
+- Clarify what `RevalidateOnLatestState` means operationally before execution starts.
+- Consider an explicit pending reason or status path for revalidation-driven deferral.
+- Add end-to-end scenarios such as:
+  - approve stale request
+  - require renewed approval
+  - approve again
+  - execute
+- Ensure stale handling semantics are visible through request decisions, examples, and tests.
+
+Why this matters:
+
+- Version resolution exists, but its branch semantics still need to be tightened before governed execution becomes a durable contract.
+
+### 4. Core Runtime Concurrency
+
+Close the remaining concurrency gap in the core mutation engine itself.
+
+Scope:
+
+- Enforce `MutationEngineOptions.MaxConcurrentMutations` in core execution rather than leaving it as a passive option.
+- Introduce explicit concurrency handling around direct state mutation execution.
+- Decide whether per-state locking, optimistic execution, or both are part of the core runtime contract.
+- Define how direct batch execution behaves when concurrency conflicts appear mid-flight.
+
+Why this matters:
+
+- Recent work hardened governance request storage concurrency.
+- The underlying core execution runtime still has its own unresolved concurrency contract.
 
 ## v1.2 Governance Data
 
 Focus: make governed execution queryable, persistent, and classification-aware.
 
-### 1. Persistent History and Audit Stores
+### 1. Governance Query Store
 
-Add production-ready adapters beyond in-memory implementations.
-
-Scope:
-
-- Entity Framework Core store for audit and history.
-- PostgreSQL-oriented store or provider package.
-- Optional Redis-backed recent-history cache for hot paths.
-
-Why this matters:
-
-- In-memory implementations are suitable for examples, tests, and development only.
-- Production integration is the next natural adoption step.
-
-### 2. Query API for Audit and History
-
-Expose richer retrieval primitives than state-id-only history lookup.
+Expose operational queries over requests, approvals, and decisions.
 
 Scope:
 
-- Query by `actorId`, `category`, `riskLevel`, `sideEffectSeverity`, and time range.
-- Query by `tags`, governance metadata, and estimated blast radius.
-- Support recent activity queries and filtered timelines.
-- Add approval-oriented queries such as pending approvals and recent approval decisions.
-- Support risk-oriented filtering and reporting views.
-- Define storage-agnostic query contracts first, then implement provider-specific adapters.
+- Introduce an `IMutationRequestQueryStore` or equivalent query contract.
+- Query pending approvals by actor, group, role, or request category.
+- Query requests by `stateId`, request category, tags, governance metadata, and blast radius.
+- Query recent request decisions, approval actions, stale resolutions, and execution outcomes.
+- Define storage-agnostic query contracts before binding them to a specific provider.
 
 Why this matters:
 
-- Audit and history become much more useful once users can answer operational questions, not just replay a single state stream.
-- Persistence without queryability is only a storage layer, not an operational feature.
+- Governance data becomes operational once users can ask workflow questions, not just load a single request by id.
+
+### 2. Persistent Governance and Audit Providers
+
+Add production-ready persistence adapters beyond in-memory implementations.
+
+Scope:
+
+- Entity Framework Core provider for governance request storage and query flows.
+- PostgreSQL-oriented governance provider package.
+- Persistent audit/history provider where governance execution outcomes can be correlated with request data.
+- Optional Redis-backed recent-decision cache for hot operational paths if it proves necessary.
+
+Why this matters:
+
+- Governance runtime without persistence remains development-friendly but operationally shallow.
 
 ### 3. Governance Metadata
 
@@ -145,7 +163,7 @@ Why this matters:
 
 Focus: connect governance runtime behaviors to external systems and asynchronous policy sources.
 
-### 1. Async Policies
+### 1. Async Policies and External Governance Checks
 
 Support policy evaluation that depends on external systems.
 
@@ -154,7 +172,9 @@ Scope:
 - Introduce `EvaluateAsync(...)` policy support.
 - Preserve a sync path for lightweight policies.
 - Define ordering and timeout semantics when multiple async policies are involved.
-- Allow approval and governance checks to rely on external identity, ticketing, or compliance systems.
+- Allow approval and governance checks to rely on external identity, ticketing, quota, or compliance systems.
+- Support ticket-driven approval flows, external quota checks, and identity-provider backed approver resolution.
+- Define timeout and cancellation semantics for external governance dependencies.
 
 Why this matters:
 
@@ -212,19 +232,20 @@ The longer-term lifecycle model behind these milestones is documented in [`Docs/
 
 ## Recommended Build Order
 
-1. Add pending mutation lifecycle support.
-2. Implement approval workflow support for `PolicyRequirement`.
-3. Add versioned execution and concurrency handling to the runtime.
-4. Add persistent audit/history providers.
-5. Add query APIs over persisted governance data.
-6. Persist and expose governance metadata.
-7. Add typed side effects once persistence and query contracts are stable.
-8. Add async policy support, unless external approval integrations force it earlier.
-9. Add undo/compensation support once approval and persistence semantics are stable.
+1. Add a governed execution manager that resolves and executes approved requests.
+2. Harden approval workflow semantics around quorum, roles, and rejection modeling.
+3. Tighten version-resolution semantics and revalidation paths.
+4. Close remaining core runtime concurrency gaps.
+5. Add governance query contracts for requests, approvals, and decisions.
+6. Add persistent governance and audit/history providers.
+7. Persist and expose governance metadata.
+8. Add typed side effects once persistence and query contracts are stable.
+9. Add async policy support, unless external approval integrations force it earlier.
+10. Add undo/compensation support once governed execution and persistence semantics are stable.
 
 ## Not Recommended Yet
 
 These ideas may be useful later, but they are not the best next investment:
 
 - Distributed execution features before concurrency semantics are explicit.
-- More examples before the runtime contract around approvals and concurrency is complete.
+- More examples before the governed execution loop is complete.
