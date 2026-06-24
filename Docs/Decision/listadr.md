@@ -43,5 +43,6 @@ These ADRs describe the `ModularityKit.Mutator.Governance` extension layer and i
 | ADR-025 | Governance Approval Workflow                         | [ADR-025](Adr/ADR_025_Governance_Approval_Workflow.md)                         |
 | ADR-026 | Governance Request Query API                         | [ADR-026](Adr/ADR_026_Governance_Request_Query_API.md)                         |
 | ADR-027 | Governed Execution Manager                           | [ADR-027](Adr/ADR_027_Governed_Execution_Manager.md)                           |
+| ADR-028 | Governance Approval Workflow Hardening               | [ADR-028](Adr/ADR_028_Governance_Approval_Workflow_Hardening.md)               |
 
 > See individual ADRs for detailed context, decision rationale, and consequences.
