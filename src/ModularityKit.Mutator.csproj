@@ -15,6 +15,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageTags>mutations;policy;audit;history;governance</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageIcon>modularitykit-mutator-logo-128.png</PackageIcon>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     </PropertyGroup>
@@ -30,6 +31,7 @@
     <ItemGroup>
         <None Include="README.md" Pack="true" PackagePath="" Visible="false" />
         <None Include="../assets/brand/logo.png" Pack="true" PackagePath="" Visible="false" Link="logo.png" />
+        <None Include="../assets/brand/modularitykit-mutator-logo-128.png" Pack="true" PackagePath="" Visible="false" Link="modularitykit-mutator-logo-128.png" />
         <None Include="../assets/core/mutator-overview.png" Pack="true" PackagePath="" Visible="false" Link="mutator-overview.png" />
         <None Include="../assets/core/mutator-core-what-it-provides.png" Pack="true" PackagePath="" Visible="false" Link="mutator-core-what-it-provides.png" />
     </ItemGroup>

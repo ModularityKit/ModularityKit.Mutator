@@ -17,6 +17,7 @@
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageTags>governance;approvals;requests;workflow;audit</PackageTags>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageIcon>modularitykit-mutator-governance-logo-128.png</PackageIcon>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     </PropertyGroup>
@@ -33,6 +34,7 @@
         <None Include="Governance/README.md" Pack="true" PackagePath="" Visible="false" />
         <None Include="../assets/governance/logotype_governance.png" Pack="true" PackagePath="" Visible="false" Link="logotype_governance.png" />
         <None Include="../assets/governance/logogorver.png" Pack="true" PackagePath="" Visible="false" Link="logogorver.png" />
+        <None Include="../assets/governance/modularitykit-mutator-governance-logo-128.png" Pack="true" PackagePath="" Visible="false" Link="modularitykit-mutator-governance-logo-128.png" />
         <None Include="../assets/governance/goverwhatadded.png" Pack="true" PackagePath="" Visible="false" Link="goverwhatadded.png" />
         <None Include="../assets/governance/mutator-governance-overview.png" Pack="true" PackagePath="" Visible="false" Link="mutator-governance-overview.png" />
     </ItemGroup>
