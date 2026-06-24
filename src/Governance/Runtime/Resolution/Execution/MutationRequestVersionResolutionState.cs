@@ -71,8 +71,8 @@ internal static class MutationRequestVersionResolutionState
         return AppendDecision(
             request with
             {
-                Status = MutationRequestStatus.Approved,
-                PendingReason = null,
+                Status = MutationRequestStatus.Pending,
+                PendingReason = PendingMutationReason.Revalidation,
                 ExpectedStateVersion = currentStateVersion,
                 UpdatedAt = decision.Timestamp
             },
