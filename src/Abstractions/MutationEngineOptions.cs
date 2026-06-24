@@ -55,11 +55,14 @@ public sealed class MutationEngineOptions
     public bool EnableDetailedMetrics { get; set; } = false;
 
     /// <summary>
-    /// The maximum number of mutations that may be executed concurrently.
+    /// The maximum number of mutations that may be executed concurrently by the core runtime.
     /// </summary>
     /// <remarks>
-    /// This setting controls parallelism and can be used to limit resource usage
-    /// or avoid contention.
+    /// This setting limits concurrent core execution across the engine.
+    /// Mutations that carry the same <see cref="Context.MutationContext.StateId"/>
+    /// are serialized so shared-state workloads remain deterministic.
+    /// Batch execution remains ordered; the limit applies to each batch step as it
+    /// passes through the runtime.
     /// </remarks>
     public int MaxConcurrentMutations { get; set; } = 10;
 

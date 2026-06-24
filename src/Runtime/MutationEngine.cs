@@ -32,6 +32,7 @@ internal sealed class MutationEngine(
     private readonly IMutationHistoryStore _historyStore = historyStore ?? throw new ArgumentNullException(nameof(historyStore));
     private readonly IMetricsCollector _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
     private readonly MutationEngineOptions _options = options ?? throw new ArgumentNullException(nameof(options));
+    private readonly MutationExecutionConcurrencyGate _concurrencyGate = CreateConcurrencyGate(options);
 
     public async Task<MutationResult<TState>> ExecuteAsync<TState>(
         IMutation<TState> mutation,
@@ -42,9 +43,13 @@ internal sealed class MutationEngine(
         var stopwatch = Stopwatch.StartNew();
         IMetricsScope? metricsScope = null;
 
+        await using var executionLease = await _concurrencyGate
+            .EnterAsync(mutation.Context.StateId, cancellationToken)
+            .ConfigureAwait(false);
+
         if (_options.EnableDetailedMetrics)
             metricsScope = _metricsCollector.BeginScope(executionId);
-        
+
         try
         {
             return await ExecutePipelineAsync(
@@ -373,5 +378,18 @@ internal sealed class MutationEngine(
             duration);
 
         await _historyStore.StoreAsync(entry, cancellationToken);
+    }
+
+    private static MutationExecutionConcurrencyGate CreateConcurrencyGate(MutationEngineOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+
+        if (options.MaxConcurrentMutations < 1)
+            throw new ArgumentOutOfRangeException(
+                nameof(options),
+                options.MaxConcurrentMutations,
+                "MaxConcurrentMutations must be greater than zero.");
+
+        return new MutationExecutionConcurrencyGate(options.MaxConcurrentMutations);
     }
 }

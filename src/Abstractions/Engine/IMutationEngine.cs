@@ -25,6 +25,12 @@ namespace ModularityKit.Mutator.Abstractions.Engine;
 ///   <item><description>History persistence</description></item>
 /// </list>
 /// <para>
+/// Core runtime concurrency is governed by <see cref="ModularityKit.Mutator.Abstractions.MutationEngineOptions.MaxConcurrentMutations"/>.
+/// Mutations that target the same <see cref="MutationContext.StateId"/> are serialized by the runtime so shared-state workloads
+/// remain deterministic. This is separate from governance request storage concurrency, which protects request lifecycle writes
+/// in the governance package.
+/// </para>
+/// <para>
 /// The engine acts as the primary governance boundary for all state mutations.
 /// </para>
 /// </remarks>
@@ -57,8 +63,9 @@ public interface IMutationEngine
     /// A <see cref="BatchMutationResult{TState}"/> describing the outcome of the batch execution.
     /// </returns>
     /// <remarks>
-    /// Batch execution semantics (e.g. fail-fast vs best-effort) are controlled
-    /// by <see cref="MutationEngineOptions"/>.
+    /// Batch execution is ordered and sequential. Each batch step passes through the same core concurrency controls as a
+    /// single execution, including the maximum concurrent execution limit and any state-specific serialization.
+    /// Fail-fast vs best-effort behavior is controlled by <see cref="MutationEngineOptions"/>.
     /// </remarks>
     Task<BatchMutationResult<TState>> ExecuteBatchAsync<TState>(
         IEnumerable<IMutation<TState>> mutations,
