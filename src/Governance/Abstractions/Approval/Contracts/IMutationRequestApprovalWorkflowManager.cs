@@ -1,4 +1,5 @@
 using ModularityKit.Mutator.Abstractions.Context;
+using ModularityKit.Mutator.Governance.Abstractions.Approval.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 
 namespace ModularityKit.Mutator.Governance.Abstractions.Approval.Contracts;
@@ -27,6 +28,15 @@ public interface IMutationRequestApprovalWorkflowManager
         string approvalId,
         MutationContext decisionContext,
         string? reason = null,
+        MutationApprovalRejectionReason? rejection = null,
         IReadOnlyDictionary<string, object>? metadata = null,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Expires requests whose pending approval requirements have passed their approval-specific expiration time.
+    /// </summary>
+    Task<IReadOnlyList<MutationRequest>> ExpirePendingApprovals(
+        DateTimeOffset now,
+        MutationContext decisionContext,
         CancellationToken cancellationToken = default);
 }

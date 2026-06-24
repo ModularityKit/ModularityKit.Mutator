@@ -7,5 +7,7 @@ public enum MutationApprovalRequirementStatus
 {
     Pending = 0,
     Approved = 1,
-    Rejected = 2
+    Rejected = 2,
+    Satisfied = 3,
+    Expired = 4
 }
