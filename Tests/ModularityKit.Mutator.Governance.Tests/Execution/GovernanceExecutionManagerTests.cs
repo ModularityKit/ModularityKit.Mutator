@@ -143,6 +143,48 @@ public sealed class GovernanceExecutionManagerTests
         Assert.Equal(MutationRequestVersionResolutionOutcome.RequiresRenewedApproval, result.Resolution.Outcome);
     }
 
+    [Fact]
+    public async Task ExecuteApproved_revalidates_and_executes_against_latest_state_when_strategy_demands_it()
+    {
+        var services = new ServiceCollection();
+        services.AddMutators(MutationEngineOptions.Strict);
+        await using var provider = services.BuildServiceProvider();
+
+        var engine = provider.GetRequiredService<IMutationEngine>();
+        var requestStore = new InMemoryMutationRequestStore();
+        var resolutionManager = new MutationRequestVersionResolutionManager(requestStore, new MutationRequestVersionResolver());
+        var executionManager = new GovernanceExecutionManager(requestStore, resolutionManager, engine);
+
+        var request = await requestStore.Create(MutationRequestTestFactory.CreateApprovedSecurityRequest("v10"));
+        var mutation = new PromoteRoleMutation(
+            MutationContext.User("operator-1", "Operator One", "Execute approved role promotion"),
+            nextVersion: "v16");
+        var state = RoleState.Create("tenant-42:roles", role: "Reader", version: "v15");
+
+        var result = await executionManager.ExecuteApproved(
+            request.RequestId,
+            mutation,
+            state,
+            currentStateVersion: state.Version,
+            resultingStateVersionProvider: updated => updated.Version,
+            governanceContext: MutationContext.Service("governance-runtime", "Revalidate and execute"),
+            strategy: VersionedRequestResolutionStrategy.RevalidateOnLatestState);
+
+        Assert.True(result.WasExecuted);
+        Assert.NotNull(result.MutationResult);
+        Assert.Equal(MutationRequestVersionResolutionOutcome.RevalidateOnLatestState, result.Resolution.Outcome);
+        Assert.Equal(MutationRequestStatus.Executed, result.Request.Status);
+        Assert.Equal("v16", result.ResultingStateVersion);
+        Assert.Equal("v16", result.Request.ResultingStateVersion);
+        Assert.Equal("v16", result.Request.ExpectedStateVersion);
+        Assert.Equal(
+            MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Executed),
+            result.Request.Decisions[^1].Type);
+        Assert.Contains(
+            result.Request.Decisions,
+            decision => decision.Type == MutationRequestDecisionType.VersionResolution(MutationRequestVersionResolutionDecisionType.RevalidationRequired));
+    }
+
     private sealed record RoleState(string StateId, string Role, string Version)
     {
         public static RoleState Create(string stateId, string role, string version) => new(stateId, role, version);

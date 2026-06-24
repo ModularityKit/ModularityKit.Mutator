@@ -3,6 +3,7 @@ using ModularityKit.Mutator.Governance.Abstractions.Exceptions.Storage;
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Decisions;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
+using ModularityKit.Mutator.Governance.Abstractions.Resolution.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Resolution.Strategies;
 using ModularityKit.Mutator.Governance.Runtime.Resolution.Execution;
 using ModularityKit.Mutator.Governance.Runtime.Storage;
@@ -60,6 +61,35 @@ public sealed class MutationRequestVersionResolutionPersistenceTests
             loaded.Decisions[^1].Type);
         Assert.Equal(MutationRequestStatus.Rejected, loaded.Status);
         Assert.Equal(1, loaded.Revision);
+        Assert.Equal(loaded, resolution.Request);
+    }
+
+    [Fact]
+    public async Task ResolveAndStore_revalidation_marks_request_pending_for_revalidation()
+    {
+        var store = new InMemoryMutationRequestStore();
+        var resolver = new MutationRequestVersionResolver();
+        var manager = new MutationRequestVersionResolutionManager(store, resolver);
+        var request = await store.Create(MutationRequestTestFactory.CreateApprovedSecurityRequest("v10"));
+
+        var resolution = await manager.ResolveAndStore(
+            request.RequestId,
+            currentStateVersion: "v15",
+            resolutionContext: MutationContext.User("approver", "Approver", "Revalidate request"),
+            strategy: VersionedRequestResolutionStrategy.RevalidateOnLatestState);
+
+        var loaded = await store.Get(request.RequestId);
+
+        Assert.NotNull(loaded);
+        Assert.Equal(3, loaded.Decisions.Count);
+        Assert.Equal(
+            MutationRequestDecisionType.VersionResolution(MutationRequestVersionResolutionDecisionType.RevalidationRequired),
+            loaded.Decisions[^1].Type);
+        Assert.Equal(MutationRequestStatus.Pending, loaded.Status);
+        Assert.Equal(PendingMutationReason.Revalidation, loaded.PendingReason);
+        Assert.Equal("v15", loaded.ExpectedStateVersion);
+        Assert.Equal(1, loaded.Revision);
+        Assert.Equal(MutationRequestVersionResolutionOutcome.RevalidateOnLatestState, resolution.Outcome);
         Assert.Equal(loaded, resolution.Request);
     }
 

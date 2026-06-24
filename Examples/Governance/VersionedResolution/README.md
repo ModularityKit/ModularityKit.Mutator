@@ -12,6 +12,7 @@ It is the direct runnable example for the semantics introduced around `ExpectedS
 - resolving stale requests with `RevalidateOnLatestState`
 - persisting a resolved outcome through `MutationRequestVersionResolutionManager`
 - inspecting the resulting lifecycle state and appended decision history
+- observing that revalidation is represented as `Pending` with `PendingMutationReason.Revalidation`
 
 ## Key files
 
@@ -67,6 +68,7 @@ The sample prints one block per resolution strategy and one persisted-resolution
 - selected outcome
 - whether the request was stale
 - resulting request status
+- the revalidation pending reason when the latest-state branch is selected
 - updated expected version
 - last decision recorded during resolution
 - persisted request revision for the runtime path
