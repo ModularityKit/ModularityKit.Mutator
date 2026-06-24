@@ -6,6 +6,19 @@
         <Nullable>enable</Nullable>
         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
         <RootNamespace>ModularityKit.Mutator</RootNamespace>
+        <PackageId>ModularityKit.Mutator.Governance</PackageId>
+        <Version>0.1.0</Version>
+        <Authors>ModularityKit</Authors>
+        <Company>ModularityKit</Company>
+        <Description>Governance extension for ModularityKit.Mutator with request lifecycle, approval workflow, and version-aware execution.</Description>
+        <PackageProjectUrl>https://github.com/ModularityKit/ModularityKit.Mutator</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/ModularityKit/ModularityKit.Mutator.git</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageTags>governance;approvals;requests;workflow;audit</PackageTags>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
     </PropertyGroup>
 
     <ItemGroup>
@@ -14,6 +27,10 @@
 
     <ItemGroup>
         <Compile Include="Governance/**/*.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="Governance/README.md" Pack="true" PackagePath="" Visible="false" />
     </ItemGroup>
 
 </Project>

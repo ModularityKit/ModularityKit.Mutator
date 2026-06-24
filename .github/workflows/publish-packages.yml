@@ -1,0 +1,116 @@
+name: Publish Packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version without the leading "v"
+        required: false
+        type: string
+      publish_nuget:
+        description: Publish to NuGet.org
+        required: false
+        default: true
+        type: boolean
+      publish_github_packages:
+        description: Publish to GitHub Packages
+        required: false
+        default: true
+        type: boolean
+  workflow_call:
+    inputs:
+      version:
+        description: Release version without the leading "v"
+        required: false
+        type: string
+      publish_nuget:
+        description: Publish to NuGet.org
+        required: false
+        type: boolean
+      publish_github_packages:
+        description: Publish to GitHub Packages
+        required: false
+        type: boolean
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  package:
+    uses: ./.github/workflows/publish-artifacts.yml
+    with:
+      package_version: ${{ inputs.version }}
+
+  publish-nuget:
+    name: Publish to NuGet.org
+    runs-on: ubuntu-latest
+    needs: package
+    if: ${{ inputs.publish_nuget != false }}
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Download packages
+        uses: actions/download-artifact@v6
+        with:
+          pattern: ModularityKit-packages
+          path: dist
+          merge-multiple: true
+
+      - name: NuGet login
+        id: login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USERNAME }}
+
+      - name: Push packages to NuGet.org
+        run: |
+          if [ -z "${{ secrets.NUGET_USERNAME }}" ]; then
+            echo "NUGET_USERNAME secret is required to publish to NuGet.org with Trusted Publishing." >&2
+            exit 1
+          fi
+
+          for package in dist/*.nupkg; do
+            dotnet nuget push "$package" \
+              --api-key "${{ steps.login.outputs.NUGET_API_KEY }}" \
+              --source https://api.nuget.org/v3/index.json \
+              --skip-duplicate
+          done
+
+  publish-github-packages:
+    name: Publish to GitHub Packages
+    runs-on: ubuntu-latest
+    needs: package
+    if: ${{ inputs.publish_github_packages != false }}
+
+    steps:
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Download packages
+        uses: actions/download-artifact@v6
+        with:
+          pattern: ModularityKit-packages
+          path: dist
+          merge-multiple: true
+
+      - name: Push packages to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_OWNER: ${{ github.repository_owner }}
+        run: |
+          for package in dist/*.nupkg; do
+            dotnet nuget push "$package" \
+              --api-key "$GITHUB_TOKEN" \
+              --source "https://nuget.pkg.github.com/${GITHUB_OWNER}/index.json" \
+              --skip-duplicate
+          done
