@@ -34,5 +34,9 @@ public enum PendingMutationReason
     /// The request is waiting for manual review.
     /// </summary>
     ManualReview = 5,
+
+    /// <summary>
+    /// The request is pending because it must be revalidated against the latest state before execution.
+    /// </summary>
     Revalidation = 6
 }
