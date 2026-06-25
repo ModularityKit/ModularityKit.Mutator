@@ -1,5 +1,8 @@
 using ModularityKit.Mutator.Governance.Abstractions.Exceptions.Storage;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Contracts;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
+using ModularityKit.Mutator.Governance.Abstractions.Requests.Decisions;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Storage;
 
@@ -9,7 +12,7 @@ namespace ModularityKit.Mutator.Governance.Runtime.Storage;
 /// In-memory store for governance mutation requests.
 /// Suitable for examples, tests, and local development.
 /// </summary>
-public sealed class InMemoryMutationRequestStore : IMutationRequestStore
+public sealed class InMemoryMutationRequestStore : IMutationRequestStore, IMutationRequestQueryStore
 {
     private readonly Dictionary<string, MutationRequest> _requests = new();
     private readonly Lock _lock = new();
@@ -119,6 +122,139 @@ public sealed class InMemoryMutationRequestStore : IMutationRequestStore
                 .ToList();
 
             return Task.FromResult<IReadOnlyList<MutationRequest>>(requests);
+        }
+    }
+
+    public Task<IReadOnlyList<MutationRequest>> QueryAsync(
+        MutationRequestQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+
+        lock (_lock)
+        {
+            var requests = _requests.Values
+                .Where(request => MutationRequestQueryEvaluator.Matches(request, query))
+                .OrderBy(request => request.CreatedAt)
+                .ThenBy(request => request.RequestId)
+                .ToList();
+
+            return Task.FromResult<IReadOnlyList<MutationRequest>>(requests);
+        }
+    }
+
+    public Task<IReadOnlyList<MutationRequest>> GetPendingRequestsAsync(
+        MutationRequestQuery? query = null,
+        CancellationToken cancellationToken = default)
+    {
+        lock (_lock)
+        {
+            var requests = _requests.Values
+                .Where(request => MutationRequestQueryEvaluator.Matches(request, query ?? new MutationRequestQuery()) &&
+                                   request.Status == MutationRequestStatus.Pending)
+                .OrderBy(request => request.CreatedAt)
+                .ThenBy(request => request.RequestId)
+                .ToList();
+
+            return Task.FromResult<IReadOnlyList<MutationRequest>>(requests);
+        }
+    }
+
+    public Task<IReadOnlyList<MutationRequest>> GetPendingApprovalQueueAsync(
+        MutationRequestQuery? query = null,
+        CancellationToken cancellationToken = default)
+    {
+        lock (_lock)
+        {
+            var requests = _requests.Values
+                .Where(request =>
+                    MutationRequestQueryEvaluator.Matches(request, query ?? new MutationRequestQuery()) &&
+                    request.Status == MutationRequestStatus.Pending &&
+                    request.PendingReason == PendingMutationReason.Approval)
+                .OrderBy(request => request.CreatedAt)
+                .ThenBy(request => request.RequestId)
+                .ToList();
+
+            return Task.FromResult<IReadOnlyList<MutationRequest>>(requests);
+        }
+    }
+
+    public Task<IReadOnlyList<MutationRequest>> GetRecentApprovalsAsync(
+        MutationRequestQuery? query = null,
+        int? take = null,
+        CancellationToken cancellationToken = default)
+    {
+        var effectiveQuery = query ?? MutationRequestQuery.RecentApprovals();
+
+        lock (_lock)
+        {
+            var requests = _requests.Values
+                .Where(request => MutationRequestQueryEvaluator.Matches(request, effectiveQuery) &&
+                                   MutationRequestQueryEvaluator.HasApprovalActivity(request))
+                .OrderByDescending(MutationRequestQueryEvaluator.GetRecentApprovalTimestamp)
+                .ThenByDescending(request => request.UpdatedAt)
+                .ThenBy(request => request.RequestId)
+                .ToList();
+
+            if (take.HasValue && take.Value >= 0)
+                requests = requests.Take(take.Value).ToList();
+
+            return Task.FromResult<IReadOnlyList<MutationRequest>>(requests);
+        }
+    }
+
+    public Task<IReadOnlyList<MutationApprovalView>> GetPendingApprovalsAsync(
+        MutationApprovalQuery? query = null,
+        CancellationToken cancellationToken = default)
+    {
+        var effectiveQuery = query ?? MutationApprovalQuery.Pending();
+
+        lock (_lock)
+        {
+            var approvals = _requests.Values
+                .SelectMany(request => request.ApprovalRequirements.Select(approval => new MutationApprovalView
+                {
+                    Request = request,
+                    Approval = approval
+                }))
+                .Where(view => MutationApprovalQueryEvaluator.Matches(view.Request, view.Approval, effectiveQuery))
+                .OrderBy(view => view.Request.CreatedAt)
+                .ThenBy(view => view.Request.RequestId)
+                .ThenBy(view => view.Approval.StepOrder)
+                .ThenBy(view => view.Approval.ApprovalId)
+                .ToList();
+
+            return Task.FromResult<IReadOnlyList<MutationApprovalView>>(approvals);
+        }
+    }
+
+    public Task<IReadOnlyList<MutationRequestDecisionView>> GetRecentDecisionsAsync(
+        MutationRequestDecisionQuery? query = null,
+        int? take = null,
+        CancellationToken cancellationToken = default)
+    {
+        var effectiveQuery = query ?? new MutationRequestDecisionQuery();
+
+        lock (_lock)
+        {
+            IEnumerable<MutationRequestDecisionView> decisions = _requests.Values
+                .SelectMany(request => request.Decisions.Select(decision => new MutationRequestDecisionView
+                {
+                    Request = request,
+                    Decision = decision
+                }))
+                .Where(view => MutationRequestDecisionQueryEvaluator.Matches(
+                    view.Request,
+                    view.Decision,
+                    effectiveQuery))
+                .OrderByDescending(view => view.Decision.Timestamp)
+                .ThenByDescending(view => view.Request.UpdatedAt)
+                .ThenBy(view => view.Request.RequestId);
+
+            if (take.HasValue && take.Value >= 0)
+                decisions = decisions.Take(take.Value);
+
+            return Task.FromResult<IReadOnlyList<MutationRequestDecisionView>>(decisions.ToList());
         }
     }
 }

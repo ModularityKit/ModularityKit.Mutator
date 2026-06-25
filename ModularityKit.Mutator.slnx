@@ -2,6 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/ModularityKit.Mutator.Governance.csproj" />
     <Project Path="src/ModularityKit.Mutator.csproj" />
+    <Project Path="src/Redis/ModularityKit.Mutator.Governance.Redis.csproj" />
   </Folder>
   <Folder Name="/Examples/">
     <Project Path="Examples/Core/BillingQuotas/BillingQuotas.csproj" />
@@ -11,12 +12,14 @@
     <Project Path="Examples/Governance/ApprovalWorkflow/ApprovalWorkflow.csproj" />
     <Project Path="Examples/Governance/GovernedExecution/GovernedExecution.csproj" />
     <Project Path="Examples/Governance/DecisionTaxonomy/DecisionTaxonomy.csproj" />
+    <Project Path="Examples/Governance/Queries/Queries.csproj" />
     <Project Path="Examples/Governance/RequestLifecycle/RequestLifecycle.csproj" />
     <Project Path="Examples/Governance/VersionedResolution/VersionedResolution.csproj" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/ModularityKit.Mutator.Tests/ModularityKit.Mutator.Tests.csproj" />
     <Project Path="Tests/ModularityKit.Mutator.Governance.Tests/ModularityKit.Mutator.Governance.Tests.csproj" />
+    <Project Path="Tests/ModularityKit.Mutator.Governance.Redis.Tests/ModularityKit.Mutator.Governance.Redis.Tests.csproj" />
   </Folder>
   <Folder Name="/Benchmarks/">
     <Project Path="Benchmarks/ModularityKit.Mutator.Benchmarks.csproj" />
