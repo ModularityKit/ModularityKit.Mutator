@@ -13,6 +13,7 @@
     <Project Path="Examples/Governance/GovernedExecution/GovernedExecution.csproj" />
     <Project Path="Examples/Governance/DecisionTaxonomy/DecisionTaxonomy.csproj" />
     <Project Path="Examples/Governance/Queries/Queries.csproj" />
+    <Project Path="Examples/Governance/RedisQueries/RedisQueries.csproj" />
     <Project Path="Examples/Governance/RequestLifecycle/RequestLifecycle.csproj" />
     <Project Path="Examples/Governance/VersionedResolution/VersionedResolution.csproj" />
   </Folder>
