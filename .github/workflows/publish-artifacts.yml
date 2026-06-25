@@ -7,6 +7,18 @@ on:
         description: "Optional package version, usually the release tag without the leading v."
         required: false
         type: string
+      core_version:
+        description: "Optional manual version for ModularityKit.Mutator."
+        required: false
+        type: string
+      governance_version:
+        description: "Optional manual version for ModularityKit.Mutator.Governance."
+        required: false
+        type: string
+      redis_version:
+        description: "Optional manual version for ModularityKit.Mutator.Governance.Redis."
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -28,21 +40,45 @@ jobs:
       - name: Restore
         run: dotnet restore ModularityKit.Mutator.slnx
 
-      - name: Resolve package version
+      - name: Resolve package versions
         id: version
         env:
           PACKAGE_VERSION: ${{ inputs.package_version }}
+          CORE_VERSION: ${{ inputs.core_version }}
+          GOVERNANCE_VERSION: ${{ inputs.governance_version }}
+          REDIS_VERSION: ${{ inputs.redis_version }}
           REF_NAME: ${{ github.ref_name }}
         run: |
-          version="$PACKAGE_VERSION"
-          if [ -z "$version" ]; then
-            version="$REF_NAME"
-          fi
-          version="${version#v}"
-          if ! printf '%s' "$version" | grep -Eq '^[0-9]+(\.[0-9]+){1,2}([-+][0-9A-Za-z.-]+)?$'; then
-            version="0.1.0"
-          fi
-          echo "package_version=$version" >> "$GITHUB_OUTPUT"
+          resolve_version() {
+            local value="$1"
+            local fallback="$2"
+
+            if [ -z "$value" ]; then
+              value="$fallback"
+            fi
+
+            if [ -z "$value" ]; then
+              value="$REF_NAME"
+            fi
+
+            value="${value#v}"
+
+            if ! printf '%s' "$value" | grep -Eq '^[0-9]+(\.[0-9]+){1,2}([-+][0-9A-Za-z.-]+)?$'; then
+              value="0.1.0"
+            fi
+
+            printf '%s' "$value"
+          }
+
+          shared_version="$(resolve_version "$PACKAGE_VERSION" "")"
+          core_version="$(resolve_version "$CORE_VERSION" "$shared_version")"
+          governance_version="$(resolve_version "$GOVERNANCE_VERSION" "$shared_version")"
+          redis_version="$(resolve_version "$REDIS_VERSION" "$shared_version")"
+
+          echo "package_version=$shared_version" >> "$GITHUB_OUTPUT"
+          echo "core_version=$core_version" >> "$GITHUB_OUTPUT"
+          echo "governance_version=$governance_version" >> "$GITHUB_OUTPUT"
+          echo "redis_version=$redis_version" >> "$GITHUB_OUTPUT"
 
       - name: Pack core package
         run: >
@@ -50,7 +86,7 @@ jobs:
           -c Release
           --no-restore
           -o nupkg
-          -p:PackageVersion=${{ steps.version.outputs.package_version }}
+          -p:PackageVersion=${{ steps.version.outputs.core_version }}
 
       - name: Pack governance package
         run: >
@@ -58,7 +94,15 @@ jobs:
           -c Release
           --no-restore
           -o nupkg
-          -p:PackageVersion=${{ steps.version.outputs.package_version }}
+          -p:PackageVersion=${{ steps.version.outputs.governance_version }}
+
+      - name: Pack Redis governance package
+        run: >
+          dotnet pack src/Redis/ModularityKit.Mutator.Governance.Redis.csproj
+          -c Release
+          --no-restore
+          -o nupkg
+          -p:PackageVersion=${{ steps.version.outputs.redis_version }}
 
       - name: Upload packages
         uses: actions/upload-artifact@v4
