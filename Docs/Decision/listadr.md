@@ -44,5 +44,9 @@ These ADRs describe the `ModularityKit.Mutator.Governance` extension layer and i
 | ADR-026 | Governance Request Query API                         | [ADR-026](Adr/ADR_026_Governance_Request_Query_API.md)                         |
 | ADR-027 | Governed Execution Manager                           | [ADR-027](Adr/ADR_027_Governed_Execution_Manager.md)                           |
 | ADR-028 | Governance Approval Workflow Hardening               | [ADR-028](Adr/ADR_028_Governance_Approval_Workflow_Hardening.md)               |
+| ADR-029 | Governance Redis Provider Package                    | [ADR-029](Adr/ADR_029_Governance_Redis_Provider_Package.md)                    |
+| ADR-030 | Governance Redis Request Storage and Query Strategy  | [ADR-030](Adr/ADR_030_Governance_Redis_Request_Storage_and_Query_Strategy.md)  |
+| ADR-031 | Governance Redis Serialization and Document Compatibility | [ADR-031](Adr/ADR_031_Governance_Redis_Serialization_and_Document_Compatibility.md) |
+| ADR-032 | Governance Redis Concurrency and Index Maintenance Model | [ADR-032](Adr/ADR_032_Governance_Redis_Concurrency_and_Index_Maintenance_Model.md) |
 
 > See individual ADRs for detailed context, decision rationale, and consequences.
