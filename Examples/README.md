@@ -27,6 +27,8 @@ The projects are intentionally small and focused. Each one demonstrates a differ
 | `DecisionTaxonomy` | lifecycle, approval, and version-resolution decision categories | [`Examples/Governance/DecisionTaxonomy/README.md`](Governance/DecisionTaxonomy/README.md) |
 | `ApprovalWorkflow` | request-level approvals, multi-step sign-off, and governed approval actions | [`Examples/Governance/ApprovalWorkflow/README.md`](Governance/ApprovalWorkflow/README.md) |
 | `VersionedResolution` | stale request handling and expected state version semantics | [`Examples/Governance/VersionedResolution/README.md`](Governance/VersionedResolution/README.md) |
+| `Queries` | request queries, pending approvals, and decision-oriented governance read views | [`Examples/Governance/Queries/README.md`](Governance/Queries/README.md) |
+| `RedisQueries` | Redis-backed governance request storage and query-oriented reads | [`Examples/Governance/RedisQueries/README.md`](Governance/RedisQueries/README.md) |
 
 ## How to use these examples
 
@@ -59,6 +61,8 @@ dotnet build Examples/Governance/GovernedExecution/GovernedExecution.csproj -c R
 dotnet build Examples/Governance/DecisionTaxonomy/DecisionTaxonomy.csproj -c Release
 dotnet build Examples/Governance/ApprovalWorkflow/ApprovalWorkflow.csproj -c Release
 dotnet build Examples/Governance/VersionedResolution/VersionedResolution.csproj -c Release
+dotnet build Examples/Governance/Queries/Queries.csproj -c Release
+dotnet build Examples/Governance/RedisQueries/RedisQueries.csproj -c Release
 ```
 
 ## Run
@@ -77,6 +81,8 @@ dotnet run --project Examples/Governance/GovernedExecution/GovernedExecution.csp
 dotnet run --project Examples/Governance/DecisionTaxonomy/DecisionTaxonomy.csproj
 dotnet run --project Examples/Governance/ApprovalWorkflow/ApprovalWorkflow.csproj
 dotnet run --project Examples/Governance/VersionedResolution/VersionedResolution.csproj
+dotnet run --project Examples/Governance/Queries/Queries.csproj
+dotnet run --project Examples/Governance/RedisQueries/RedisQueries.csproj
 ```
 
 If you want to run one sample repeatedly while changing code, stay in its folder:
@@ -163,6 +169,18 @@ See [`Governance/DecisionTaxonomy/README.md`](Governance/DecisionTaxonomy/README
 Shows how governance resolves approved requests once the underlying state version has moved. This is the example to read if you want concrete stale request semantics.
 
 See [`Governance/VersionedResolution/README.md`](Governance/VersionedResolution/README.md).
+
+### Queries
+
+Shows the governance read side as a first-class API for listing requests, approvals, and decision history.
+
+See [`Governance/Queries/README.md`](Governance/Queries/README.md).
+
+### RedisQueries
+
+Shows the same governance read side backed by `ModularityKit.Mutator.Governance.Redis` instead of the in-memory store.
+
+See [`Governance/RedisQueries/README.md`](Governance/RedisQueries/README.md).
 
 ## Notes
 

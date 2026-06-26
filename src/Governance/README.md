@@ -60,6 +60,15 @@ Console.WriteLine($"{persisted.RequestId} -> {persisted.Status}");
 - `MutationRequestApprovalWorkflowManager`
 - `MutationApprovalRequirement`
 
+### Queries
+
+- `IMutationRequestQueryStore`
+- `MutationRequestQuery`
+- `MutationApprovalQuery`
+- `MutationRequestDecisionQuery`
+- `MutationApprovalView`
+- `MutationRequestDecisionView`
+
 ### Resolution
 
 - `IMutationRequestVersionResolver`
@@ -94,12 +103,16 @@ Runnable examples live under [`Examples/Governance`](../../Examples/Governance):
 - [`ApprovalWorkflow`](../../Examples/Governance/ApprovalWorkflow/README.md)
 - [`VersionedResolution`](../../Examples/Governance/VersionedResolution/README.md)
 - [`GovernedExecution`](../../Examples/Governance/GovernedExecution/README.md)
+- [`Queries`](../../Examples/Governance/Queries/README.md)
+- [`RedisQueries`](../../Examples/Governance/RedisQueries/README.md)
 
 ## Relationship to the core package
 
 `ModularityKit.Mutator` owns mutation execution, policy evaluation, audit, history, side effects, and metrics.
 
 `ModularityKit.Mutator.Governance` owns the request lifecycle around that execution: approvals, pending states, request storage, stale-version resolution, and terminal governance decisions.
+
+It also owns the query-oriented read side for governed requests, approval work, and decision history.
 
 ## Current scope
 

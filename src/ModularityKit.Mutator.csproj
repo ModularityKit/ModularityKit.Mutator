@@ -22,6 +22,7 @@
 
     <ItemGroup>
       <Compile Remove="Governance/**/*.cs" />
+      <Compile Remove="Redis/**/*.cs" />
     </ItemGroup>
 
     <ItemGroup>

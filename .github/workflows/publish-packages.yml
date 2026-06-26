@@ -7,6 +7,18 @@ on:
         description: Release version without the leading "v"
         required: false
         type: string
+      core_version:
+        description: Optional manual version for ModularityKit.Mutator
+        required: false
+        type: string
+      governance_version:
+        description: Optional manual version for ModularityKit.Mutator.Governance
+        required: false
+        type: string
+      redis_version:
+        description: Optional manual version for ModularityKit.Mutator.Governance.Redis
+        required: false
+        type: string
       publish_nuget:
         description: Publish to NuGet.org
         required: false
@@ -21,6 +33,18 @@ on:
     inputs:
       version:
         description: Release version without the leading "v"
+        required: false
+        type: string
+      core_version:
+        description: Optional manual version for ModularityKit.Mutator
+        required: false
+        type: string
+      governance_version:
+        description: Optional manual version for ModularityKit.Mutator.Governance
+        required: false
+        type: string
+      redis_version:
+        description: Optional manual version for ModularityKit.Mutator.Governance.Redis
         required: false
         type: string
       publish_nuget:
@@ -41,6 +65,9 @@ jobs:
     uses: ./.github/workflows/publish-artifacts.yml
     with:
       package_version: ${{ inputs.version }}
+      core_version: ${{ inputs.core_version }}
+      governance_version: ${{ inputs.governance_version }}
+      redis_version: ${{ inputs.redis_version }}
 
   publish-nuget:
     name: Publish to NuGet.org

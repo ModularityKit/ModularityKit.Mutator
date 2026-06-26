@@ -1,0 +1,16 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${MODULARITYKIT_REDIS_PORT:-6379}:6379"
+    environment:
+      REDIS_PASSWORD: "${MODULARITYKIT_REDIS_PASSWORD:-}"
+    command:
+      - sh
+      - -c
+      - >
+        if [ -n "$$REDIS_PASSWORD" ]; then
+          exec redis-server --save "" --appendonly no --requirepass "$$REDIS_PASSWORD";
+        else
+          exec redis-server --save "" --appendonly no;
+        fi
