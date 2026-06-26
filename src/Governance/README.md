@@ -104,6 +104,7 @@ Runnable examples live under [`Examples/Governance`](../../Examples/Governance):
 - [`VersionedResolution`](../../Examples/Governance/VersionedResolution/README.md)
 - [`GovernedExecution`](../../Examples/Governance/GovernedExecution/README.md)
 - [`Queries`](../../Examples/Governance/Queries/README.md)
+- [`RedisQueries`](../../Examples/Governance/RedisQueries/README.md)
 
 ## Relationship to the core package
 

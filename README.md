@@ -12,6 +12,7 @@
 
 - [`ModularityKit.Mutator`](src/README.md) - core mutation runtime
 - [`ModularityKit.Mutator.Governance`](src/Governance/README.md) - request lifecycle, approvals, and governed execution
+- [`ModularityKit.Mutator.Governance.Redis`](src/Redis/README.md) - Redis provider for ModularityKit.Mutator.Governance
 
 ## Repository
 
