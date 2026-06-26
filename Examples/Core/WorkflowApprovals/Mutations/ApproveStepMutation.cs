@@ -10,21 +10,23 @@ namespace WorkflowApprovals.Mutations;
 /// <summary>
 /// Mutation that approves specific step in an <see cref="ApprovalWorkflowState"/>.
 /// </summary>
-internal sealed record ApproveStepMutation(
-    int StepIndex,
-    string Approver,
-    MutationContext Context
-) : IMutation<ApprovalWorkflowState>
+internal sealed class ApproveStepMutation(
+    int stepIndex,
+    string approver,
+    MutationContext context
+) : MutationBase<ApprovalWorkflowState>(
+    CreateIntent(
+        operationName: "ApproveStep",
+        category: "Workflow",
+        description: "Approve a workflow step",
+        riskLevel: MutationRiskLevel.High),
+    context)
 {
-    public MutationIntent Intent { get; } = new()
-    {
-        OperationName = "ApproveStep",
-        Category = "Workflow",
-        RiskLevel = MutationRiskLevel.High,
-        Description = "Approve a workflow step"
-    };
+    public int StepIndex { get; } = stepIndex;
 
-    public ValidationResult Validate(ApprovalWorkflowState state)
+    public string Approver { get; } = approver;
+
+    public override ValidationResult Validate(ApprovalWorkflowState state)
     {
         var result = new ValidationResult();
         if (StepIndex < 0 || StepIndex >= state.Steps.Count)
@@ -34,7 +36,7 @@ internal sealed record ApproveStepMutation(
         return result;
     }
 
-    public MutationResult<ApprovalWorkflowState> Apply(ApprovalWorkflowState state)
+    public override MutationResult<ApprovalWorkflowState> Apply(ApprovalWorkflowState state)
     {
         var steps = state.Steps.ToList();
         var oldStep = steps[StepIndex];
@@ -47,12 +49,8 @@ internal sealed record ApproveStepMutation(
 
         var newState = state with { Steps = steps };
 
-        var changes = ChangeSet.Single(
-            StateChange.Modified($"Steps[{StepIndex}]", oldStep.Status, newStep.Status)
-        );
-
-        return MutationResult<ApprovalWorkflowState>.Success(newState, changes);
+        return Success(
+            newState,
+            StateChange.Modified($"Steps[{StepIndex}]", oldStep.Status, newStep.Status));
     }
-
-    public MutationResult<ApprovalWorkflowState> Simulate(ApprovalWorkflowState state) => Apply(state);
 }

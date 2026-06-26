@@ -55,13 +55,10 @@ internal static class EmergencyIncreaseScenario
             userName: "System Admin",
             reason: "Emergency quota increase");
 
-        var mutations = new IMutation<QuotaState>[]
-        {
+        var result = await engine.ExecuteBatchAsync(
+            state,
             new IncreaseQuotaMutation("alice", 15, ctx),
-            new IncreaseQuotaMutation("bob", 10, ctx)
-        };
-
-        var result = await engine.ExecuteBatchAsync(mutations, state);
+            new IncreaseQuotaMutation("bob", 10, ctx));
 
         foreach (var res in result.Results)
         {

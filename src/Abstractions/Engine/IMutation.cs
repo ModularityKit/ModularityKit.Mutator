@@ -14,6 +14,10 @@ namespace ModularityKit.Mutator.Abstractions.Engine;
 /// and the operations to apply, validate, or simulate the mutation.
 /// </para>
 /// <para>
+/// For simpler implementations, <see cref="MutationBase{TState}"/> provides default behavior for
+/// validation and simulation.
+/// </para>
+/// <para>
 /// Typical usage involves:
 /// <list type="bullet">
 /// <item>Creating a mutation instance with a descriptive <see cref="Intent"/>.</item>

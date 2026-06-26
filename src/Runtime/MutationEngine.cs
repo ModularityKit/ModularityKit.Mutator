@@ -263,6 +263,11 @@ internal sealed class MutationEngine(
             cancellationToken);
     }
 
+    public Task<BatchMutationResult<TState>> ExecuteBatchAsync<TState>(
+        TState state,
+        params IMutation<TState>[] mutations)
+        => ExecuteBatchAsync(mutations, state);
+
     public void RegisterPolicy<TState>(IMutationPolicy<TState> policy) =>
         _policyRegistry.Register(policy);
 

@@ -66,18 +66,15 @@ internal static class GovernanceExecutionScenario
 
     private sealed record FeatureFlagState(string StateId, bool IsEnabled, string Version);
 
-    private sealed class EnableFeatureMutation(MutationContext context, string nextVersion) : IMutation<FeatureFlagState>
+    private sealed class EnableFeatureMutation(MutationContext context, string nextVersion)
+        : MutationBase<FeatureFlagState>(
+            CreateIntent(
+                operationName: "EnableFeature",
+                category: "Configuration",
+                description: "Enable a feature after governance approval"),
+            context)
     {
-        public MutationIntent Intent { get; } = new()
-        {
-            OperationName = "EnableFeature",
-            Category = "Configuration",
-            Description = "Enable a feature after governance approval"
-        };
-
-        public MutationContext Context { get; } = context;
-
-        public MutationResult<FeatureFlagState> Apply(FeatureFlagState state)
+        public override MutationResult<FeatureFlagState> Apply(FeatureFlagState state)
         {
             var newState = state with
             {
@@ -85,18 +82,16 @@ internal static class GovernanceExecutionScenario
                 Version = nextVersion
             };
 
-            return MutationResult<FeatureFlagState>.Success(
+            return Success(
                 newState,
-                ChangeSet.Single(StateChange.Modified("IsEnabled", state.IsEnabled, newState.IsEnabled)));
+                StateChange.Modified("IsEnabled", state.IsEnabled, newState.IsEnabled));
         }
 
-        public ValidationResult Validate(FeatureFlagState state)
+        public override ValidationResult Validate(FeatureFlagState state)
         {
             return state.IsEnabled
                 ? ValidationResult.WithError("IsEnabled", "Feature is already enabled.")
                 : ValidationResult.Success();
         }
-
-        public MutationResult<FeatureFlagState> Simulate(FeatureFlagState state) => Apply(state);
     }
 }

@@ -10,21 +10,23 @@ namespace IamRoles.Mutations;
 /// <summary>
 /// Mutation that grants role to user in current <see cref="UserPermissionsState"/>.
 /// </summary>
-internal sealed record GrantUserRoleMutation(
-    string UserId,
-    string Role,
-    MutationContext Context
-) : IMutation<UserPermissionsState>
+internal sealed class GrantUserRoleMutation(
+    string userId,
+    string role,
+    MutationContext context
+) : MutationBase<UserPermissionsState>(
+    CreateIntent(
+        operationName: "GrantUserRole",
+        category: "Security",
+        description: "Grants role to a user",
+        riskLevel: MutationRiskLevel.Critical),
+    context)
 {
-    public MutationIntent Intent { get; } = new()
-    {
-        OperationName = "GrantUserRole",
-        Category = "Security",
-        RiskLevel = MutationRiskLevel.Critical,
-        Description = "Grants role to a user"
-    };
+    public string UserId { get; } = userId;
 
-    public ValidationResult Validate(UserPermissionsState state)
+    public string Role { get; } = role;
+
+    public override ValidationResult Validate(UserPermissionsState state)
     {
         var result = new ValidationResult();
 
@@ -41,7 +43,7 @@ internal sealed record GrantUserRoleMutation(
         return result;
     }
 
-    public MutationResult<UserPermissionsState> Apply(UserPermissionsState state)
+    public override MutationResult<UserPermissionsState> Apply(UserPermissionsState state)
     {
         var rolesByUser = state.RolesByUser
             .ToDictionary(kv => kv.Key, kv => new HashSet<string>(kv.Value));
@@ -56,13 +58,8 @@ internal sealed record GrantUserRoleMutation(
 
         var newState = state with { RolesByUser = rolesByUser };
 
-        var changes = ChangeSet.Single(
-            StateChange.Added($"RolesByUser.{UserId}", Role)
-        );
-
-        return MutationResult<UserPermissionsState>.Success(newState, changes);
+        return Success(
+            newState,
+            StateChange.Added($"RolesByUser.{UserId}", Role));
     }
-
-    public MutationResult<UserPermissionsState> Simulate(UserPermissionsState state)
-        => Apply(state);
 }

@@ -78,6 +78,19 @@ public sealed record MutationResult<TState>
         };
 
     /// <summary>
+    /// Creates a successful mutation result from a single state change.
+    /// </summary>
+    /// <param name="newState">The new state after the mutation.</param>
+    /// <param name="change">The single change applied.</param>
+    /// <param name="sideEffects">Optional list of side effects.</param>
+    /// <returns>A <see cref="MutationResult{TState}"/> representing success.</returns>
+    public static MutationResult<TState> Success(
+        TState newState,
+        StateChange change,
+        IReadOnlyList<SideEffect>? sideEffects = null)
+        => Success(newState, ChangeSet.Single(change), sideEffects);
+
+    /// <summary>
     /// Creates a failed mutation result due to validation errors.
     /// </summary>
     /// <param name="validation">The validation result explaining the failure.</param>

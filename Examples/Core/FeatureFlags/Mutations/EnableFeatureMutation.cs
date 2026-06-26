@@ -10,18 +10,19 @@ namespace FeatureFlags.Mutations;
 /// <summary>
 /// Mutation that enables feature flag in the current <see cref="FeatureFlagsState"/>.
 /// </summary>
-internal sealed record EnableFeatureMutation(string FeatureName, MutationContext Context) : IMutation<FeatureFlagsState>
+internal sealed class EnableFeatureMutation(string featureName, MutationContext context)
+    : MutationBase<FeatureFlagsState>(
+        CreateIntent(
+            operationName: "EnableFeature",
+            category: "Security",
+            description: "Enables a feature flag.",
+            riskLevel: MutationRiskLevel.High,
+            tags: new HashSet<string> { "auth" }),
+        context)
 {
-    public MutationIntent Intent { get; } = new()
-    {
-        OperationName = "EnableFeature",
-        Category = "Security",
-        Tags = new HashSet<string> { "auth" },
-        RiskLevel = MutationRiskLevel.High,
-        Description = "Enables a feature flag."
-    };
+    public string FeatureName { get; } = featureName;
 
-    public MutationResult<FeatureFlagsState> Apply(FeatureFlagsState state)
+    public override MutationResult<FeatureFlagsState> Apply(FeatureFlagsState state)
     {
         if (state.Flags.TryGetValue(FeatureName, out var oldValue) && oldValue)
             return MutationResult<FeatureFlagsState>.Success(state, ChangeSet.Empty);
@@ -31,13 +32,12 @@ internal sealed record EnableFeatureMutation(string FeatureName, MutationContext
             [FeatureName] = true
         };
         var newState = state with { Flags = newFlags };
-        var changes = ChangeSet.Single(
-            StateChange.Modified($"Flags.{FeatureName}", oldValue, true)
-        );
-        return MutationResult<FeatureFlagsState>.Success(newState, changes);
+        return Success(
+            newState,
+            StateChange.Modified($"Flags.{FeatureName}", oldValue, true));
     }
 
-    public ValidationResult Validate(FeatureFlagsState state)
+    public override ValidationResult Validate(FeatureFlagsState state)
     {
         var result = new ValidationResult();
         if (string.IsNullOrEmpty(FeatureName))
@@ -50,6 +50,4 @@ internal sealed record EnableFeatureMutation(string FeatureName, MutationContext
         }
         return result;
     }
-
-    public MutationResult<FeatureFlagsState> Simulate(FeatureFlagsState state) => Apply(state);
 }
