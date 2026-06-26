@@ -22,4 +22,16 @@ public interface IGovernanceExecutionManager
         MutationContext governanceContext,
         VersionedRequestResolutionStrategy strategy,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Executes an approved governed mutation request against a versioned state snapshot.
+    /// </summary>
+    Task<GovernedExecutionResult<TState>> ExecuteApproved<TState>(
+        string requestId,
+        IMutation<TState> mutation,
+        TState currentState,
+        MutationContext governanceContext,
+        VersionedRequestResolutionStrategy strategy,
+        CancellationToken cancellationToken = default)
+        where TState : IVersionedState;
 }

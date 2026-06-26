@@ -5,6 +5,7 @@ using ModularityKit.Mutator.Abstractions.Context;
 using ModularityKit.Mutator.Abstractions.Engine;
 using ModularityKit.Mutator.Abstractions.Intent;
 using ModularityKit.Mutator.Abstractions.Results;
+using ModularityKit.Mutator.Governance.Abstractions.Execution.Contracts;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Factory;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Resolution.Strategies;
@@ -28,10 +29,8 @@ internal static class GovernanceExecutionScenario
         var resolutionManager = new MutationRequestVersionResolutionManager(store, new MutationRequestVersionResolver());
         var executionManager = new GovernanceExecutionManager(store, resolutionManager, engine);
 
-        var request = await store.Create(MutationRequestFactory.Approved(
+        var request = await store.Create(MutationRequestFactory.Approved<FeatureFlagState, EnableFeatureMutation>(
             stateId: "tenant-42:feature-flags",
-            stateType: "FeatureFlagState",
-            mutationType: nameof(EnableFeatureMutation),
             intent: new MutationIntent
             {
                 OperationName = "EnableFeature",
@@ -50,8 +49,6 @@ internal static class GovernanceExecutionScenario
             request.RequestId,
             new EnableFeatureMutation(MutationContext.Service("release-orchestrator", "Execute approved rollout"), "v11"),
             currentState,
-            currentState.Version,
-            resultingStateVersionProvider: state => state.Version,
             governanceContext: MutationContext.Service("governance-runtime", "Execute approved governance request"),
             strategy: VersionedRequestResolutionStrategy.RejectStale);
 
@@ -64,7 +61,7 @@ internal static class GovernanceExecutionScenario
         Console.WriteLine($"Reason: {execution.Request.Decisions[^1].Reason}");
     }
 
-    private sealed record FeatureFlagState(string StateId, bool IsEnabled, string Version);
+    private sealed record FeatureFlagState(string StateId, bool IsEnabled, string Version) : IVersionedState;
 
     private sealed class EnableFeatureMutation(MutationContext context, string nextVersion)
         : MutationBase<FeatureFlagState>(

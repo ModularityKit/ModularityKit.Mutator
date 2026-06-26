@@ -120,4 +120,22 @@ public sealed class GovernanceExecutionManager(
             executedRequest,
             resultingStateVersion);
     }
+
+    public Task<GovernedExecutionResult<TState>> ExecuteApproved<TState>(
+        string requestId,
+        IMutation<TState> mutation,
+        TState currentState,
+        MutationContext governanceContext,
+        VersionedRequestResolutionStrategy strategy,
+        CancellationToken cancellationToken = default)
+        where TState : IVersionedState
+        => ExecuteApproved(
+            requestId,
+            mutation,
+            currentState,
+            currentState.Version,
+            state => state.Version,
+            governanceContext,
+            strategy,
+            cancellationToken);
 }

@@ -44,6 +44,10 @@ Console.WriteLine($"{persisted.RequestId} -> {persisted.Status}");
 - `MutationRequestStatus`
 - `PendingMutationReason`
 
+The request factory also has generic overloads such as `Approved<TState, TMutation>()` and
+`PendingApproval<TState, TMutation>()` when you already have concrete CLR types and do not want
+to repeat `stateType` / `mutationType` strings at the call site.
+
 ### Storage
 
 - `IMutationRequestStore`

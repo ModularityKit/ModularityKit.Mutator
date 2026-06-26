@@ -7,15 +7,16 @@ using ModularityKit.Mutator.Abstractions.Engine;
 using ModularityKit.Mutator.Abstractions.History;
 using ModularityKit.Mutator.Abstractions.Intent;
 using ModularityKit.Mutator.Abstractions.Results;
+using ModularityKit.Mutator.Governance.Abstractions.Execution.Contracts;
 using ModularityKit.Mutator.Governance.Abstractions.Execution.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
+using ModularityKit.Mutator.Governance.Abstractions.Requests.Factory;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Decisions;
 using ModularityKit.Mutator.Governance.Abstractions.Resolution.Strategies;
 using ModularityKit.Mutator.Governance.Abstractions.Resolution.Model;
 using ModularityKit.Mutator.Governance.Runtime.Execution.Orchestration;
 using ModularityKit.Mutator.Governance.Runtime.Resolution.Execution;
 using ModularityKit.Mutator.Governance.Runtime.Storage;
-using ModularityKit.Mutator.Governance.Tests.TestSupport;
 using ModularityKit.Mutator.Runtime;
 using Xunit;
 
@@ -37,7 +38,16 @@ public sealed class GovernanceExecutionManagerTests
         var resolutionManager = new MutationRequestVersionResolutionManager(requestStore, new MutationRequestVersionResolver());
         var executionManager = new GovernanceExecutionManager(requestStore, resolutionManager, engine);
 
-        var request = await requestStore.Create(MutationRequestTestFactory.CreateApprovedSecurityRequest("v10"));
+        var request = await requestStore.Create(MutationRequestFactory.Approved<RoleState, PromoteRoleMutation>(
+            stateId: "tenant-42:roles",
+            intent: new MutationIntent
+            {
+                OperationName = "GrantRole",
+                Category = "Security",
+                Description = "Grant elevated access"
+            },
+            context: MutationContext.User("requester", "Requester", "Need access"),
+            expectedStateVersion: "v10"));
         var mutation = new PromoteRoleMutation(
             MutationContext.User("operator-1", "Operator One", "Execute approved role promotion"),
             nextVersion: "v11");
@@ -47,8 +57,6 @@ public sealed class GovernanceExecutionManagerTests
             request.RequestId,
             mutation,
             state,
-            currentStateVersion: state.Version,
-            resultingStateVersionProvider: updated => updated.Version,
             governanceContext: MutationContext.Service("governance-runtime", "Execute approved request"),
             strategy: VersionedRequestResolutionStrategy.RejectStale);
 
@@ -84,7 +92,16 @@ public sealed class GovernanceExecutionManagerTests
         var resolutionManager = new MutationRequestVersionResolutionManager(requestStore, new MutationRequestVersionResolver());
         var executionManager = new GovernanceExecutionManager(requestStore, resolutionManager, engine);
 
-        var request = await requestStore.Create(MutationRequestTestFactory.CreateApprovedSecurityRequest("v10"));
+        var request = await requestStore.Create(MutationRequestFactory.Approved<RoleState, PromoteRoleMutation>(
+            stateId: "tenant-42:roles",
+            intent: new MutationIntent
+            {
+                OperationName = "GrantRole",
+                Category = "Security",
+                Description = "Grant elevated access"
+            },
+            context: MutationContext.User("requester", "Requester", "Need access"),
+            expectedStateVersion: "v10"));
         var mutation = new PromoteRoleMutation(
             MutationContext.User("operator-1", "Operator One", "Execute approved role promotion"),
             nextVersion: "v11");
@@ -94,8 +111,6 @@ public sealed class GovernanceExecutionManagerTests
             request.RequestId,
             mutation,
             state,
-            currentStateVersion: state.Version,
-            resultingStateVersionProvider: updated => updated.Version,
             governanceContext: MutationContext.Service("governance-runtime", "Reject stale request"),
             strategy: VersionedRequestResolutionStrategy.RejectStale);
 
@@ -120,7 +135,16 @@ public sealed class GovernanceExecutionManagerTests
         var resolutionManager = new MutationRequestVersionResolutionManager(requestStore, new MutationRequestVersionResolver());
         var executionManager = new GovernanceExecutionManager(requestStore, resolutionManager, engine);
 
-        var request = await requestStore.Create(MutationRequestTestFactory.CreateApprovedSecurityRequest("v10"));
+        var request = await requestStore.Create(MutationRequestFactory.Approved<RoleState, PromoteRoleMutation>(
+            stateId: "tenant-42:roles",
+            intent: new MutationIntent
+            {
+                OperationName = "GrantRole",
+                Category = "Security",
+                Description = "Grant elevated access"
+            },
+            context: MutationContext.User("requester", "Requester", "Need access"),
+            expectedStateVersion: "v10"));
         var mutation = new PromoteRoleMutation(
             MutationContext.User("operator-1", "Operator One", "Execute approved role promotion"),
             nextVersion: "v11");
@@ -130,8 +154,6 @@ public sealed class GovernanceExecutionManagerTests
             request.RequestId,
             mutation,
             state,
-            currentStateVersion: state.Version,
-            resultingStateVersionProvider: updated => updated.Version,
             governanceContext: MutationContext.Service("governance-runtime", "Require renewed approval"),
             strategy: VersionedRequestResolutionStrategy.RequireRenewedApproval);
 
@@ -155,7 +177,16 @@ public sealed class GovernanceExecutionManagerTests
         var resolutionManager = new MutationRequestVersionResolutionManager(requestStore, new MutationRequestVersionResolver());
         var executionManager = new GovernanceExecutionManager(requestStore, resolutionManager, engine);
 
-        var request = await requestStore.Create(MutationRequestTestFactory.CreateApprovedSecurityRequest("v10"));
+        var request = await requestStore.Create(MutationRequestFactory.Approved<RoleState, PromoteRoleMutation>(
+            stateId: "tenant-42:roles",
+            intent: new MutationIntent
+            {
+                OperationName = "GrantRole",
+                Category = "Security",
+                Description = "Grant elevated access"
+            },
+            context: MutationContext.User("requester", "Requester", "Need access"),
+            expectedStateVersion: "v10"));
         var mutation = new PromoteRoleMutation(
             MutationContext.User("operator-1", "Operator One", "Execute approved role promotion"),
             nextVersion: "v16");
@@ -165,8 +196,6 @@ public sealed class GovernanceExecutionManagerTests
             request.RequestId,
             mutation,
             state,
-            currentStateVersion: state.Version,
-            resultingStateVersionProvider: updated => updated.Version,
             governanceContext: MutationContext.Service("governance-runtime", "Revalidate and execute"),
             strategy: VersionedRequestResolutionStrategy.RevalidateOnLatestState);
 
@@ -185,7 +214,7 @@ public sealed class GovernanceExecutionManagerTests
             decision => decision.Type == MutationRequestDecisionType.VersionResolution(MutationRequestVersionResolutionDecisionType.RevalidationRequired));
     }
 
-    private sealed record RoleState(string StateId, string Role, string Version)
+    private sealed record RoleState(string StateId, string Role, string Version) : IVersionedState
     {
         public static RoleState Create(string stateId, string role, string version) => new(stateId, role, version);
     }

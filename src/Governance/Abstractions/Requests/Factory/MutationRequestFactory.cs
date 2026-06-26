@@ -1,4 +1,5 @@
 using ModularityKit.Mutator.Abstractions.Context;
+using ModularityKit.Mutator.Abstractions.Engine;
 using ModularityKit.Mutator.Abstractions.Intent;
 using ModularityKit.Mutator.Abstractions.Policies;
 using ModularityKit.Mutator.Governance.Abstractions.Approval.Mapping;
@@ -13,6 +14,31 @@ namespace ModularityKit.Mutator.Governance.Abstractions.Requests.Factory;
 /// </summary>
 public static class MutationRequestFactory
 {
+    /// <summary>
+    /// Creates a request that should enter the pending lifecycle using type inference for the target state and mutation.
+    /// </summary>
+    public static MutationRequest Pending<TState, TMutation>(
+        string stateId,
+        MutationIntent intent,
+        MutationContext context,
+        PendingMutationReason pendingReason,
+        IReadOnlyList<PolicyRequirement>? requirements = null,
+        string? expectedStateVersion = null,
+        DateTimeOffset? expiresAt = null,
+        IReadOnlyDictionary<string, object>? metadata = null)
+        where TMutation : IMutation<TState>
+        => Pending(
+            stateId,
+            typeof(TState).Name,
+            typeof(TMutation).Name,
+            intent,
+            context,
+            pendingReason,
+            requirements,
+            expectedStateVersion,
+            expiresAt,
+            metadata);
+
     /// <summary>
     /// Creates a request that should enter the pending lifecycle.
     /// </summary>
@@ -54,6 +80,29 @@ public static class MutationRequestFactory
             ]
         };
     }
+
+    /// <summary>
+    /// Creates a request that enters pending approval using type inference for the target state and mutation.
+    /// </summary>
+    public static MutationRequest PendingApproval<TState, TMutation>(
+        string stateId,
+        MutationIntent intent,
+        MutationContext context,
+        IReadOnlyList<PolicyRequirement> requirements,
+        string? expectedStateVersion = null,
+        DateTimeOffset? expiresAt = null,
+        IReadOnlyDictionary<string, object>? metadata = null)
+        where TMutation : IMutation<TState>
+        => PendingApproval(
+            stateId,
+            typeof(TState).Name,
+            typeof(TMutation).Name,
+            intent,
+            context,
+            requirements,
+            expectedStateVersion,
+            expiresAt,
+            metadata);
 
     /// <summary>
     /// Creates a request that enters pending approval with concrete request-level approval requirements.
@@ -110,6 +159,25 @@ public static class MutationRequestFactory
             ]
         };
     }
+
+    /// <summary>
+    /// Creates a request that is immediately approved for execution using type inference for the target state and mutation.
+    /// </summary>
+    public static MutationRequest Approved<TState, TMutation>(
+        string stateId,
+        MutationIntent intent,
+        MutationContext context,
+        string? expectedStateVersion = null,
+        IReadOnlyDictionary<string, object>? metadata = null)
+        where TMutation : IMutation<TState>
+        => Approved(
+            stateId,
+            typeof(TState).Name,
+            typeof(TMutation).Name,
+            intent,
+            context,
+            expectedStateVersion,
+            metadata);
 
     /// <summary>
     /// Creates a request that is immediately approved for execution.
