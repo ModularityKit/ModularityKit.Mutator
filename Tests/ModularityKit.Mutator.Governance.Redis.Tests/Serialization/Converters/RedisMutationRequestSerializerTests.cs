@@ -73,6 +73,7 @@ public sealed class RedisMutationRequestSerializerTests
         Assert.Equal(request.Intent.Category, roundtrip.Intent.Category);
         Assert.Contains("security", roundtrip.Intent.Tags);
         Assert.Equal(BlastRadiusScope.Module, roundtrip.Intent.EstimatedBlastRadius?.Scope);
+        Assert.Equal("platform", roundtrip.Intent.Metadata["risk-owner"]);
         Assert.Equal("security", roundtrip.Metadata["team"]);
         Assert.Single(roundtrip.Requirements);
         Assert.Single(roundtrip.ApprovalRequirements);
