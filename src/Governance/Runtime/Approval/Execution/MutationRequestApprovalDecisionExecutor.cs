@@ -106,8 +106,8 @@ internal sealed class MutationRequestApprovalDecisionExecutor(IMutationRequestSt
                 string.Equals(requirement.ApprovalGroupId, resolvedRequirement.ApprovalGroupId, StringComparison.Ordinal) &&
                 requirement.Status == MutationApprovalRequirementStatus.Satisfied))
         {
-            decisions.Add(MutationRequestDecision.Create(
-                MutationRequestDecisionType.Approval(MutationRequestApprovalDecisionType.QuorumSatisfied),
+            decisions.Add(MutationRequestDecision.Approval(
+                MutationRequestApprovalDecisionType.QuorumSatisfied,
                 decisionContext,
                 reason: $"Approval quorum satisfied for group '{resolvedRequirement.ApprovalGroupId}'.",
                 metadata: new Dictionary<string, object>
@@ -122,15 +122,15 @@ internal sealed class MutationRequestApprovalDecisionExecutor(IMutationRequestSt
 
         if (finalizeApprovedRequest && isFullyApproved)
         {
-            decisions.Add(MutationRequestDecision.Create(
-                MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Approved),
+            decisions.Add(MutationRequestDecision.Lifecycle(
+                MutationRequestLifecycleDecisionType.Approved,
                 decisionContext,
                 reason: "All approval requirements were fulfilled."));
         }
         else if (!finalizeApprovedRequest)
         {
-            decisions.Add(MutationRequestDecision.Create(
-                MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Rejected),
+            decisions.Add(MutationRequestDecision.Lifecycle(
+                MutationRequestLifecycleDecisionType.Rejected,
                 decisionContext,
                 reason: reason ?? rejection?.Message ?? decisionContext.Reason ?? "Request was rejected during approval workflow."));
         }

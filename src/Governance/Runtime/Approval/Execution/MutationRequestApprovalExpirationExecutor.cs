@@ -60,8 +60,8 @@ internal sealed class MutationRequestApprovalExpirationExecutor(IMutationRequest
                         ? "Approval requirement expired."
                         : $"Approval requirement expired at '{requirement.ExpiresAt:O}'.")));
 
-            decisions.Add(MutationRequestDecision.Create(
-                MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Rejected),
+            decisions.Add(MutationRequestDecision.Lifecycle(
+                MutationRequestLifecycleDecisionType.Rejected,
                 decisionContext,
                 reason: "Request was rejected because one or more approval requirements expired."));
 
