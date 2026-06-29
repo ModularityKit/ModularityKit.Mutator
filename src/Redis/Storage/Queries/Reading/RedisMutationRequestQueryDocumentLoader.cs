@@ -1,5 +1,5 @@
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
-using ModularityKit.Mutator.Governance.Abstractions.Queries.Model;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 using ModularityKit.Mutator.Governance.Redis.Storage.Candidates;
 using ModularityKit.Mutator.Governance.Redis.Storage.Documents.Reading;

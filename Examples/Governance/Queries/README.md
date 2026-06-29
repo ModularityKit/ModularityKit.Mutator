@@ -7,6 +7,7 @@ It focuses on listing governed requests, approval work, and decision history wit
 ## What it demonstrates
 
 - querying governed requests with `MutationRequestQuery`
+- filtering by intent tags, intent metadata, request metadata, and blast radius
 - listing the pending approval queue through `IMutationRequestQueryStore`
 - listing pending requests by `PendingMutationReason`
 - querying requests by `StateId` and request category
@@ -25,9 +26,9 @@ It focuses on listing governed requests, approval work, and decision history wit
 - [`Scenarios/ApprovalQueryScenario.cs`](Scenarios/ApprovalQueryScenario.cs)
 - [`Scenarios/DecisionQueryScenario.cs`](Scenarios/DecisionQueryScenario.cs)
 - [`src/Governance/Abstractions/Queries/Contracts/IMutationRequestQueryStore.cs`](../../../src/Governance/Abstractions/Queries/Contracts/IMutationRequestQueryStore.cs)
-- [`src/Governance/Abstractions/Queries/Model/MutationRequestQuery.cs`](../../../src/Governance/Abstractions/Queries/Model/MutationRequestQuery.cs)
-- [`src/Governance/Abstractions/Queries/Model/MutationApprovalQuery.cs`](../../../src/Governance/Abstractions/Queries/Model/MutationApprovalQuery.cs)
-- [`src/Governance/Abstractions/Queries/Model/MutationRequestDecisionQuery.cs`](../../../src/Governance/Abstractions/Queries/Model/MutationRequestDecisionQuery.cs)
+- [`src/Governance/Abstractions/Queries/Model/Requests/MutationRequestQuery.cs`](../../../src/Governance/Abstractions/Queries/Model/Requests/MutationRequestQuery.cs)
+- [`src/Governance/Abstractions/Queries/Model/Approvals/MutationApprovalQuery.cs`](../../../src/Governance/Abstractions/Queries/Model/Approvals/MutationApprovalQuery.cs)
+- [`src/Governance/Abstractions/Queries/Model/Decisions/MutationRequestDecisionQuery.cs`](../../../src/Governance/Abstractions/Queries/Model/Decisions/MutationRequestDecisionQuery.cs)
 
 ## Run
 
@@ -43,6 +44,7 @@ The sample prints:
 - pending external-check requests
 - requests filtered by request category
 - requests filtered by state
+- requests filtered by governance metadata
 - recent approval-driven requests
 - approval views filtered by approver
 - recent version-resolution decisions

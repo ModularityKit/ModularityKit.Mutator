@@ -46,39 +46,35 @@ public sealed class GovernanceExecutionManager(
         ArgumentNullException.ThrowIfNull(resultingStateVersionProvider);
         ArgumentNullException.ThrowIfNull(governanceContext);
 
-        var resolution = await _resolutionManager.ResolveAndStore(
+        var execution = await ResolveExecutionContext(
             requestId,
+            mutation,
+            currentState,
             currentStateVersion,
+            resultingStateVersionProvider,
             governanceContext,
             strategy,
             cancellationToken).ConfigureAwait(false);
 
-        if (resolution.Outcome is MutationRequestVersionResolutionOutcome.RejectedAsStale or
+        if (execution.Resolution.Outcome is MutationRequestVersionResolutionOutcome.RejectedAsStale or
             MutationRequestVersionResolutionOutcome.RequiresRenewedApproval)
         {
-            return _outcomeHandler.BuildNonExecutedResult<TState>(resolution);
+            return _outcomeHandler.BuildNonExecutedResult<TState>(execution.Resolution);
         }
 
-        var governedMutation = new GovernedMutation<TState>(mutation, requestId, resolution.Request.StateId);
         MutationResult<TState> mutationResult;
 
         try
         {
-            mutationResult = await _mutationEngine
-                .ExecuteAsync(governedMutation, currentState, cancellationToken)
-                .ConfigureAwait(false);
+            mutationResult = await ExecuteMutation(execution, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             await _outcomeHandler.PersistRejectedExecution(
-                resolution.Request,
-                governanceContext,
+                execution.Resolution.Request,
+                execution.GovernanceContext,
                 $"Governed execution threw '{ex.GetType().Name}': {ex.Message}",
-                new Dictionary<string, object>
-                {
-                    ["CurrentStateVersion"] = currentStateVersion,
-                    ["ExecutionFailureType"] = ex.GetType().Name
-                },
+                GovernedExecutionFailureMetadataFactory.CreateExceptionMetadata(execution.CurrentStateVersion, ex),
                 cancellationToken).ConfigureAwait(false);
 
             throw;
@@ -87,35 +83,32 @@ public sealed class GovernanceExecutionManager(
         if (!mutationResult.IsSuccess || mutationResult.NewState is null)
         {
             var rejectedRequest = await _outcomeHandler.PersistRejectedExecution(
-                resolution.Request,
-                governanceContext,
+                execution.Resolution.Request,
+                execution.GovernanceContext,
                 GovernedExecutionDecisionFactory.BuildRejectedExecutionReason(mutationResult),
-                new Dictionary<string, object>
-                {
-                    ["CurrentStateVersion"] = currentStateVersion,
-                    ["HasPolicyDecisions"] = mutationResult.PolicyDecisions.Count > 0,
-                    ["HasValidationErrors"] = !mutationResult.ValidationResult.IsValid
-                },
+                GovernedExecutionFailureMetadataFactory.CreateRejectedExecutionMetadata(
+                    execution.CurrentStateVersion,
+                    mutationResult),
                 cancellationToken).ConfigureAwait(false);
 
             return _outcomeHandler.BuildNonExecutedResult(
-                resolution with { Request = rejectedRequest },
+                execution.Resolution with { Request = rejectedRequest },
                 mutationResult);
         }
 
-        var resultingStateVersion = resultingStateVersionProvider(mutationResult.NewState);
+        var resultingStateVersion = execution.ResultingStateVersionProvider(mutationResult.NewState);
         if (string.IsNullOrWhiteSpace(resultingStateVersion))
             throw new InvalidOperationException("Governed execution requires a non-empty resulting state version.");
 
         var executedRequest = await _outcomeHandler.PersistExecutedRequest(
-            resolution.Request,
+            execution.Resolution.Request,
             resultingStateVersion,
-            governanceContext,
+            execution.GovernanceContext,
             mutationResult,
             cancellationToken).ConfigureAwait(false);
 
         return _outcomeHandler.BuildExecutedResult(
-            resolution,
+            execution.Resolution,
             mutationResult,
             executedRequest,
             resultingStateVersion);
@@ -137,5 +130,39 @@ public sealed class GovernanceExecutionManager(
             state => state.Version,
             governanceContext,
             strategy,
+            cancellationToken);
+
+    private async Task<GovernedExecutionContext<TState>> ResolveExecutionContext<TState>(
+        string requestId,
+        IMutation<TState> mutation,
+        TState currentState,
+        string currentStateVersion,
+        Func<TState, string> resultingStateVersionProvider,
+        MutationContext governanceContext,
+        VersionedRequestResolutionStrategy strategy,
+        CancellationToken cancellationToken)
+    {
+        var resolution = await _resolutionManager.ResolveAndStore(
+            requestId,
+            currentStateVersion,
+            governanceContext,
+            strategy,
+            cancellationToken).ConfigureAwait(false);
+
+        return new GovernedExecutionContext<TState>(
+            resolution,
+            new GovernedMutation<TState>(mutation, resolution.Request),
+            currentState,
+            currentStateVersion,
+            resultingStateVersionProvider,
+            governanceContext);
+    }
+
+    private Task<MutationResult<TState>> ExecuteMutation<TState>(
+        GovernedExecutionContext<TState> execution,
+        CancellationToken cancellationToken)
+        => _mutationEngine.ExecuteAsync(
+            execution.Mutation,
+            execution.CurrentState,
             cancellationToken);
 }

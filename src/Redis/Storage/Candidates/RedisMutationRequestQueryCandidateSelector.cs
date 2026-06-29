@@ -1,5 +1,5 @@
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
-using ModularityKit.Mutator.Governance.Abstractions.Queries.Model;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests;
 using ModularityKit.Mutator.Governance.Redis.Storage.Candidates.Execution;
 using ModularityKit.Mutator.Governance.Redis.Storage.Candidates.Models;
 using ModularityKit.Mutator.Governance.Redis.Storage.Candidates.Planning;
@@ -7,7 +7,7 @@ using ModularityKit.Mutator.Governance.Redis.Storage.Candidates.Planning;
 namespace ModularityKit.Mutator.Governance.Redis.Storage.Candidates;
 
 /// <summary>
-/// Selects Redis request-id candidates for higher-level request queries.
+/// Selects request id candidates for higher level request queries.
 /// </summary>
 internal sealed class RedisMutationRequestQueryCandidateSelector(
     RedisMutationRequestCandidatePlanBuilder planBuilder,
@@ -15,7 +15,7 @@ internal sealed class RedisMutationRequestQueryCandidateSelector(
 {
     private readonly RedisMutationRequestCandidatePlanBuilder _planBuilder =
         planBuilder ?? throw new ArgumentNullException(nameof(planBuilder));
-   
+
     private readonly RedisMutationRequestCandidateExecutor _candidateExecutor =
         candidateExecutor ?? throw new ArgumentNullException(nameof(candidateExecutor));
 
@@ -28,7 +28,7 @@ internal sealed class RedisMutationRequestQueryCandidateSelector(
         LoadAsync(_planBuilder.BuildAllRequestsPlan(), cancellationToken);
 
     /// <summary>
-    /// Loads request identifiers for a specific state.
+    /// Loads request identifiers for specific state.
     /// </summary>
     /// <param name="stateId">The state identifier.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -46,7 +46,7 @@ internal sealed class RedisMutationRequestQueryCandidateSelector(
         LoadAsync(_planBuilder.BuildPendingPlan(reason), cancellationToken);
 
     /// <summary>
-    /// Loads pending request identifiers for a specific state.
+    /// Loads pending request identifiers for specific state.
     /// </summary>
     /// <param name="stateId">The state identifier.</param>
     /// <param name="reason">The optional pending reason.</param>
@@ -56,7 +56,7 @@ internal sealed class RedisMutationRequestQueryCandidateSelector(
         LoadAsync(_planBuilder.BuildPendingByStateIdPlan(stateId, reason), cancellationToken);
 
     /// <summary>
-    /// Loads request identifiers for a general request query using Redis-side candidate narrowing.
+    /// Loads request identifiers for general request query using side candidate narrowing.
     /// </summary>
     /// <param name="query">The query to analyze.</param>
     /// <param name="cancellationToken">The cancellation token.</param>

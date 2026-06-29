@@ -1,5 +1,5 @@
 using ModularityKit.Mutator.Governance.Abstractions.Queries.Contracts;
-using ModularityKit.Mutator.Governance.Abstractions.Queries.Model;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Approvals;
 
 namespace Queries.Scenarios;
 

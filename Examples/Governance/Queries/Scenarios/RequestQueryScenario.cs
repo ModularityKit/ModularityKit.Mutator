@@ -1,6 +1,8 @@
 using ModularityKit.Mutator.Governance.Abstractions.Queries.Contracts;
-using ModularityKit.Mutator.Governance.Abstractions.Queries.Model;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests.Filters;
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
+using ModularityKit.Mutator.Abstractions.Intent;
 
 namespace Queries.Scenarios;
 
@@ -14,19 +16,43 @@ internal static class RequestQueryScenario
         GovernanceQueriesSampleData.PrintSection("Pending External Check Requests");
         GovernanceQueriesSampleData.PrintRequests(await queryStore.GetPendingRequestsAsync(new MutationRequestQuery
         {
-            PendingReasons = new HashSet<PendingMutationReason> { PendingMutationReason.ExternalCheck }
+            Lifecycle = new MutationRequestLifecycleFilter
+            {
+                PendingReasons = new HashSet<PendingMutationReason> { PendingMutationReason.ExternalCheck }
+            }
         }));
 
         GovernanceQueriesSampleData.PrintSection("Billing Requests");
         GovernanceQueriesSampleData.PrintRequests(await queryStore.QueryAsync(new MutationRequestQuery
         {
-            Categories = new HashSet<string> { "Billing" }
+            Intent = new MutationRequestIntentFilter
+            {
+                Categories = new HashSet<string> { "Billing" }
+            }
         }));
 
         GovernanceQueriesSampleData.PrintSection("Requests For tenant-42:roles");
         GovernanceQueriesSampleData.PrintRequests(await queryStore.QueryAsync(new MutationRequestQuery
         {
-            StateIds = new HashSet<string> { "tenant-42:roles" }
+            Scope = new MutationRequestScopeFilter
+            {
+                StateIds = new HashSet<string> { "tenant-42:roles" }
+            }
+        }));
+
+        GovernanceQueriesSampleData.PrintSection("Metadata-classified Security Requests");
+        GovernanceQueriesSampleData.PrintRequests(await queryStore.QueryAsync(new MutationRequestQuery
+        {
+            Intent = new MutationRequestIntentFilter
+            {
+                Tags = new HashSet<string> { "security" },
+                Metadata = new Dictionary<string, object?> { ["risk-owner"] = "platform" },
+                MinimumBlastRadiusScope = BlastRadiusScope.Module
+            },
+            Metadata = new MutationRequestMetadataFilter
+            {
+                Values = new Dictionary<string, object?> { ["ticket"] = "INC-42" }
+            }
         }));
 
         GovernanceQueriesSampleData.PrintSection("Recent Approval Driven Requests");

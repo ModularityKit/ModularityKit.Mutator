@@ -1,7 +1,9 @@
 using ModularityKit.Mutator.Governance.Abstractions.Approval.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
 
-namespace ModularityKit.Mutator.Governance.Abstractions.Queries.Model;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests;
+
+namespace ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Approvals;
 
 /// <summary>
 /// Defines storage-agnostic filters for approval-oriented governance queries.

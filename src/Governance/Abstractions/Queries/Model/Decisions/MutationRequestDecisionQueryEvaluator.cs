@@ -1,7 +1,8 @@
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Decisions;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 
-namespace ModularityKit.Mutator.Governance.Abstractions.Queries.Model;
+namespace ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Decisions;
 
 /// <summary>
 /// Evaluates decision oriented query criteria against governed mutation requests.

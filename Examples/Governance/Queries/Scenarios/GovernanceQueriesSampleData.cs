@@ -3,6 +3,8 @@ using ModularityKit.Mutator.Abstractions.Intent;
 using ModularityKit.Mutator.Abstractions.Policies;
 using ModularityKit.Mutator.Governance.Abstractions.Approval.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Approvals;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Decisions;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Decisions;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Factory;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
@@ -76,7 +78,7 @@ internal static class GovernanceQueriesSampleData
             Console.WriteLine("- none");
     }
 
-    public static void PrintApprovals(IReadOnlyList<ModularityKit.Mutator.Governance.Abstractions.Queries.Model.MutationApprovalView> approvals)
+    public static void PrintApprovals(IReadOnlyList<MutationApprovalView> approvals)
     {
         foreach (var approval in approvals)
         {
@@ -88,7 +90,7 @@ internal static class GovernanceQueriesSampleData
             Console.WriteLine("- none");
     }
 
-    public static void PrintDecisions(IReadOnlyList<ModularityKit.Mutator.Governance.Abstractions.Queries.Model.MutationRequestDecisionView> decisions)
+    public static void PrintDecisions(IReadOnlyList<MutationRequestDecisionView> decisions)
     {
         foreach (var decision in decisions)
         {
@@ -114,7 +116,13 @@ internal static class GovernanceQueriesSampleData
             {
                 OperationName = "ExampleOperation",
                 Category = category,
-                Description = $"Governed request for {category.ToLowerInvariant()} flow"
+                Description = $"Governed request for {category.ToLowerInvariant()} flow",
+                Tags = new HashSet<string> { category.ToLowerInvariant(), "approval" },
+                EstimatedBlastRadius = category == "Security" ? BlastRadius.Module : BlastRadius.Single,
+                Metadata = new Dictionary<string, object>
+                {
+                    ["risk-owner"] = category == "Security" ? "platform" : "finance"
+                }
             },
             context: MutationContext.User("requester", "Requester", "Need governed change"),
             requirements:
@@ -126,6 +134,10 @@ internal static class GovernanceQueriesSampleData
             RequestId = requestId,
             CreatedAt = createdAt,
             UpdatedAt = createdAt,
+            Metadata = new Dictionary<string, object>
+            {
+                ["ticket"] = category == "Security" ? "INC-42" : "BILL-7"
+            },
             ApprovalRequirements =
             [
                 new MutationApprovalRequirement
@@ -150,7 +162,13 @@ internal static class GovernanceQueriesSampleData
             {
                 OperationName = "ExampleOperation",
                 Category = category,
-                Description = "Waiting for dependency validation"
+                Description = "Waiting for dependency validation",
+                Tags = new HashSet<string> { "external-check" },
+                EstimatedBlastRadius = BlastRadius.Single,
+                Metadata = new Dictionary<string, object>
+                {
+                    ["risk-owner"] = "release"
+                }
             },
             context: MutationContext.Service("release-orchestrator", "Waiting for external dependency"),
             pendingReason: PendingMutationReason.ExternalCheck)
@@ -158,7 +176,11 @@ internal static class GovernanceQueriesSampleData
         {
             RequestId = requestId,
             CreatedAt = createdAt,
-            UpdatedAt = createdAt
+            UpdatedAt = createdAt,
+            Metadata = new Dictionary<string, object>
+            {
+                ["ticket"] = "REL-99"
+            }
         };
 
     private static MutationRequest CreateRecentlyApprovedRequest(
@@ -175,7 +197,13 @@ internal static class GovernanceQueriesSampleData
             {
                 OperationName = "ExampleOperation",
                 Category = category,
-                Description = "Recently approved governed request"
+                Description = "Recently approved governed request",
+                Tags = new HashSet<string> { category.ToLowerInvariant(), "approved" },
+                EstimatedBlastRadius = category == "Security" ? BlastRadius.Module : BlastRadius.Single,
+                Metadata = new Dictionary<string, object>
+                {
+                    ["risk-owner"] = category == "Security" ? "platform" : "finance"
+                }
             },
             context: MutationContext.User("requester", "Requester", "Need privileged change"),
             requirements:
@@ -189,6 +217,10 @@ internal static class GovernanceQueriesSampleData
             PendingReason = null,
             CreatedAt = approvedAt.AddMinutes(-20),
             UpdatedAt = approvedAt,
+            Metadata = new Dictionary<string, object>
+            {
+                ["ticket"] = category == "Security" ? "INC-77" : "BILL-9"
+            },
             ApprovalRequirements =
             [
                 new MutationApprovalRequirement
@@ -252,7 +284,13 @@ internal static class GovernanceQueriesSampleData
             {
                 OperationName = "ExampleOperation",
                 Category = category,
-                Description = "Resolved governed request"
+                Description = "Resolved governed request",
+                Tags = new HashSet<string> { category.ToLowerInvariant(), "resolution" },
+                EstimatedBlastRadius = BlastRadius.Single,
+                Metadata = new Dictionary<string, object>
+                {
+                    ["risk-owner"] = "governance"
+                }
             },
             context: MutationContext.Service("governance-runtime", "Resolve stale request"))
         with
@@ -261,6 +299,10 @@ internal static class GovernanceQueriesSampleData
             Status = MutationRequestStatus.Approved,
             CreatedAt = decisionTimestamp.AddMinutes(-30),
             UpdatedAt = decisionTimestamp,
+            Metadata = new Dictionary<string, object>
+            {
+                ["ticket"] = "CFG-5"
+            },
             Decisions =
             [
                 MutationRequestDecision.Lifecycle(
@@ -293,7 +335,13 @@ internal static class GovernanceQueriesSampleData
             {
                 OperationName = "ExampleOperation",
                 Category = category,
-                Description = "Executed governed request"
+                Description = "Executed governed request",
+                Tags = new HashSet<string> { category.ToLowerInvariant(), "executed" },
+                EstimatedBlastRadius = BlastRadius.Single,
+                Metadata = new Dictionary<string, object>
+                {
+                    ["risk-owner"] = "finance"
+                }
             },
             context: MutationContext.Service("governance-runtime", "Execute approved request"))
         with
@@ -303,6 +351,10 @@ internal static class GovernanceQueriesSampleData
             CreatedAt = executedAt.AddMinutes(-15),
             UpdatedAt = executedAt,
             ExecutedAt = executedAt,
+            Metadata = new Dictionary<string, object>
+            {
+                ["ticket"] = "BILL-22"
+            },
             Decisions =
             [
                 MutationRequestDecision.Lifecycle(

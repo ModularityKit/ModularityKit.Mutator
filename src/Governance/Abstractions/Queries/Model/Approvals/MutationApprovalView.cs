@@ -1,7 +1,7 @@
 using ModularityKit.Mutator.Governance.Abstractions.Approval.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 
-namespace ModularityKit.Mutator.Governance.Abstractions.Queries.Model;
+namespace ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Approvals;
 
 /// <summary>
 /// Represents one approval oriented projection from governed mutation request.

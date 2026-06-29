@@ -44,10 +44,20 @@ public sealed class GovernanceExecutionManagerTests
             {
                 OperationName = "GrantRole",
                 Category = "Security",
-                Description = "Grant elevated access"
+                Description = "Grant elevated access",
+                Tags = new HashSet<string> { "security", "incident" },
+                EstimatedBlastRadius = BlastRadius.Module,
+                Metadata = new Dictionary<string, object>
+                {
+                    ["risk-owner"] = "platform"
+                }
             },
             context: MutationContext.User("requester", "Requester", "Need access"),
-            expectedStateVersion: "v10"));
+            expectedStateVersion: "v10",
+            metadata: new Dictionary<string, object>
+            {
+                ["ticket"] = "INC-42"
+            }));
         var mutation = new PromoteRoleMutation(
             MutationContext.User("operator-1", "Operator One", "Execute approved role promotion"),
             nextVersion: "v11");
@@ -78,6 +88,11 @@ public sealed class GovernanceExecutionManagerTests
         Assert.Single(history.Entries);
         Assert.Equal(request.RequestId, auditEntries[0].Context.Metadata["GovernanceRequestId"]);
         Assert.Equal(request.RequestId, history.Entries[0].Context.Metadata["GovernanceRequestId"]);
+        Assert.Contains("security", auditEntries[0].MutationIntent.Tags);
+        Assert.Equal(BlastRadiusScope.Module, auditEntries[0].MutationIntent.EstimatedBlastRadius?.Scope);
+        Assert.Equal("platform", auditEntries[0].MutationIntent.Metadata["risk-owner"]);
+        Assert.Equal("platform", history.Entries[0].Intent.Metadata["risk-owner"]);
+        Assert.Equal("INC-42", ((IReadOnlyDictionary<string, object>)auditEntries[0].Context.Metadata["GovernanceRequestMetadata"])["ticket"]);
     }
 
     [Fact]
