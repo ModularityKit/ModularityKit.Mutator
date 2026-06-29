@@ -48,6 +48,10 @@ The request factory also has generic overloads such as `Approved<TState, TMutati
 `PendingApproval<TState, TMutation>()` when you already have concrete CLR types and do not want
 to repeat `stateType` / `mutationType` strings at the call site.
 
+`MutationRequestDecision` also exposes category-specific helpers such as `Lifecycle(...)`,
+`Approval(...)`, and `VersionResolution(...)` so you do not have to spell out the low-level
+decision wrapper when the category is already known.
+
 ### Storage
 
 - `IMutationRequestStore`
@@ -86,6 +90,12 @@ to repeat `stateType` / `mutationType` strings at the call site.
 - `IGovernanceExecutionManager`
 - `GovernanceExecutionManager`
 - `GovernedExecutionResult<TState>`
+
+`IGovernanceExecutionManager.ExecuteApproved(...)` also has an overload for `IVersionedState`
+implementations, which removes the need to pass the current and resulting version selectors when
+both come from `state.Version`.
+
+See [`Docs/API/API.md`](../../Docs/API/API.md) for the practical usage surface and example call patterns.
 
 ## Package structure
 
