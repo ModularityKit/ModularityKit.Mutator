@@ -1,5 +1,7 @@
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
-using ModularityKit.Mutator.Governance.Abstractions.Queries.Model;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Approvals;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Decisions;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 
 namespace ModularityKit.Mutator.Governance.Redis.Storage.Queries.Materialization;
@@ -10,7 +12,7 @@ namespace ModularityKit.Mutator.Governance.Redis.Storage.Queries.Materialization
 internal static class RedisMutationRequestQueryMaterializer
 {
     /// <summary>
-    /// Applies a general request query to already materialized requests.
+    /// Applies general request query to already materialized requests.
     /// </summary>
     /// <param name="requests">The materialized requests.</param>
     /// <param name="query">The query to evaluate.</param>
@@ -27,7 +29,7 @@ internal static class RedisMutationRequestQueryMaterializer
     }
 
     /// <summary>
-    /// Applies a pending request query to already materialized requests.
+    /// Applies pending request query to already materialized requests.
     /// </summary>
     /// <param name="requests">The materialized requests.</param>
     /// <param name="query">The query to evaluate.</param>
@@ -46,7 +48,7 @@ internal static class RedisMutationRequestQueryMaterializer
     }
 
     /// <summary>
-    /// Applies a pending approval queue query to already materialized requests.
+    /// Applies pending approval queue query to already materialized requests.
     /// </summary>
     /// <param name="requests">The materialized requests.</param>
     /// <param name="query">The query to evaluate.</param>
@@ -66,7 +68,7 @@ internal static class RedisMutationRequestQueryMaterializer
     }
 
     /// <summary>
-    /// Applies a recent approvals query to already materialized requests.
+    /// Applies recent approvals query to already materialized requests.
     /// </summary>
     /// <param name="requests">The materialized requests.</param>
     /// <param name="query">The query to evaluate.</param>
@@ -89,7 +91,7 @@ internal static class RedisMutationRequestQueryMaterializer
     }
 
     /// <summary>
-    /// Applies a pending approval view query to already materialized requests.
+    /// Applies pending approval view query to already materialized requests.
     /// </summary>
     /// <param name="requests">The materialized requests.</param>
     /// <param name="query">The approval query to evaluate.</param>
@@ -109,7 +111,7 @@ internal static class RedisMutationRequestQueryMaterializer
     }
 
     /// <summary>
-    /// Applies a recent decision query to already materialized requests.
+    /// Applies recent decision query to already materialized requests.
     /// </summary>
     /// <param name="requests">The materialized requests.</param>
     /// <param name="query">The decision query to evaluate.</param>

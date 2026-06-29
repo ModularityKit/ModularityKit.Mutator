@@ -1,4 +1,6 @@
-using ModularityKit.Mutator.Governance.Abstractions.Queries.Model;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Approvals;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Decisions;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 
 namespace ModularityKit.Mutator.Governance.Redis.Storage.Queries.Materialization;
@@ -8,12 +10,23 @@ namespace ModularityKit.Mutator.Governance.Redis.Storage.Queries.Materialization
 /// </summary>
 internal static class RedisMutationRequestOrdering
 {
+    /// <summary>
+    /// Orders request results by creation time and request identifier.
+    /// </summary>
+    /// <param name="requests">Requests to order.</param>
+    /// <returns>Materialized request results in ascending creation order.</returns>
     public static IReadOnlyList<MutationRequest> ByCreated(IEnumerable<MutationRequest> requests)
         => requests
             .OrderBy(request => request.CreatedAt)
             .ThenBy(request => request.RequestId)
             .ToList();
 
+    /// <summary>
+    /// Orders requests by the most recent approval activity and applies an optional result limit.
+    /// </summary>
+    /// <param name="requests">Requests to order.</param>
+    /// <param name="take">Optional maximum number of results to return.</param>
+    /// <returns>Materialized request results ordered for recent approval views.</returns>
     public static IReadOnlyList<MutationRequest> ByRecentApprovals(
         IEnumerable<MutationRequest> requests,
         int? take)
@@ -29,6 +42,11 @@ internal static class RedisMutationRequestOrdering
         return results.ToList();
     }
 
+    /// <summary>
+    /// Orders pending approval projections by request creation and approval step sequence.
+    /// </summary>
+    /// <param name="views">Approval views to order.</param>
+    /// <returns>Materialized approval views in pending queue order.</returns>
     public static IReadOnlyList<MutationApprovalView> ByPendingApprovalView(
         IEnumerable<MutationApprovalView> views)
         => views
@@ -38,6 +56,12 @@ internal static class RedisMutationRequestOrdering
             .ThenBy(view => view.Approval.ApprovalId)
             .ToList();
 
+    /// <summary>
+    /// Orders decision projections by decision recency and applies an optional result limit.
+    /// </summary>
+    /// <param name="views">Decision views to order.</param>
+    /// <param name="take">Optional maximum number of results to return.</param>
+    /// <returns>Materialized decision views ordered from newest to oldest.</returns>
     public static IReadOnlyList<MutationRequestDecisionView> ByRecentDecisionView(
         IEnumerable<MutationRequestDecisionView> views,
         int? take)

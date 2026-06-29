@@ -1,5 +1,7 @@
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
-using ModularityKit.Mutator.Governance.Abstractions.Queries.Model;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Approvals;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Decisions;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 using ModularityKit.Mutator.Governance.Redis.Storage.Queries.Materialization;
 
@@ -120,7 +122,7 @@ internal sealed class RedisMutationRequestQueryReader
         int? take = null,
         CancellationToken cancellationToken = default)
     {
-        var effectiveQuery = query ?? MutationRequestQuery.RecentApprovals();
+        var effectiveQuery = query ?? MutationRequestQueries.RecentApprovals();
         var requests = await _documentLoader.LoadByRequestQueryAsync(effectiveQuery, cancellationToken).ConfigureAwait(false);
         return RedisMutationRequestQueryMaterializer.ApplyRecentApprovalsQuery(requests, effectiveQuery, take);
     }

@@ -1,6 +1,8 @@
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Queries.Contracts;
-using ModularityKit.Mutator.Governance.Abstractions.Queries.Model;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Approvals;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Decisions;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Storage;
 using ModularityKit.Mutator.Governance.Redis.Storage.Persistence;
@@ -10,7 +12,7 @@ using ModularityKit.Mutator.Governance.Redis.Storage.Queries.Reading;
 namespace ModularityKit.Mutator.Governance.Redis.Storage;
 
 /// <summary>
-/// Redis-backed implementation of governed mutation request storage and query access.
+/// Implementation of governed mutation request storage and query access.
 /// </summary>
 public sealed class RedisMutationRequestStore : IMutationRequestStore, IMutationRequestQueryStore
 {
@@ -26,7 +28,7 @@ public sealed class RedisMutationRequestStore : IMutationRequestStore, IMutation
     }
 
     /// <summary>
-    /// Creates a governed mutation request in Redis storage.
+    /// Creates governed mutation request in storage.
     /// </summary>
     /// <param name="request">The request to create.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -37,7 +39,7 @@ public sealed class RedisMutationRequestStore : IMutationRequestStore, IMutation
         => _persistence.Create(request, cancellationToken);
 
     /// <summary>
-    /// Attempts to store a governed mutation request update using optimistic concurrency.
+    /// Attempts to store governed mutation request update using optimistic concurrency.
     /// </summary>
     /// <param name="request">The request to store.</param>
     /// <param name="expectedRevision">The expected current revision.</param>
@@ -50,7 +52,7 @@ public sealed class RedisMutationRequestStore : IMutationRequestStore, IMutation
         => _persistence.TryStore(request, expectedRevision, cancellationToken);
 
     /// <summary>
-    /// Reads a governed mutation request by identifier.
+    /// Reads governed mutation request by identifier.
     /// </summary>
     /// <param name="requestId">The request identifier.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -61,7 +63,7 @@ public sealed class RedisMutationRequestStore : IMutationRequestStore, IMutation
         => _persistence.Get(requestId, cancellationToken);
 
     /// <summary>
-    /// Reads governed mutation requests for a specific state identifier.
+    /// Reads governed mutation requests for specific state identifier.
     /// </summary>
     /// <param name="stateId">The state identifier.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
@@ -83,7 +85,7 @@ public sealed class RedisMutationRequestStore : IMutationRequestStore, IMutation
         => _queryReader.GetPending(reason, cancellationToken);
 
     /// <summary>
-    /// Reads pending governed mutation requests for a specific state identifier.
+    /// Reads pending governed mutation requests for specific state identifier.
     /// </summary>
     /// <param name="stateId">The state identifier.</param>
     /// <param name="reason">The optional pending reason.</param>
