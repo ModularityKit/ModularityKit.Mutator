@@ -3,7 +3,10 @@ using ModularityKit.Mutator.Abstractions.Intent;
 using ModularityKit.Mutator.Governance.Abstractions.Approval.Model;
 using ModularityKit.Mutator.Abstractions.Policies;
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
-using ModularityKit.Mutator.Governance.Abstractions.Queries.Model;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Approvals;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Decisions;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests.Filters;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Decisions;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Factory;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
@@ -27,7 +30,8 @@ public sealed class MutationRequestQueryStoreTests
             actorName: "Alice",
             category: "Security",
             tags: new HashSet<string> { "security", "urgent" },
-            metadata: new Dictionary<string, object> { ["team"] = "platform" },
+            intentMetadata: new Dictionary<string, object> { ["team"] = "platform" },
+            requestMetadata: new Dictionary<string, object> { ["team"] = "platform" },
             blastRadius: BlastRadius.Module,
             createdAt: new DateTimeOffset(2026, 6, 1, 10, 0, 0, TimeSpan.Zero),
             updatedAt: new DateTimeOffset(2026, 6, 1, 11, 0, 0, TimeSpan.Zero),
@@ -55,7 +59,8 @@ public sealed class MutationRequestQueryStoreTests
             actorName: "Bob",
             category: "Billing",
             tags: new HashSet<string> { "billing" },
-            metadata: new Dictionary<string, object> { ["team"] = "finance" },
+            intentMetadata: new Dictionary<string, object> { ["team"] = "finance" },
+            requestMetadata: new Dictionary<string, object> { ["team"] = "finance" },
             blastRadius: BlastRadius.System,
             createdAt: new DateTimeOffset(2026, 6, 2, 10, 0, 0, TimeSpan.Zero),
             updatedAt: new DateTimeOffset(2026, 6, 2, 11, 0, 0, TimeSpan.Zero),
@@ -73,16 +78,32 @@ public sealed class MutationRequestQueryStoreTests
 
         var results = await store.QueryAsync(new MutationRequestQuery
         {
-            Statuses = new HashSet<MutationRequestStatus> { MutationRequestStatus.Pending },
-            PendingReasons = new HashSet<PendingMutationReason> { PendingMutationReason.Approval },
-            ActorIds = new HashSet<string> { "alice" },
-            Categories = new HashSet<string> { "Security" },
-            Tags = new HashSet<string> { "security", "urgent" },
-            TagMatchMode = MutationRequestTagMatchMode.All,
-            Metadata = new Dictionary<string, object?> { ["team"] = "platform" },
-            MinimumBlastRadiusScope = BlastRadiusScope.Module,
-            CreatedFrom = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero),
-            CreatedTo = new DateTimeOffset(2026, 6, 1, 23, 59, 59, TimeSpan.Zero)
+            Lifecycle = new MutationRequestLifecycleFilter
+            {
+                Statuses = new HashSet<MutationRequestStatus> { MutationRequestStatus.Pending },
+                PendingReasons = new HashSet<PendingMutationReason> { PendingMutationReason.Approval }
+            },
+            Actor = new MutationRequestActorFilter
+            {
+                ActorIds = new HashSet<string> { "alice" }
+            },
+            Intent = new MutationRequestIntentFilter
+            {
+                Categories = new HashSet<string> { "Security" },
+                Tags = new HashSet<string> { "security", "urgent" },
+                TagMatchMode = MutationRequestTagMatchMode.All,
+                Metadata = new Dictionary<string, object?> { ["team"] = "platform" },
+                MinimumBlastRadiusScope = BlastRadiusScope.Module
+            },
+            Metadata = new MutationRequestMetadataFilter
+            {
+                Values = new Dictionary<string, object?> { ["team"] = "platform" }
+            },
+            TimeRange = new MutationRequestTimeRangeFilter
+            {
+                CreatedFrom = new DateTimeOffset(2026, 6, 1, 0, 0, 0, TimeSpan.Zero),
+                CreatedTo = new DateTimeOffset(2026, 6, 1, 23, 59, 59, TimeSpan.Zero)
+            }
         });
 
         Assert.Single(results);
@@ -109,6 +130,63 @@ public sealed class MutationRequestQueryStoreTests
 
         Assert.Single(results);
         Assert.Equal(pending.RequestId, results[0].RequestId);
+    }
+
+    [Fact]
+    public async Task QueryAsync_can_filter_by_intent_metadata_independently_from_request_metadata()
+    {
+        var store = new InMemoryMutationRequestStore();
+
+        await store.Create(CreateGovernedRequest(
+            requestId: "req-platform",
+            stateId: "tenant-42:roles",
+            stateType: "IamRoleState",
+            mutationType: "GrantRoleMutation",
+            actorId: "alice",
+            actorName: "Alice",
+            category: "Security",
+            tags: new HashSet<string> { "security" },
+            intentMetadata: new Dictionary<string, object> { ["risk-owner"] = "platform" },
+            requestMetadata: new Dictionary<string, object> { ["ticket"] = "INC-42" },
+            blastRadius: BlastRadius.Module,
+            createdAt: new DateTimeOffset(2026, 6, 1, 10, 0, 0, TimeSpan.Zero),
+            updatedAt: new DateTimeOffset(2026, 6, 1, 11, 0, 0, TimeSpan.Zero),
+            status: MutationRequestStatus.Pending,
+            pendingReason: PendingMutationReason.Approval,
+            decisions: []));
+
+        await store.Create(CreateGovernedRequest(
+            requestId: "req-finance",
+            stateId: "tenant-42:quota",
+            stateType: "QuotaState",
+            mutationType: "IncreaseQuotaMutation",
+            actorId: "bob",
+            actorName: "Bob",
+            category: "Billing",
+            tags: new HashSet<string> { "billing" },
+            intentMetadata: new Dictionary<string, object> { ["risk-owner"] = "finance" },
+            requestMetadata: new Dictionary<string, object> { ["ticket"] = "FIN-9" },
+            blastRadius: BlastRadius.Single,
+            createdAt: new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero),
+            updatedAt: new DateTimeOffset(2026, 6, 1, 12, 30, 0, TimeSpan.Zero),
+            status: MutationRequestStatus.Approved,
+            pendingReason: null,
+            decisions: []));
+
+        var results = await store.QueryAsync(new MutationRequestQuery
+        {
+            Intent = new MutationRequestIntentFilter
+            {
+                Metadata = new Dictionary<string, object?> { ["risk-owner"] = "platform" }
+            },
+            Metadata = new MutationRequestMetadataFilter
+            {
+                Values = new Dictionary<string, object?> { ["ticket"] = "INC-42" }
+            }
+        });
+
+        Assert.Single(results);
+        Assert.Equal("req-platform", results[0].RequestId);
     }
 
     [Fact]
@@ -389,7 +467,8 @@ public sealed class MutationRequestQueryStoreTests
         string actorName,
         string category,
         IReadOnlySet<string> tags,
-        IReadOnlyDictionary<string, object> metadata,
+        IReadOnlyDictionary<string, object> intentMetadata,
+        IReadOnlyDictionary<string, object> requestMetadata,
         BlastRadius blastRadius,
         DateTimeOffset createdAt,
         DateTimeOffset updatedAt,
@@ -407,7 +486,7 @@ public sealed class MutationRequestQueryStoreTests
                 OperationName = mutationType,
                 Category = category,
                 Tags = tags,
-                Metadata = metadata,
+                Metadata = intentMetadata,
                 EstimatedBlastRadius = blastRadius
             },
             Context = MutationContext.User(actorId, actorName, "Query test"),
@@ -416,6 +495,6 @@ public sealed class MutationRequestQueryStoreTests
             CreatedAt = createdAt,
             UpdatedAt = updatedAt,
             Decisions = decisions,
-            Metadata = metadata
+            Metadata = requestMetadata
         };
 }
