@@ -20,8 +20,8 @@ internal static class MutationRequestVersionResolutionFactory
         MutationRequestVersionEvaluation evaluation,
         MutationContext resolutionContext)
     {
-        var validatedDecision = MutationRequestDecision.Create(
-            MutationRequestDecisionType.VersionResolution(MutationRequestVersionResolutionDecisionType.Validated),
+        var validatedDecision = MutationRequestDecision.VersionResolution(
+            MutationRequestVersionResolutionDecisionType.Validated,
             resolutionContext,
             reason: MutationRequestVersionResolutionState.BuildValidatedReason(
                 evaluation.ExpectedStateVersion,
@@ -48,8 +48,8 @@ internal static class MutationRequestVersionResolutionFactory
         MutationRequestVersionEvaluation evaluation,
         MutationContext resolutionContext)
     {
-        var decision = MutationRequestDecision.Create(
-            MutationRequestDecisionType.VersionResolution(MutationRequestVersionResolutionDecisionType.RejectedAsStale),
+        var decision = MutationRequestDecision.VersionResolution(
+            MutationRequestVersionResolutionDecisionType.RejectedAsStale,
             resolutionContext,
             reason: MutationRequestVersionResolutionState.BuildStaleReason(
                 evaluation.ExpectedStateVersion!,
@@ -81,8 +81,8 @@ internal static class MutationRequestVersionResolutionFactory
         MutationRequestVersionEvaluation evaluation,
         MutationContext resolutionContext)
     {
-        var decision = MutationRequestDecision.Create(
-            MutationRequestDecisionType.VersionResolution(MutationRequestVersionResolutionDecisionType.RenewedApprovalRequired),
+        var decision = MutationRequestDecision.VersionResolution(
+            MutationRequestVersionResolutionDecisionType.RenewedApprovalRequired,
             resolutionContext,
             reason: MutationRequestVersionResolutionState.BuildStaleReason(
                 evaluation.ExpectedStateVersion!,
@@ -114,8 +114,8 @@ internal static class MutationRequestVersionResolutionFactory
         MutationRequestVersionEvaluation evaluation,
         MutationContext resolutionContext)
     {
-        var decision = MutationRequestDecision.Create(
-            MutationRequestDecisionType.VersionResolution(MutationRequestVersionResolutionDecisionType.RevalidationRequired),
+        var decision = MutationRequestDecision.VersionResolution(
+            MutationRequestVersionResolutionDecisionType.RevalidationRequired,
             resolutionContext,
             reason: MutationRequestVersionResolutionState.BuildStaleReason(
                 evaluation.ExpectedStateVersion!,

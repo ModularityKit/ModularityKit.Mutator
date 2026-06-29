@@ -14,8 +14,8 @@ internal static class GovernedExecutionDecisionFactory
         string reason,
         IReadOnlyDictionary<string, object> metadata)
     {
-        return MutationRequestDecision.Create(
-            MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Rejected),
+        return MutationRequestDecision.Lifecycle(
+            MutationRequestLifecycleDecisionType.Rejected,
             governanceContext,
             reason,
             metadata);
@@ -26,8 +26,8 @@ internal static class GovernedExecutionDecisionFactory
         string resultingStateVersion,
         MutationResult<TState> mutationResult)
     {
-        return MutationRequestDecision.Create(
-            MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Executed),
+        return MutationRequestDecision.Lifecycle(
+            MutationRequestLifecycleDecisionType.Executed,
             governanceContext,
             "Governed request executed successfully.",
             new Dictionary<string, object>
