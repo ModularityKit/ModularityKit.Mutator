@@ -4,7 +4,9 @@ using ModularityKit.Mutator.Abstractions.Intent;
 using ModularityKit.Mutator.Abstractions.Policies;
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Queries.Contracts;
-using ModularityKit.Mutator.Governance.Abstractions.Queries.Model;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Approvals;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Decisions;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Decisions;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Factory;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
@@ -152,22 +154,22 @@ internal static class GovernanceRedisQueriesScenario
             ExecutedAt = executedAt,
             Decisions =
             [
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Submitted),
+                MutationRequestDecision.Lifecycle(
+                    MutationRequestLifecycleDecisionType.Submitted,
                     MutationContext.Service("governance-runtime", "Submitted"))
                 with
                 {
                     Timestamp = executedAt.AddMinutes(-15)
                 },
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Approved),
+                MutationRequestDecision.Lifecycle(
+                    MutationRequestLifecycleDecisionType.Approved,
                     MutationContext.Service("governance-runtime", "Approved"))
                 with
                 {
                     Timestamp = executedAt.AddMinutes(-5)
                 },
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Executed),
+                MutationRequestDecision.Lifecycle(
+                    MutationRequestLifecycleDecisionType.Executed,
                     MutationContext.Service("governance-runtime", "Executed"))
                 with
                 {
