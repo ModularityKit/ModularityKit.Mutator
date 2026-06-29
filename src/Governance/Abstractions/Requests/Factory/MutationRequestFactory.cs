@@ -69,12 +69,12 @@ public static class MutationRequestFactory
             Metadata = metadata ?? new Dictionary<string, object>(),
             Decisions =
             [
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Submitted),
+                MutationRequestDecision.Lifecycle(
+                    MutationRequestLifecycleDecisionType.Submitted,
                     context,
                     reason: context.Reason),
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Pending),
+                MutationRequestDecision.Lifecycle(
+                    MutationRequestLifecycleDecisionType.Pending,
                     context,
                     reason: $"Request entered pending lifecycle for reason '{pendingReason}'.")
             ]
@@ -140,16 +140,16 @@ public static class MutationRequestFactory
             Metadata = metadata ?? new Dictionary<string, object>(),
             Decisions =
             [
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Submitted),
+                MutationRequestDecision.Lifecycle(
+                    MutationRequestLifecycleDecisionType.Submitted,
                     context,
                     reason: context.Reason),
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Pending),
+                MutationRequestDecision.Lifecycle(
+                    MutationRequestLifecycleDecisionType.Pending,
                     context,
                     reason: "Request entered pending approval."),
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Approval(MutationRequestApprovalDecisionType.Requested),
+                MutationRequestDecision.Approval(
+                    MutationRequestApprovalDecisionType.Requested,
                     context,
                     reason: $"Request requires {approvalRequirements.Count} approval action(s).",
                     metadata: new Dictionary<string, object>
@@ -203,12 +203,12 @@ public static class MutationRequestFactory
             Metadata = metadata ?? new Dictionary<string, object>(),
             Decisions =
             [
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Submitted),
+                MutationRequestDecision.Lifecycle(
+                    MutationRequestLifecycleDecisionType.Submitted,
                     context,
                     reason: context.Reason),
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Approved),
+                MutationRequestDecision.Lifecycle(
+                    MutationRequestLifecycleDecisionType.Approved,
                     context,
                     reason: "Approved at submission time")
             ]

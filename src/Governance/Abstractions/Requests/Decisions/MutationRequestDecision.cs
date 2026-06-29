@@ -33,6 +33,48 @@ public sealed record MutationRequestDecision
     public IReadOnlyDictionary<string, object> Metadata { get; init; } = new Dictionary<string, object>();
 
     /// <summary>
+    /// Creates a lifecycle decision entry.
+    /// </summary>
+    public static MutationRequestDecision Lifecycle(
+        MutationRequestLifecycleDecisionType type,
+        MutationContext context,
+        string? reason = null,
+        IReadOnlyDictionary<string, object>? metadata = null)
+        => Create(
+            MutationRequestDecisionType.Lifecycle(type),
+            context,
+            reason,
+            metadata);
+
+    /// <summary>
+    /// Creates an approval decision entry.
+    /// </summary>
+    public static MutationRequestDecision Approval(
+        MutationRequestApprovalDecisionType type,
+        MutationContext context,
+        string? reason = null,
+        IReadOnlyDictionary<string, object>? metadata = null)
+        => Create(
+            MutationRequestDecisionType.Approval(type),
+            context,
+            reason,
+            metadata);
+
+    /// <summary>
+    /// Creates a version-resolution decision entry.
+    /// </summary>
+    public static MutationRequestDecision VersionResolution(
+        MutationRequestVersionResolutionDecisionType type,
+        MutationContext context,
+        string? reason = null,
+        IReadOnlyDictionary<string, object>? metadata = null)
+        => Create(
+            MutationRequestDecisionType.VersionResolution(type),
+            context,
+            reason,
+            metadata);
+
+    /// <summary>
     /// Creates a new request decision entry.
     /// </summary>
     public static MutationRequestDecision Create(

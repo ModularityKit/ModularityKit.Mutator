@@ -1,7 +1,8 @@
 using ModularityKit.Mutator.Governance.Abstractions.Approval.Model;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 
-namespace ModularityKit.Mutator.Governance.Abstractions.Queries.Model;
+namespace ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Approvals;
 
 /// <summary>
 /// Evaluates approval oriented query criteria against governed mutation requests.

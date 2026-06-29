@@ -1,7 +1,7 @@
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Decisions;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 
-namespace ModularityKit.Mutator.Governance.Abstractions.Queries.Model;
+namespace ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Decisions;
 
 /// <summary>
 /// Represents one decision-oriented projection from a governed mutation request.

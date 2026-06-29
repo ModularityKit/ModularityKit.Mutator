@@ -1,5 +1,7 @@
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Approvals;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Decisions;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
-using ModularityKit.Mutator.Governance.Abstractions.Queries.Model;
 
 namespace ModularityKit.Mutator.Governance.Abstractions.Queries.Contracts;
 

@@ -1,6 +1,8 @@
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Decisions;
 
-namespace ModularityKit.Mutator.Governance.Abstractions.Queries.Model;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests;
+
+namespace ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Decisions;
 
 /// <summary>
 /// Defines storage agnostic filters for decision oriented governance queries.
