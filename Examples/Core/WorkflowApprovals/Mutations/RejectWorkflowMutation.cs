@@ -11,20 +11,20 @@ namespace WorkflowApprovals.Mutations;
 /// <summary>
 /// Mutation that rejects the entire workflow in an <see cref="ApprovalWorkflowState"/>.
 /// </summary>
-internal sealed record RejectWorkflowMutation(
-    string Rejector,
-    MutationContext Context
-) : IMutation<ApprovalWorkflowState>
+internal sealed class RejectWorkflowMutation(
+    string rejector,
+    MutationContext context
+) : MutationBase<ApprovalWorkflowState>(
+    CreateIntent(
+        operationName: "RejectWorkflow",
+        category: "Workflow",
+        description: "Rejects the entire workflow",
+        riskLevel: MutationRiskLevel.Critical),
+    context)
 {
-    public MutationIntent Intent { get; } = new()
-    {
-        OperationName = "RejectWorkflow",
-        Category = "Workflow",
-        RiskLevel = MutationRiskLevel.Critical,
-        Description = "Rejects the entire workflow"
-    };
+    public string Rejector { get; } = rejector;
 
-    public ValidationResult Validate(ApprovalWorkflowState state)
+    public override ValidationResult Validate(ApprovalWorkflowState state)
     {
         var result = new ValidationResult();
         if (string.IsNullOrEmpty(Rejector))
@@ -32,7 +32,7 @@ internal sealed record RejectWorkflowMutation(
         return result;
     }
 
-    public MutationResult<ApprovalWorkflowState> Apply(ApprovalWorkflowState state)
+    public override MutationResult<ApprovalWorkflowState> Apply(ApprovalWorkflowState state)
     {
         var steps = state.Steps.Select(s => s with
         {
@@ -41,10 +41,9 @@ internal sealed record RejectWorkflowMutation(
         }).ToList();
 
         var newState = state with { Steps = steps };
-        var changes = ChangeSet.Single(StateChange.Modified("Workflow", null, "Rejected"));
-        return MutationResult<ApprovalWorkflowState>.Success(
+        return Success(
             newState,
-            changes,
+            StateChange.Modified("Workflow", null, "Rejected"),
             [
                 SideEffect.Critical(
                     type: "WorkflowRejected",
@@ -57,6 +56,4 @@ internal sealed record RejectWorkflowMutation(
                     })
             ]);
     }
-
-    public MutationResult<ApprovalWorkflowState> Simulate(ApprovalWorkflowState state) => Apply(state);
 }

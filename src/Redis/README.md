@@ -1,5 +1,7 @@
 ![ModularityKit.Mutator.Governance.Redis overview](../../assets/governance/providers/mutator-governance-redis-overview.png)
 
+See [`Docs/API/Redis.md`](../../Docs/API/Redis.md) for the practical API surface and usage examples.
+
 ## Package structure
 
 - `Configuration` for provider options

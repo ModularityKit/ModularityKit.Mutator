@@ -11,21 +11,23 @@ namespace WorkflowApprovals.Mutations;
 /// <summary>
 /// Mutation that starts new approval workflow in an <see cref="ApprovalWorkflowState"/>.
 /// </summary>
-internal sealed record StartApprovalMutation(
-    string Initiator,
-    string[] StepNames,
-    MutationContext Context
-) : IMutation<ApprovalWorkflowState>
+internal sealed class StartApprovalMutation(
+    string initiator,
+    string[] stepNames,
+    MutationContext context
+) : MutationBase<ApprovalWorkflowState>(
+    CreateIntent(
+        operationName: "StartWorkflow",
+        category: "Workflow",
+        description: "Starts a new approval workflow",
+        riskLevel: MutationRiskLevel.Medium),
+    context)
 {
-    public MutationIntent Intent { get; } = new()
-    {
-        OperationName = "StartWorkflow",
-        Category = "Workflow",
-        RiskLevel = MutationRiskLevel.Medium,
-        Description = "Starts a new approval workflow"
-    };
+    public string Initiator { get; } = initiator;
 
-    public ValidationResult Validate(ApprovalWorkflowState state)
+    public string[] StepNames { get; } = stepNames;
+
+    public override ValidationResult Validate(ApprovalWorkflowState state)
     {
         var result = new ValidationResult();
         if (string.IsNullOrEmpty(Initiator))
@@ -35,7 +37,7 @@ internal sealed record StartApprovalMutation(
         return result;
     }
 
-    public MutationResult<ApprovalWorkflowState> Apply(ApprovalWorkflowState state)
+    public override MutationResult<ApprovalWorkflowState> Apply(ApprovalWorkflowState state)
     {
         var steps = StepNames.Select(name => new WorkflowStep(name)).ToList();
         var newState = state with
@@ -45,10 +47,9 @@ internal sealed record StartApprovalMutation(
             Initiator = Initiator
         };
 
-        var changes = ChangeSet.Single(StateChange.Added("Steps", steps));
-        return MutationResult<ApprovalWorkflowState>.Success(
+        return Success(
             newState,
-            changes,
+            StateChange.Added("Steps", steps),
             [
                 SideEffect.Create(
                     type: "WorkflowStarted",
@@ -61,6 +62,4 @@ internal sealed record StartApprovalMutation(
                     })
             ]);
     }
-
-    public MutationResult<ApprovalWorkflowState> Simulate(ApprovalWorkflowState state) => Apply(state);
 }

@@ -10,28 +10,30 @@ namespace FeatureFlags.Mutations;
 /// <summary>
 /// Mutation that disables a feature flag in the current <see cref="FeatureFlagsState"/>.
 /// </summary>
-internal sealed record DisableFeatureMutation(string FeatureName, MutationContext Context) : IMutation<FeatureFlagsState>
+internal sealed class DisableFeatureMutation(string featureName, MutationContext context)
+    : MutationBase<FeatureFlagsState>(
+        CreateIntent(
+            operationName: "DisableFeature",
+            category: "Configuration",
+            description: "Disables a feature flag.",
+            riskLevel: MutationRiskLevel.High),
+        context)
 {
-    public MutationIntent Intent { get; } = new()
-    {
-        OperationName = "DisableFeature",
-        Category = "Configuration",
-        RiskLevel = MutationRiskLevel.High,
-        Description = "Disables a feature flag."
-    };
+    public string FeatureName { get; } = featureName;
 
-    public MutationResult<FeatureFlagsState> Apply(FeatureFlagsState state)
+    public override MutationResult<FeatureFlagsState> Apply(FeatureFlagsState state)
     {
         var newFlags = new Dictionary<string, bool>(state.Flags);
         if (newFlags.ContainsKey(FeatureName))
             newFlags[FeatureName] = false;
         
         var newState = state with { Flags = newFlags };
-        var changes = ChangeSet.Single(StateChange.Modified($"Flags.{FeatureName}", true, false));
-        return MutationResult<FeatureFlagsState>.Success(newState, changes);
+        return Success(
+            newState,
+            StateChange.Modified($"Flags.{FeatureName}", true, false));
     }
 
-    public ValidationResult Validate(FeatureFlagsState state)
+    public override ValidationResult Validate(FeatureFlagsState state)
     {
         var result = new ValidationResult();
         
@@ -41,6 +43,4 @@ internal sealed record DisableFeatureMutation(string FeatureName, MutationContex
             result.AddError("FeatureName", $"Feature '{FeatureName}' does not exist");
         return result;
     }
-
-    public MutationResult<FeatureFlagsState> Simulate(FeatureFlagsState state) => Apply(state);
 }

@@ -65,7 +65,7 @@ internal static class BatchRoleMigrationScenario
             new GrantUserRoleMutation("carol", "Manager", ctx)
         };
 
-        var result = await engine.ExecuteBatchAsync(mutations, state);
+        var result = await engine.ExecuteBatchAsync(state, mutations);
 
         Console.WriteLine($"Executed: {result.Results.Count}");
         Console.WriteLine($"Success: {result.Results.Count(r => r.IsSuccess)}");

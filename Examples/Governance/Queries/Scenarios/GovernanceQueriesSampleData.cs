@@ -201,36 +201,36 @@ internal static class GovernanceQueriesSampleData
             ],
             Decisions =
             [
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Submitted),
+                MutationRequestDecision.Lifecycle(
+                    MutationRequestLifecycleDecisionType.Submitted,
                     MutationContext.User("requester", "Requester", "Submitted"))
                 with
                 {
                     Timestamp = approvedAt.AddMinutes(-20)
                 },
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Pending),
+                MutationRequestDecision.Lifecycle(
+                    MutationRequestLifecycleDecisionType.Pending,
                     MutationContext.User("requester", "Requester", "Pending approval"))
                 with
                 {
                     Timestamp = approvedAt.AddMinutes(-19)
                 },
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Approval(MutationRequestApprovalDecisionType.Requested),
+                MutationRequestDecision.Approval(
+                    MutationRequestApprovalDecisionType.Requested,
                     MutationContext.User("requester", "Requester", "Approval requested"))
                 with
                 {
                     Timestamp = approvedAt.AddMinutes(-18)
                 },
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Approval(MutationRequestApprovalDecisionType.Granted),
+                MutationRequestDecision.Approval(
+                    MutationRequestApprovalDecisionType.Granted,
                     MutationContext.User(approverId, approverId, "Approved"))
                 with
                 {
                     Timestamp = approvedAt
                 },
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Approved),
+                MutationRequestDecision.Lifecycle(
+                    MutationRequestLifecycleDecisionType.Approved,
                     MutationContext.User(approverId, approverId, "Approved"))
                 with
                 {
@@ -263,16 +263,15 @@ internal static class GovernanceQueriesSampleData
             UpdatedAt = decisionTimestamp,
             Decisions =
             [
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Submitted),
+                MutationRequestDecision.Lifecycle(
+                    MutationRequestLifecycleDecisionType.Submitted,
                     MutationContext.Service("governance-runtime", "Submitted"))
                 with
                 {
                     Timestamp = decisionTimestamp.AddMinutes(-30)
                 },
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.VersionResolution(
-                        MutationRequestVersionResolutionDecisionType.Validated),
+                MutationRequestDecision.VersionResolution(
+                    MutationRequestVersionResolutionDecisionType.Validated,
                     MutationContext.Service("governance-runtime", "Validated current version"))
                 with
                 {
@@ -306,22 +305,22 @@ internal static class GovernanceQueriesSampleData
             ExecutedAt = executedAt,
             Decisions =
             [
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Submitted),
+                MutationRequestDecision.Lifecycle(
+                    MutationRequestLifecycleDecisionType.Submitted,
                     MutationContext.Service("governance-runtime", "Submitted"))
                 with
                 {
                     Timestamp = executedAt.AddMinutes(-15)
                 },
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Approved),
+                MutationRequestDecision.Lifecycle(
+                    MutationRequestLifecycleDecisionType.Approved,
                     MutationContext.Service("governance-runtime", "Approved"))
                 with
                 {
                     Timestamp = executedAt.AddMinutes(-5)
                 },
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Executed),
+                MutationRequestDecision.Lifecycle(
+                    MutationRequestLifecycleDecisionType.Executed,
                     MutationContext.Service("governance-runtime", "Executed"))
                 with
                 {

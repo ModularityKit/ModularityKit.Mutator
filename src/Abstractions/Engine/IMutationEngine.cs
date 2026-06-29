@@ -73,6 +73,24 @@ public interface IMutationEngine
         CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Executes a batch of mutations as a single logical transaction.
+    /// </summary>
+    /// <typeparam name="TState">The type of the state being mutated.</typeparam>
+    /// <param name="state">The initial state.</param>
+    /// <param name="mutations">The mutations to execute in order.</param>
+    /// <param name="cancellationToken">Token used to cancel execution.</param>
+    /// <returns>
+    /// A <see cref="BatchMutationResult{TState}"/> describing the outcome of the batch execution.
+    /// </returns>
+    /// <remarks>
+    /// This overload is optimized for call sites that want a compact mutation list without
+    /// manually allocating an array.
+    /// </remarks>
+    Task<BatchMutationResult<TState>> ExecuteBatchAsync<TState>(
+        TState state,
+        params IMutation<TState>[] mutations);
+
+    /// <summary>
     /// Registers a global mutation policy.
     /// </summary>
     /// <typeparam name="TState">The state type the policy applies to.</typeparam>

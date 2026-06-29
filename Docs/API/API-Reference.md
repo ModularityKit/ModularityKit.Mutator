@@ -15,6 +15,7 @@ Complete API documentation for **ModularityKit.Mutators**.
 - [Related Types](#related-types)
 - [DI Extension Methods](#di-extension-methods)
   - [AddMutators](#addmutators)
+- [Governance API](#governance-api)
 - [Execution Semantics](#execution-semantics)
 - [Best Practices](#best-practices)
 - [Complete Examples](#complete-examples)
@@ -243,6 +244,19 @@ services.AddMutators(MutationEngineOptions.Performance, addDefaultLoggingInterce
 ```csharp
 services.AddMutators(MutationEngineOptions.Strict, addDefaultLoggingInterceptor: true);
 ```
+
+---
+
+## Governance API
+
+Governance is documented separately so the core API reference can stay focused on direct mutation execution.
+
+- [Governance package overview](../../src/Governance/README.md)
+- [Governance API usage](API.md)
+- [Redis provider API](Redis.md)
+
+Governance-specific types such as `MutationRequestFactory`, `MutationRequestDecision`, and
+`IGovernanceExecutionManager` live in the governance package, not the core mutation runtime.
 
 ---
 

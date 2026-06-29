@@ -84,7 +84,7 @@ internal static class BatchFeatureToggleScenario
             ),
         };
 
-        var batchResult = await engine.ExecuteBatchAsync(mutations, state);
+        var batchResult = await engine.ExecuteBatchAsync(state, mutations);
         MutationResultLogger.LogBatch(batchResult.Results);
 
         Console.WriteLine($"Success: {batchResult.SuccessCount}, Failed: {batchResult.FailureCount}");

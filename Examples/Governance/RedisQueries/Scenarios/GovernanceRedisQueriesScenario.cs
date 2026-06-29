@@ -152,22 +152,22 @@ internal static class GovernanceRedisQueriesScenario
             ExecutedAt = executedAt,
             Decisions =
             [
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Submitted),
+                MutationRequestDecision.Lifecycle(
+                    MutationRequestLifecycleDecisionType.Submitted,
                     MutationContext.Service("governance-runtime", "Submitted"))
                 with
                 {
                     Timestamp = executedAt.AddMinutes(-15)
                 },
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Approved),
+                MutationRequestDecision.Lifecycle(
+                    MutationRequestLifecycleDecisionType.Approved,
                     MutationContext.Service("governance-runtime", "Approved"))
                 with
                 {
                     Timestamp = executedAt.AddMinutes(-5)
                 },
-                MutationRequestDecision.Create(
-                    MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Executed),
+                MutationRequestDecision.Lifecycle(
+                    MutationRequestLifecycleDecisionType.Executed,
                     MutationContext.Service("governance-runtime", "Executed"))
                 with
                 {

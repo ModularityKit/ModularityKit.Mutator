@@ -60,7 +60,7 @@ internal static class MonthlyResetScenario
             .Select(user => new ResetQuotaMutation(user, ctx))
             .ToArray();
 
-        var result = await engine.ExecuteBatchAsync(mutations, state);
+        var result = await engine.ExecuteBatchAsync(state, mutations);
 
         Console.WriteLine($"Executed: {result.Results.Count}");
         Console.WriteLine($"Success: {result.Results.Count(r => r.IsSuccess)}");

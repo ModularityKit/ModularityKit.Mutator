@@ -31,25 +31,20 @@ Console.WriteLine(result.NewState!.Quota);
 
 public sealed record QuotaState(string StateId, int Quota);
 
-public sealed class IncreaseQuotaMutation : IMutation<QuotaState>
+public sealed class IncreaseQuotaMutation : MutationBase<QuotaState>
 {
     public IncreaseQuotaMutation(string stateId, int amount)
+        : base(
+            CreateIntent(
+                operationName: "IncreaseQuota",
+                category: "Quota",
+                description: "Increase tenant quota"),
+            MutationContext.System("Initial quota setup") with { StateId = stateId })
     {
         Amount = amount;
-        Intent = new MutationIntent
-        {
-            OperationName = "IncreaseQuota",
-            Category = "Quota",
-            Description = "Increase tenant quota"
-        };
-        Context = MutationContext.System("Initial quota setup") with { StateId = stateId };
     }
 
     public int Amount { get; }
-
-    public MutationIntent Intent { get; }
-
-    public MutationContext Context { get; }
 
     public MutationResult<QuotaState> Apply(QuotaState state)
         => MutationResult<QuotaState>.Success(
@@ -60,8 +55,6 @@ public sealed class IncreaseQuotaMutation : IMutation<QuotaState>
         => Amount > 0
             ? ValidationResult.Success()
             : ValidationResult.WithError("Amount", "Amount must be positive.");
-
-    public MutationResult<QuotaState> Simulate(QuotaState state) => Apply(state);
 }
 
 public sealed class PreventNegativeQuotaPolicy : IMutationPolicy<QuotaState>
@@ -97,6 +90,7 @@ Core runtime concurrency is controlled by `MutationEngineOptions.MaxConcurrentMu
 ### Engine
 
 - `IMutation<TState>`
+- `MutationBase<TState>`
 - `IMutationEngine`
 - `IMutationExecutor`
 - `MutationEngineOptions`

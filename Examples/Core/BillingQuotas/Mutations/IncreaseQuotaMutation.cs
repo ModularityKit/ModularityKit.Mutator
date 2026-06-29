@@ -10,21 +10,23 @@ namespace BillingQuotas.Mutations;
 /// <summary>
 /// Mutation that increases the quota for specific user by given amount.
 /// </summary>
-internal sealed record IncreaseQuotaMutation(
-    string UserId,
-    int Amount,
-    MutationContext Context
-) : IMutation<QuotaState>
+internal sealed class IncreaseQuotaMutation(
+    string userId,
+    int amount,
+    MutationContext context
+) : MutationBase<QuotaState>(
+    CreateIntent(
+        operationName: "IncreaseQuota",
+        category: "Billing",
+        description: "Increase user quota by given amount",
+        riskLevel: MutationRiskLevel.Medium),
+    context)
 {
-    public MutationIntent Intent { get; } = new()
-    {
-        OperationName = "IncreaseQuota",
-        Category = "Billing",
-        RiskLevel = MutationRiskLevel.Medium,
-        Description = "Increase user quota by given amount"
-    };
+    public string UserId { get; } = userId;
 
-    public ValidationResult Validate(QuotaState state)
+    public int Amount { get; } = amount;
+
+    public override ValidationResult Validate(QuotaState state)
     {
         var result = new ValidationResult();
 
@@ -37,19 +39,15 @@ internal sealed record IncreaseQuotaMutation(
         return result;
     }
 
-    public MutationResult<QuotaState> Apply(QuotaState state)
+    public override MutationResult<QuotaState> Apply(QuotaState state)
     {
         var quotas = state.UserQuotas.ToDictionary(kv => kv.Key, kv => kv.Value);
         quotas[UserId] = quotas.GetValueOrDefault(UserId) + Amount;
 
         var newState = state with { UserQuotas = quotas };
 
-        var changes = ChangeSet.Single(
-            StateChange.Modified($"UserQuotas.{UserId}", null, quotas[UserId])
-        );
-
-        return MutationResult<QuotaState>.Success(newState, changes);
+        return Success(
+            newState,
+            StateChange.Modified($"UserQuotas.{UserId}", null, quotas[UserId]));
     }
-
-    public MutationResult<QuotaState> Simulate(QuotaState state) => Apply(state);
 }
