@@ -19,6 +19,21 @@ on:
         description: "Optional manual version for ModularityKit.Mutator.Governance.Redis."
         required: false
         type: string
+      publish_core:
+        description: "Pack ModularityKit.Mutator."
+        required: false
+        type: boolean
+        default: true
+      publish_governance:
+        description: "Pack ModularityKit.Mutator.Governance."
+        required: false
+        type: boolean
+        default: true
+      publish_redis:
+        description: "Pack ModularityKit.Mutator.Governance.Redis."
+        required: false
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -80,7 +95,14 @@ jobs:
           echo "governance_version=$governance_version" >> "$GITHUB_OUTPUT"
           echo "redis_version=$redis_version" >> "$GITHUB_OUTPUT"
 
+      - name: Validate package selection
+        if: ${{ inputs.publish_core != true && inputs.publish_governance != true && inputs.publish_redis != true }}
+        run: |
+          echo "At least one package must be selected for packing." >&2
+          exit 1
+
       - name: Pack core package
+        if: ${{ inputs.publish_core == true }}
         run: >
           dotnet pack src/ModularityKit.Mutator.csproj
           -c Release
@@ -89,6 +111,7 @@ jobs:
           -p:PackageVersion=${{ steps.version.outputs.core_version }}
 
       - name: Pack governance package
+        if: ${{ inputs.publish_governance == true }}
         run: >
           dotnet pack src/ModularityKit.Mutator.Governance.csproj
           -c Release
@@ -97,6 +120,7 @@ jobs:
           -p:PackageVersion=${{ steps.version.outputs.governance_version }}
 
       - name: Pack Redis governance package
+        if: ${{ inputs.publish_redis == true }}
         run: >
           dotnet pack src/Redis/ModularityKit.Mutator.Governance.Redis.csproj
           -c Release
