@@ -109,6 +109,37 @@ Core runtime concurrency is controlled by `MutationEngineOptions.MaxConcurrentMu
 - `ValidationResult`
 - `ChangeSet`
 - `StateChange`
+- `SideEffect`
+- `SideEffectDataContractAttribute`
+- `SideEffectDataContractRegistry`
+
+### Typed side effects
+
+Use typed side effect payloads when the emitted data is meant to survive serialization, audit, or downstream integration:
+
+```csharp
+[SideEffectDataContract("workflow.started", 1)]
+public sealed record WorkflowStartedSideEffectData
+{
+    public required string Initiator { get; init; }
+    public required int StepCount { get; init; }
+    public required string WorkflowId { get; init; }
+}
+
+SideEffectDataContractRegistry.Register<WorkflowStartedSideEffectData>();
+
+var effect = SideEffect.Create(
+    type: "WorkflowStarted",
+    description: "Approval workflow started",
+    data: new WorkflowStartedSideEffectData
+    {
+        Initiator = "alice",
+        StepCount = 2,
+        WorkflowId = "wf-42"
+    });
+```
+
+The side effect keeps `DataContractType` and `DataContractVersion` alongside `Data`, so persistence and integration layers do not have to guess the payload shape.
 
 ### Context and intent
 

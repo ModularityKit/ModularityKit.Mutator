@@ -1,6 +1,8 @@
 using ModularityKit.Mutator.Abstractions.Context;
 using ModularityKit.Mutator.Abstractions.Effects;
 using ModularityKit.Mutator.Abstractions.Engine;
+using System.Text.Json;
+using WorkflowApprovals.Contracts;
 using WorkflowApprovals.Mutations;
 using WorkflowApprovals.State;
 
@@ -11,6 +13,9 @@ internal static class SideEffectsScenario
     internal static async Task Run(IMutationEngine engine)
     {
         Console.WriteLine("\n=== Side Effects Scenario ===");
+
+        SideEffectDataContractRegistry.Register<WorkflowStartedSideEffectData>();
+        SideEffectDataContractRegistry.Register<WorkflowRejectedSideEffectData>();
 
         var state = new ApprovalWorkflowState();
 
@@ -51,9 +56,25 @@ internal static class SideEffectsScenario
                 $"  {effect.Type} | severity={effect.Severity} | requiresAction={effect.RequiresAction}");
             Console.WriteLine($"    {effect.Description}");
 
-            if (effect.Data is not null)
+            var roundtrip = JsonSerializer.Deserialize<SideEffect>(JsonSerializer.Serialize(effect));
+
+            if (roundtrip?.TryGetData<WorkflowStartedSideEffectData>(out var started) == true)
             {
-                Console.WriteLine($"    data={effect.Data}");
+                Console.WriteLine(
+                    $"    contract={roundtrip.DataContractType}@v{roundtrip.DataContractVersion} | initiator={started!.Initiator} | workflowId={started.WorkflowId}");
+                continue;
+            }
+
+            if (roundtrip?.TryGetData<WorkflowRejectedSideEffectData>(out var rejected) == true)
+            {
+                Console.WriteLine(
+                    $"    contract={roundtrip.DataContractType}@v{roundtrip.DataContractVersion} | rejector={rejected!.Rejector} | state={rejected.State}");
+                continue;
+            }
+
+            if (roundtrip?.Data is not null)
+            {
+                Console.WriteLine($"    data={roundtrip.Data}");
             }
         }
     }
