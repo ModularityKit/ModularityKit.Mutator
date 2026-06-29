@@ -1,6 +1,8 @@
 using ModularityKit.Mutator.Governance.Abstractions.Exceptions.Storage;
 using ModularityKit.Mutator.Governance.Abstractions.Queries.Contracts;
-using ModularityKit.Mutator.Governance.Abstractions.Queries.Model;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Approvals;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Decisions;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests;
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Decisions;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
@@ -184,7 +186,7 @@ public sealed class InMemoryMutationRequestStore : IMutationRequestStore, IMutat
         int? take = null,
         CancellationToken cancellationToken = default)
     {
-        var effectiveQuery = query ?? MutationRequestQuery.RecentApprovals();
+        var effectiveQuery = query ?? MutationRequestQueries.RecentApprovals();
 
         lock (_lock)
         {
