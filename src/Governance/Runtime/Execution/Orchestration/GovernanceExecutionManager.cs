@@ -70,48 +70,13 @@ public sealed class GovernanceExecutionManager(
         }
         catch (Exception ex)
         {
-            await _outcomeHandler.PersistRejectedExecution(
-                execution.Resolution.Request,
-                execution.GovernanceContext,
-                $"Governed execution threw '{ex.GetType().Name}': {ex.Message}",
-                GovernedExecutionFailureMetadataFactory.CreateExceptionMetadata(execution.CurrentStateVersion, ex),
-                cancellationToken).ConfigureAwait(false);
-
+            await _outcomeHandler.PersistException(execution, ex, cancellationToken).ConfigureAwait(false);
             throw;
         }
 
-        if (!mutationResult.IsSuccess || mutationResult.NewState is null)
-        {
-            var rejectedRequest = await _outcomeHandler.PersistRejectedExecution(
-                execution.Resolution.Request,
-                execution.GovernanceContext,
-                GovernedExecutionDecisionFactory.BuildRejectedExecutionReason(mutationResult),
-                GovernedExecutionFailureMetadataFactory.CreateRejectedExecutionMetadata(
-                    execution.CurrentStateVersion,
-                    mutationResult),
-                cancellationToken).ConfigureAwait(false);
-
-            return _outcomeHandler.BuildNonExecutedResult(
-                execution.Resolution with { Request = rejectedRequest },
-                mutationResult);
-        }
-
-        var resultingStateVersion = execution.ResultingStateVersionProvider(mutationResult.NewState);
-        if (string.IsNullOrWhiteSpace(resultingStateVersion))
-            throw new InvalidOperationException("Governed execution requires a non-empty resulting state version.");
-
-        var executedRequest = await _outcomeHandler.PersistExecutedRequest(
-            execution.Resolution.Request,
-            resultingStateVersion,
-            execution.GovernanceContext,
-            mutationResult,
-            cancellationToken).ConfigureAwait(false);
-
-        return _outcomeHandler.BuildExecutedResult(
-            execution.Resolution,
-            mutationResult,
-            executedRequest,
-            resultingStateVersion);
+        return await _outcomeHandler
+            .HandleMutationResult(execution, mutationResult, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     public Task<GovernedExecutionResult<TState>> ExecuteApproved<TState>(
