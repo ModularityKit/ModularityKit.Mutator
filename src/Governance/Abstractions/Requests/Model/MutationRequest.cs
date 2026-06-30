@@ -9,7 +9,7 @@ using ModularityKit.Mutator.Governance.Abstractions.Requests.Decisions;
 namespace ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 
 /// <summary>
-/// Represents a governed mutation request that may execute immediately or enter a pending lifecycle.
+/// Represents governed mutation request that may execute immediately or enter a pending lifecycle.
 /// </summary>
 public sealed record MutationRequest
 {
@@ -42,6 +42,11 @@ public sealed record MutationRequest
     /// Request context describing who requested the mutation and why.
     /// </summary>
     public MutationContext Context { get; init; } = null!;
+
+    /// <summary>
+    /// Governed execution-specific details associated with this request.
+    /// </summary>
+    public GovernedExecutionDetails Execution { get; init; } = new();
 
     /// <summary>
     /// Current lifecycle status of the request.
@@ -79,24 +84,14 @@ public sealed record MutationRequest
     public long Revision { get; init; }
 
     /// <summary>
-    /// Expected version or concurrency token for the target state.
+    /// Versioning and execution completion details associated with the request.
     /// </summary>
-    public string? ExpectedStateVersion { get; init; }
-
-    /// <summary>
-    /// Resulting version of the target state after successful governed execution.
-    /// </summary>
-    public string? ResultingStateVersion { get; init; }
+    public MutationRequestVersioningDetails Versioning { get; init; } = new();
 
     /// <summary>
     /// Optional expiration time for pending requests.
     /// </summary>
     public DateTimeOffset? ExpiresAt { get; init; }
-
-    /// <summary>
-    /// Timestamp when governed execution completed successfully.
-    /// </summary>
-    public DateTimeOffset? ExecutedAt { get; init; }
 
     /// <summary>
     /// Timestamp when the request was first created.

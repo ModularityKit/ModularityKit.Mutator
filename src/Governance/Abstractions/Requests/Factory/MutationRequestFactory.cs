@@ -17,6 +17,17 @@ public static class MutationRequestFactory
     /// <summary>
     /// Creates a request that should enter the pending lifecycle using type inference for the target state and mutation.
     /// </summary>
+    /// <typeparam name="TState">The target state type.</typeparam>
+    /// <typeparam name="TMutation">The mutation type.</typeparam>
+    /// <param name="stateId">Stable identifier of the target state.</param>
+    /// <param name="intent">Intent associated with the requested mutation.</param>
+    /// <param name="context">Request context describing who submitted the mutation and why.</param>
+    /// <param name="pendingReason">Lifecycle reason that keeps the request pending.</param>
+    /// <param name="requirements">Optional policy requirements attached to the request.</param>
+    /// <param name="expectedStateVersion">Optional expected state version captured at submission time.</param>
+    /// <param name="expiresAt">Optional expiration time for the pending request.</param>
+    /// <param name="metadata">Optional governance metadata carried by the request.</param>
+    /// <returns>A pending governed mutation request.</returns>
     public static MutationRequest Pending<TState, TMutation>(
         string stateId,
         MutationIntent intent,
@@ -42,6 +53,17 @@ public static class MutationRequestFactory
     /// <summary>
     /// Creates a request that should enter the pending lifecycle.
     /// </summary>
+    /// <param name="stateId">Stable identifier of the target state.</param>
+    /// <param name="stateType">Logical state type name.</param>
+    /// <param name="mutationType">Mutation type name.</param>
+    /// <param name="intent">Intent associated with the requested mutation.</param>
+    /// <param name="context">Request context describing who submitted the mutation and why.</param>
+    /// <param name="pendingReason">Lifecycle reason that keeps the request pending.</param>
+    /// <param name="requirements">Optional policy requirements attached to the request.</param>
+    /// <param name="expectedStateVersion">Optional expected state version captured at submission time.</param>
+    /// <param name="expiresAt">Optional expiration time for the pending request.</param>
+    /// <param name="metadata">Optional governance metadata carried by the request.</param>
+    /// <returns>A pending governed mutation request.</returns>
     public static MutationRequest Pending(
         string stateId,
         string stateType,
@@ -64,7 +86,10 @@ public static class MutationRequestFactory
             Status = MutationRequestStatus.Pending,
             PendingReason = pendingReason,
             Requirements = requirements ?? [],
-            ExpectedStateVersion = expectedStateVersion,
+            Versioning = new MutationRequestVersioningDetails
+            {
+                ExpectedStateVersion = expectedStateVersion
+            },
             ExpiresAt = expiresAt,
             Metadata = metadata ?? new Dictionary<string, object>(),
             Decisions =
@@ -84,6 +109,16 @@ public static class MutationRequestFactory
     /// <summary>
     /// Creates a request that enters pending approval using type inference for the target state and mutation.
     /// </summary>
+    /// <typeparam name="TState">The target state type.</typeparam>
+    /// <typeparam name="TMutation">The mutation type.</typeparam>
+    /// <param name="stateId">Stable identifier of the target state.</param>
+    /// <param name="intent">Intent associated with the requested mutation.</param>
+    /// <param name="context">Request context describing who submitted the mutation and why.</param>
+    /// <param name="requirements">Policy requirements that will be translated into approval requirements.</param>
+    /// <param name="expectedStateVersion">Optional expected state version captured at submission time.</param>
+    /// <param name="expiresAt">Optional expiration time for the pending request.</param>
+    /// <param name="metadata">Optional governance metadata carried by the request.</param>
+    /// <returns>A governed mutation request pending approval.</returns>
     public static MutationRequest PendingApproval<TState, TMutation>(
         string stateId,
         MutationIntent intent,
@@ -107,6 +142,16 @@ public static class MutationRequestFactory
     /// <summary>
     /// Creates a request that enters pending approval with concrete request-level approval requirements.
     /// </summary>
+    /// <param name="stateId">Stable identifier of the target state.</param>
+    /// <param name="stateType">Logical state type name.</param>
+    /// <param name="mutationType">Mutation type name.</param>
+    /// <param name="intent">Intent associated with the requested mutation.</param>
+    /// <param name="context">Request context describing who submitted the mutation and why.</param>
+    /// <param name="requirements">Policy requirements that will be translated into approval requirements.</param>
+    /// <param name="expectedStateVersion">Optional expected state version captured at submission time.</param>
+    /// <param name="expiresAt">Optional expiration time for the pending request.</param>
+    /// <param name="metadata">Optional governance metadata carried by the request.</param>
+    /// <returns>A governed mutation request pending approval.</returns>
     public static MutationRequest PendingApproval(
         string stateId,
         string stateType,
@@ -135,7 +180,10 @@ public static class MutationRequestFactory
             PendingReason = PendingMutationReason.Approval,
             Requirements = requirements,
             ApprovalRequirements = approvalRequirements,
-            ExpectedStateVersion = expectedStateVersion,
+            Versioning = new MutationRequestVersioningDetails
+            {
+                ExpectedStateVersion = expectedStateVersion
+            },
             ExpiresAt = expiresAt,
             Metadata = metadata ?? new Dictionary<string, object>(),
             Decisions =
@@ -163,6 +211,14 @@ public static class MutationRequestFactory
     /// <summary>
     /// Creates a request that is immediately approved for execution using type inference for the target state and mutation.
     /// </summary>
+    /// <typeparam name="TState">The target state type.</typeparam>
+    /// <typeparam name="TMutation">The mutation type.</typeparam>
+    /// <param name="stateId">Stable identifier of the target state.</param>
+    /// <param name="intent">Intent associated with the requested mutation.</param>
+    /// <param name="context">Request context describing who submitted the mutation and why.</param>
+    /// <param name="expectedStateVersion">Optional expected state version captured at submission time.</param>
+    /// <param name="metadata">Optional governance metadata carried by the request.</param>
+    /// <returns>An approved governed mutation request.</returns>
     public static MutationRequest Approved<TState, TMutation>(
         string stateId,
         MutationIntent intent,
@@ -182,6 +238,14 @@ public static class MutationRequestFactory
     /// <summary>
     /// Creates a request that is immediately approved for execution.
     /// </summary>
+    /// <param name="stateId">Stable identifier of the target state.</param>
+    /// <param name="stateType">Logical state type name.</param>
+    /// <param name="mutationType">Mutation type name.</param>
+    /// <param name="intent">Intent associated with the requested mutation.</param>
+    /// <param name="context">Request context describing who submitted the mutation and why.</param>
+    /// <param name="expectedStateVersion">Optional expected state version captured at submission time.</param>
+    /// <param name="metadata">Optional governance metadata carried by the request.</param>
+    /// <returns>An approved governed mutation request.</returns>
     public static MutationRequest Approved(
         string stateId,
         string stateType,
@@ -199,7 +263,10 @@ public static class MutationRequestFactory
             Intent = intent,
             Context = context,
             Status = MutationRequestStatus.Approved,
-            ExpectedStateVersion = expectedStateVersion,
+            Versioning = new MutationRequestVersioningDetails
+            {
+                ExpectedStateVersion = expectedStateVersion
+            },
             Metadata = metadata ?? new Dictionary<string, object>(),
             Decisions =
             [

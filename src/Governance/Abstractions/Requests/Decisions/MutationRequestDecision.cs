@@ -3,7 +3,7 @@ using ModularityKit.Mutator.Abstractions.Context;
 namespace ModularityKit.Mutator.Governance.Abstractions.Requests.Decisions;
 
 /// <summary>
-/// Captures a single decision or lifecycle transition applied to a mutation request.
+/// Captures single decision or lifecycle transition applied to mutation request.
 /// </summary>
 public sealed record MutationRequestDecision
 {
@@ -33,8 +33,13 @@ public sealed record MutationRequestDecision
     public IReadOnlyDictionary<string, object> Metadata { get; init; } = new Dictionary<string, object>();
 
     /// <summary>
-    /// Creates a lifecycle decision entry.
+    /// Creates lifecycle decision entry.
     /// </summary>
+    /// <param name="type">Lifecycle decision type.</param>
+    /// <param name="context">Actor or system context that records the decision.</param>
+    /// <param name="reason">Optional human-readable explanation for the decision.</param>
+    /// <param name="metadata">Optional governance metadata attached to the decision.</param>
+    /// <returns>A lifecycle decision entry.</returns>
     public static MutationRequestDecision Lifecycle(
         MutationRequestLifecycleDecisionType type,
         MutationContext context,
@@ -49,6 +54,11 @@ public sealed record MutationRequestDecision
     /// <summary>
     /// Creates an approval decision entry.
     /// </summary>
+    /// <param name="type">Approval decision type.</param>
+    /// <param name="context">Actor or system context that records the decision.</param>
+    /// <param name="reason">Optional human-readable explanation for the decision.</param>
+    /// <param name="metadata">Optional governance metadata attached to the decision.</param>
+    /// <returns>An approval decision entry.</returns>
     public static MutationRequestDecision Approval(
         MutationRequestApprovalDecisionType type,
         MutationContext context,
@@ -61,8 +71,13 @@ public sealed record MutationRequestDecision
             metadata);
 
     /// <summary>
-    /// Creates a version-resolution decision entry.
+    /// Creates version resolution decision entry.
     /// </summary>
+    /// <param name="type">Version-resolution decision type.</param>
+    /// <param name="context">Actor or system context that records the decision.</param>
+    /// <param name="reason">Optional human-readable explanation for the decision.</param>
+    /// <param name="metadata">Optional governance metadata attached to the decision.</param>
+    /// <returns>A version-resolution decision entry.</returns>
     public static MutationRequestDecision VersionResolution(
         MutationRequestVersionResolutionDecisionType type,
         MutationContext context,
@@ -75,8 +90,13 @@ public sealed record MutationRequestDecision
             metadata);
 
     /// <summary>
-    /// Creates a new request decision entry.
+    /// Creates new request decision entry.
     /// </summary>
+    /// <param name="type">Decision type wrapper including category and stable code.</param>
+    /// <param name="context">Actor or system context that records the decision.</param>
+    /// <param name="reason">Optional human-readable explanation for the decision.</param>
+    /// <param name="metadata">Optional governance metadata attached to the decision.</param>
+    /// <returns>A new request decision entry.</returns>
     public static MutationRequestDecision Create(
         MutationRequestDecisionType type,
         MutationContext context,
