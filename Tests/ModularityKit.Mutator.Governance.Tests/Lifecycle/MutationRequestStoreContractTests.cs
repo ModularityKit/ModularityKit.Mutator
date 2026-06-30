@@ -34,8 +34,11 @@ public sealed class MutationRequestStoreContractTests
 
         var firstUpdate = created with
         {
-            Status = MutationRequestStatus.Approved,
-            PendingReason = null,
+            Lifecycle = created.Lifecycle with
+            {
+                Status = MutationRequestStatus.Approved,
+                PendingReason = null
+            },
             Decisions =
             [
                 .. created.Decisions,
@@ -50,8 +53,11 @@ public sealed class MutationRequestStoreContractTests
 
         var staleUpdate = created with
         {
-            Status = MutationRequestStatus.Canceled,
-            PendingReason = null,
+            Lifecycle = created.Lifecycle with
+            {
+                Status = MutationRequestStatus.Canceled,
+                PendingReason = null
+            },
             Decisions =
             [
                 .. created.Decisions,

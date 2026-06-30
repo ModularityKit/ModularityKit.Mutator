@@ -49,11 +49,17 @@ public sealed class RedisMutationRequestKeyspaceTests
         var request = new MutationRequest
         {
             RequestId = "req-42",
-            StateId = "tenant-42",
-            StateType = "IamRoleState",
-            MutationType = "GrantRoleMutation",
-            Status = MutationRequestStatus.Pending,
-            PendingReason = PendingMutationReason.Approval
+            Scope = new MutationRequestScopeDetails
+            {
+                StateId = "tenant-42",
+                StateType = "IamRoleState",
+                MutationType = "GrantRoleMutation"
+            },
+            Lifecycle = new MutationRequestLifecycleDetails
+            {
+                Status = MutationRequestStatus.Pending,
+                PendingReason = PendingMutationReason.Approval
+            }
         };
 
         var keys = keyspace.EnumerateIndexes(request).Select(key => key.ToString()).ToArray();

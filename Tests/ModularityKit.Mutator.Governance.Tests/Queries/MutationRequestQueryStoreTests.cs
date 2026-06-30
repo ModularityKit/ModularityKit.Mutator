@@ -393,10 +393,13 @@ public sealed class MutationRequestQueryStoreTests
         with
         {
             RequestId = requestId,
-            Status = status,
-            PendingReason = pendingReason,
-            CreatedAt = createdAt,
-            UpdatedAt = createdAt
+            Lifecycle = new MutationRequestLifecycleDetails
+            {
+                Status = status,
+                PendingReason = pendingReason,
+                CreatedAt = createdAt,
+                UpdatedAt = createdAt
+            }
         };
 
     private static MutationRequest CreateApprovedRequest(
@@ -423,10 +426,13 @@ public sealed class MutationRequestQueryStoreTests
         with
         {
             RequestId = requestId,
-            Status = MutationRequestStatus.Approved,
-            PendingReason = null,
-            CreatedAt = createdAt,
-            UpdatedAt = updatedAt,
+            Lifecycle = new MutationRequestLifecycleDetails
+            {
+                Status = MutationRequestStatus.Approved,
+                PendingReason = null,
+                CreatedAt = createdAt,
+                UpdatedAt = updatedAt
+            },
             Decisions =
             [
                 MutationRequestDecision.Create(
@@ -495,8 +501,11 @@ public sealed class MutationRequestQueryStoreTests
         with
         {
             RequestId = requestId,
-            Status = MutationRequestStatus.Pending,
-            PendingReason = PendingMutationReason.Approval,
+            Lifecycle = new MutationRequestLifecycleDetails
+            {
+                Status = MutationRequestStatus.Pending,
+                PendingReason = PendingMutationReason.Approval
+            },
             ApprovalRequirements =
             [
                 new MutationApprovalRequirement
@@ -528,7 +537,12 @@ public sealed class MutationRequestQueryStoreTests
         {
             RequestId = requestId,
             Decisions = decisions,
-            UpdatedAt = decisions.Max(decision => decision.Timestamp)
+            Lifecycle = new MutationRequestLifecycleDetails
+            {
+                Status = MutationRequestStatus.Pending,
+                PendingReason = PendingMutationReason.ExternalCheck,
+                UpdatedAt = decisions.Max(decision => decision.Timestamp)
+            }
         };
 
     private static MutationRequest CreateGovernedRequest(
@@ -552,22 +566,31 @@ public sealed class MutationRequestQueryStoreTests
         => new MutationRequest
         {
             RequestId = requestId,
-            StateId = stateId,
-            StateType = stateType,
-            MutationType = mutationType,
-            Intent = new MutationIntent
+            Scope = new MutationRequestScopeDetails
             {
-                OperationName = mutationType,
-                Category = category,
-                Tags = tags,
-                Metadata = intentMetadata,
-                EstimatedBlastRadius = blastRadius
+                StateId = stateId,
+                StateType = stateType,
+                MutationType = mutationType
             },
-            Context = MutationContext.User(actorId, actorName, "Query test"),
-            Status = status,
-            PendingReason = pendingReason,
-            CreatedAt = createdAt,
-            UpdatedAt = updatedAt,
+            Payload = new MutationRequestPayloadDetails
+            {
+                Intent = new MutationIntent
+                {
+                    OperationName = mutationType,
+                    Category = category,
+                    Tags = tags,
+                    Metadata = intentMetadata,
+                    EstimatedBlastRadius = blastRadius
+                },
+                Context = MutationContext.User(actorId, actorName, "Query test")
+            },
+            Lifecycle = new MutationRequestLifecycleDetails
+            {
+                Status = status,
+                PendingReason = pendingReason,
+                CreatedAt = createdAt,
+                UpdatedAt = updatedAt
+            },
             Decisions = decisions,
             Metadata = requestMetadata,
             SideEffects = sideEffects ?? []

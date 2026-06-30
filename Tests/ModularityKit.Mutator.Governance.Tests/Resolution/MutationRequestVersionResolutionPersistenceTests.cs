@@ -87,7 +87,7 @@ public sealed class MutationRequestVersionResolutionPersistenceTests
             loaded.Decisions[^1].Type);
         Assert.Equal(MutationRequestStatus.Pending, loaded.Status);
         Assert.Equal(PendingMutationReason.Revalidation, loaded.PendingReason);
-        Assert.Equal("v15", loaded.ExpectedStateVersion);
+        Assert.Equal("v15", loaded.Versioning.ExpectedStateVersion);
         Assert.Equal(1, loaded.Revision);
         Assert.Equal(MutationRequestVersionResolutionOutcome.RevalidateOnLatestState, resolution.Outcome);
         Assert.Equal(loaded, resolution.Request);

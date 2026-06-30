@@ -4,6 +4,7 @@ using ModularityKit.Mutator.Abstractions.Intent;
 using ModularityKit.Mutator.Abstractions.Policies;
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Factory;
+using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 using ModularityKit.Mutator.Governance.Redis.Serialization;
 using Xunit;
 
@@ -61,8 +62,13 @@ public sealed class RedisMutationRequestSerializerTests
             })
         with
         {
-            CreatedAt = new DateTimeOffset(2026, 6, 25, 9, 0, 0, TimeSpan.Zero),
-            UpdatedAt = new DateTimeOffset(2026, 6, 25, 9, 5, 0, TimeSpan.Zero),
+            Lifecycle = new MutationRequestLifecycleDetails
+            {
+                Status = MutationRequestStatus.Pending,
+                PendingReason = PendingMutationReason.Approval,
+                CreatedAt = new DateTimeOffset(2026, 6, 25, 9, 0, 0, TimeSpan.Zero),
+                UpdatedAt = new DateTimeOffset(2026, 6, 25, 9, 5, 0, TimeSpan.Zero)
+            },
             SideEffects =
             [
                 SideEffect.Critical(
@@ -95,6 +101,8 @@ public sealed class RedisMutationRequestSerializerTests
         Assert.Single(roundtrip.ApprovalRequirements);
         Assert.Equal("security-lead", roundtrip.ApprovalRequirements[0].ApproverId);
         Assert.Equal(3, roundtrip.Decisions.Count);
+        Assert.Equal(request.Lifecycle.CreatedAt, roundtrip.Lifecycle.CreatedAt);
+        Assert.Equal(request.Lifecycle.UpdatedAt, roundtrip.Lifecycle.UpdatedAt);
     }
 
     [SideEffectDataContract("redis.governance.side-effect", 1)]
