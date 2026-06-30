@@ -132,7 +132,7 @@ internal static class GovernanceRequestLifecycleScenario
         Console.WriteLine($"  state: {request.Scope.StateId}");
         Console.WriteLine($"  status: {request.Lifecycle.Status}");
         Console.WriteLine($"  pending: {request.Lifecycle.PendingReason?.ToString() ?? "-"}");
-        Console.WriteLine($"  expires: {request.Lifecycle.ExpiresAt?.ToString(\"O\") ?? \"-\"}");
+        Console.WriteLine($"  expires: {request.Lifecycle.ExpiresAt?.ToString("O") ?? "-"}");
         Console.WriteLine("  decisions:");
 
         foreach (var decision in request.Decisions)

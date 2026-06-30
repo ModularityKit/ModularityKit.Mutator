@@ -133,8 +133,13 @@ internal static class GovernanceQueriesSampleData
         with
         {
             RequestId = requestId,
-            CreatedAt = createdAt,
-            UpdatedAt = createdAt,
+            Lifecycle = new MutationRequestLifecycleDetails
+            {
+                Status = MutationRequestStatus.Pending,
+                PendingReason = PendingMutationReason.Approval,
+                CreatedAt = createdAt,
+                UpdatedAt = createdAt
+            },
             Metadata = new Dictionary<string, object>
             {
                 ["ticket"] = category == "Security" ? "INC-42" : "BILL-7"
@@ -176,8 +181,13 @@ internal static class GovernanceQueriesSampleData
         with
         {
             RequestId = requestId,
-            CreatedAt = createdAt,
-            UpdatedAt = createdAt,
+            Lifecycle = new MutationRequestLifecycleDetails
+            {
+                Status = MutationRequestStatus.Pending,
+                PendingReason = PendingMutationReason.ExternalCheck,
+                CreatedAt = createdAt,
+                UpdatedAt = createdAt
+            },
             Metadata = new Dictionary<string, object>
             {
                 ["ticket"] = "REL-99"
@@ -214,10 +224,13 @@ internal static class GovernanceQueriesSampleData
         with
         {
             RequestId = requestId,
-            Status = MutationRequestStatus.Approved,
-            PendingReason = null,
-            CreatedAt = approvedAt.AddMinutes(-20),
-            UpdatedAt = approvedAt,
+            Lifecycle = new MutationRequestLifecycleDetails
+            {
+                Status = MutationRequestStatus.Approved,
+                PendingReason = null,
+                CreatedAt = approvedAt.AddMinutes(-20),
+                UpdatedAt = approvedAt
+            },
             Metadata = new Dictionary<string, object>
             {
                 ["ticket"] = category == "Security" ? "INC-77" : "BILL-9"
@@ -297,9 +310,12 @@ internal static class GovernanceQueriesSampleData
         with
         {
             RequestId = requestId,
-            Status = MutationRequestStatus.Approved,
-            CreatedAt = decisionTimestamp.AddMinutes(-30),
-            UpdatedAt = decisionTimestamp,
+            Lifecycle = new MutationRequestLifecycleDetails
+            {
+                Status = MutationRequestStatus.Approved,
+                CreatedAt = decisionTimestamp.AddMinutes(-30),
+                UpdatedAt = decisionTimestamp
+            },
             Metadata = new Dictionary<string, object>
             {
                 ["ticket"] = "CFG-5"
@@ -348,10 +364,16 @@ internal static class GovernanceQueriesSampleData
         with
         {
             RequestId = requestId,
-            Status = MutationRequestStatus.Executed,
-            CreatedAt = executedAt.AddMinutes(-15),
-            UpdatedAt = executedAt,
-            ExecutedAt = executedAt,
+            Lifecycle = new MutationRequestLifecycleDetails
+            {
+                Status = MutationRequestStatus.Executed,
+                CreatedAt = executedAt.AddMinutes(-15),
+                UpdatedAt = executedAt
+            },
+            Versioning = new MutationRequestVersioningDetails
+            {
+                ExecutedAt = executedAt
+            },
             SideEffects =
             [
                 SideEffect.Critical(
