@@ -27,7 +27,7 @@ public sealed class MutationRequestFactoryTests
         Assert.Equal(nameof(TestState), request.StateType);
         Assert.Equal(nameof(TestMutation), request.MutationType);
         Assert.Equal(MutationRequestStatus.Approved, request.Status);
-        Assert.Equal("v1", request.ExpectedStateVersion);
+        Assert.Equal("v1", request.Versioning.ExpectedStateVersion);
     }
 
     [Fact]

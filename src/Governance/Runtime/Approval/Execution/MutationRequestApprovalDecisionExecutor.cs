@@ -156,23 +156,32 @@ internal sealed class MutationRequestApprovalDecisionExecutor(IMutationRequestSt
 
             updatedRequest = updatedRequest with
             {
-                Status = isFullyApproved ? MutationRequestStatus.Approved : MutationRequestStatus.Pending,
-                PendingReason = isFullyApproved ? null : PendingMutationReason.Approval
+                Lifecycle = request.Lifecycle with
+                {
+                    Status = isFullyApproved ? MutationRequestStatus.Approved : MutationRequestStatus.Pending,
+                    PendingReason = isFullyApproved ? null : PendingMutationReason.Approval
+                }
             };
         }
         else
         {
             updatedRequest = updatedRequest with
             {
-                Status = MutationRequestStatus.Rejected,
-                PendingReason = null
+                Lifecycle = request.Lifecycle with
+                {
+                    Status = MutationRequestStatus.Rejected,
+                    PendingReason = null
+                }
             };
         }
 
         return updatedRequest with
         {
             Decisions = decisions,
-            UpdatedAt = decisions[^1].Timestamp
+            Lifecycle = updatedRequest.Lifecycle with
+            {
+                UpdatedAt = decisions[^1].Timestamp
+            }
         };
     }
 

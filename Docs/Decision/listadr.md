@@ -49,5 +49,6 @@ These ADRs describe the `ModularityKit.Mutator.Governance` extension layer and i
 | ADR-031 | Governance Redis Serialization and Document Compatibility | [ADR-031](Adr/ADR_031_Governance_Redis_Serialization_and_Document_Compatibility.md) |
 | ADR-032 | Governance Redis Concurrency and Index Maintenance Model | [ADR-032](Adr/ADR_032_Governance_Redis_Concurrency_and_Index_Maintenance_Model.md) |
 | ADR-033 | Governance Query Model Decomposition                | [ADR-033](Adr/ADR_033_Governance_Query_Model_Decomposition.md)                 |
+| ADR-034 | Governed Execution Compensation Model               | [ADR-034](Adr/ADR_034_Governed_Execution_Compensation_Model.md)                |
 
 > See individual ADRs for detailed context, decision rationale, and consequences.

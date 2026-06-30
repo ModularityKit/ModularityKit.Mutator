@@ -41,7 +41,7 @@ internal static class GovernanceExecutionScenario
             expectedStateVersion: "v10"));
 
         var currentState = new FeatureFlagState(
-            request.StateId,
+            request.Scope.StateId,
             IsEnabled: false,
             Version: "v10");
 
@@ -55,7 +55,7 @@ internal static class GovernanceExecutionScenario
         Console.WriteLine("=== Governed Execution ===");
         Console.WriteLine($"Executed: {execution.WasExecuted}");
         Console.WriteLine($"Resolution: {execution.Resolution.Outcome}");
-        Console.WriteLine($"Request status: {execution.Request.Status}");
+        Console.WriteLine($"Request status: {execution.Request.Lifecycle.Status}");
         Console.WriteLine($"Resulting version: {execution.ResultingStateVersion ?? "-"}");
         Console.WriteLine($"Last decision: {execution.Request.Decisions[^1].Type}");
         Console.WriteLine($"Reason: {execution.Request.Decisions[^1].Reason}");

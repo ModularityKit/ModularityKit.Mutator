@@ -1,43 +1,25 @@
-using Microsoft.Extensions.DependencyInjection;
-using ModularityKit.Mutator.Abstractions;
-using ModularityKit.Mutator.Abstractions.Audit;
-using ModularityKit.Mutator.Abstractions.Changes;
 using ModularityKit.Mutator.Abstractions.Context;
-using ModularityKit.Mutator.Abstractions.Effects;
-using ModularityKit.Mutator.Abstractions.Engine;
-using ModularityKit.Mutator.Abstractions.History;
 using ModularityKit.Mutator.Abstractions.Intent;
-using ModularityKit.Mutator.Abstractions.Results;
-using ModularityKit.Mutator.Governance.Abstractions.Execution.Contracts;
-using ModularityKit.Mutator.Governance.Abstractions.Execution.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Factory;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Decisions;
-using ModularityKit.Mutator.Governance.Abstractions.Resolution.Strategies;
 using ModularityKit.Mutator.Governance.Abstractions.Resolution.Model;
-using ModularityKit.Mutator.Governance.Runtime.Execution.Orchestration;
-using ModularityKit.Mutator.Governance.Runtime.Resolution.Execution;
-using ModularityKit.Mutator.Governance.Runtime.Storage;
-using ModularityKit.Mutator.Runtime;
+using ModularityKit.Mutator.Governance.Abstractions.Resolution.Strategies;
+using ModularityKit.Mutator.Governance.Tests.TestSupport.Execution.Host;
+using ModularityKit.Mutator.Governance.Tests.TestSupport.Execution.Model;
+using ModularityKit.Mutator.Governance.Tests.TestSupport.Execution.Mutations;
 using Xunit;
 
 namespace ModularityKit.Mutator.Governance.Tests.Execution;
 
-public sealed class GovernanceExecutionManagerTests
+public sealed partial class GovernanceExecutionManagerTests
 {
     [Fact]
     public async Task ExecuteApproved_executes_request_persists_resulting_version_and_correlates_audit_history()
     {
-        var services = new ServiceCollection();
-        services.AddMutators(MutationEngineOptions.Strict);
-        await using var provider = services.BuildServiceProvider();
-
-        var engine = provider.GetRequiredService<IMutationEngine>();
-        var auditor = provider.GetRequiredService<IMutationAuditor>();
-        var historyStore = provider.GetRequiredService<IMutationHistoryStore>();
-        var requestStore = new InMemoryMutationRequestStore();
-        var resolutionManager = new MutationRequestVersionResolutionManager(requestStore, new MutationRequestVersionResolver());
-        var executionManager = new GovernanceExecutionManager(requestStore, resolutionManager, engine);
+        var (provider, _, auditor, historyStore, requestStore, _, executionManager) =
+            await GovernanceExecutionManagerTestSupport.CreateAsync();
+        await using var _ = provider;
 
         var request = await requestStore.Create(MutationRequestFactory.Approved<RoleState, PromoteRoleMutation>(
             stateId: "tenant-42:roles",
@@ -75,9 +57,9 @@ public sealed class GovernanceExecutionManagerTests
         Assert.NotNull(result.MutationResult);
         Assert.Equal("v11", result.ResultingStateVersion);
         Assert.Equal(MutationRequestStatus.Executed, result.Request.Status);
-        Assert.Equal("v11", result.Request.ResultingStateVersion);
-        Assert.Equal("v11", result.Request.ExpectedStateVersion);
-        Assert.NotNull(result.Request.ExecutedAt);
+        Assert.Equal("v11", result.Request.Versioning.ResultingStateVersion);
+        Assert.Equal("v11", result.Request.Versioning.ExpectedStateVersion);
+        Assert.NotNull(result.Request.Versioning.ExecutedAt);
         Assert.Single(result.Request.SideEffects);
         Assert.Equal("RoleElevated", result.Request.SideEffects[0].Type);
         Assert.Equal("governance.execution-effect", result.Request.SideEffects[0].DataContractType);
@@ -102,14 +84,9 @@ public sealed class GovernanceExecutionManagerTests
     [Fact]
     public async Task ExecuteApproved_does_not_execute_when_stale_resolution_rejects_request()
     {
-        var services = new ServiceCollection();
-        services.AddMutators(MutationEngineOptions.Strict);
-        await using var provider = services.BuildServiceProvider();
-
-        var engine = provider.GetRequiredService<IMutationEngine>();
-        var requestStore = new InMemoryMutationRequestStore();
-        var resolutionManager = new MutationRequestVersionResolutionManager(requestStore, new MutationRequestVersionResolver());
-        var executionManager = new GovernanceExecutionManager(requestStore, resolutionManager, engine);
+        var (provider, _, _, _, requestStore, _, executionManager) =
+            await GovernanceExecutionManagerTestSupport.CreateAsync();
+        await using var _ = provider;
 
         var request = await requestStore.Create(MutationRequestFactory.Approved<RoleState, PromoteRoleMutation>(
             stateId: "tenant-42:roles",
@@ -145,14 +122,9 @@ public sealed class GovernanceExecutionManagerTests
     [Fact]
     public async Task ExecuteApproved_requires_renewed_approval_before_execution_when_strategy_demands_it()
     {
-        var services = new ServiceCollection();
-        services.AddMutators(MutationEngineOptions.Strict);
-        await using var provider = services.BuildServiceProvider();
-
-        var engine = provider.GetRequiredService<IMutationEngine>();
-        var requestStore = new InMemoryMutationRequestStore();
-        var resolutionManager = new MutationRequestVersionResolutionManager(requestStore, new MutationRequestVersionResolver());
-        var executionManager = new GovernanceExecutionManager(requestStore, resolutionManager, engine);
+        var (provider, _, _, _, requestStore, _, executionManager) =
+            await GovernanceExecutionManagerTestSupport.CreateAsync();
+        await using var _ = provider;
 
         var request = await requestStore.Create(MutationRequestFactory.Approved<RoleState, PromoteRoleMutation>(
             stateId: "tenant-42:roles",
@@ -180,21 +152,16 @@ public sealed class GovernanceExecutionManagerTests
         Assert.Null(result.MutationResult);
         Assert.Equal(MutationRequestStatus.Pending, result.Request.Status);
         Assert.Equal(PendingMutationReason.Approval, result.Request.PendingReason);
-        Assert.Equal("v15", result.Request.ExpectedStateVersion);
+        Assert.Equal("v15", result.Request.Versioning.ExpectedStateVersion);
         Assert.Equal(MutationRequestVersionResolutionOutcome.RequiresRenewedApproval, result.Resolution.Outcome);
     }
 
     [Fact]
     public async Task ExecuteApproved_revalidates_and_executes_against_latest_state_when_strategy_demands_it()
     {
-        var services = new ServiceCollection();
-        services.AddMutators(MutationEngineOptions.Strict);
-        await using var provider = services.BuildServiceProvider();
-
-        var engine = provider.GetRequiredService<IMutationEngine>();
-        var requestStore = new InMemoryMutationRequestStore();
-        var resolutionManager = new MutationRequestVersionResolutionManager(requestStore, new MutationRequestVersionResolver());
-        var executionManager = new GovernanceExecutionManager(requestStore, resolutionManager, engine);
+        var (provider, _, _, _, requestStore, _, executionManager) =
+            await GovernanceExecutionManagerTestSupport.CreateAsync();
+        await using var _ = provider;
 
         var request = await requestStore.Create(MutationRequestFactory.Approved<RoleState, PromoteRoleMutation>(
             stateId: "tenant-42:roles",
@@ -223,70 +190,13 @@ public sealed class GovernanceExecutionManagerTests
         Assert.Equal(MutationRequestVersionResolutionOutcome.RevalidateOnLatestState, result.Resolution.Outcome);
         Assert.Equal(MutationRequestStatus.Executed, result.Request.Status);
         Assert.Equal("v16", result.ResultingStateVersion);
-        Assert.Equal("v16", result.Request.ResultingStateVersion);
-        Assert.Equal("v16", result.Request.ExpectedStateVersion);
+        Assert.Equal("v16", result.Request.Versioning.ResultingStateVersion);
+        Assert.Equal("v16", result.Request.Versioning.ExpectedStateVersion);
         Assert.Equal(
             MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Executed),
             result.Request.Decisions[^1].Type);
         Assert.Contains(
             result.Request.Decisions,
             decision => decision.Type == MutationRequestDecisionType.VersionResolution(MutationRequestVersionResolutionDecisionType.RevalidationRequired));
-    }
-
-    private sealed record RoleState(string StateId, string Role, string Version) : IVersionedState
-    {
-        public static RoleState Create(string stateId, string role, string version) => new(stateId, role, version);
-    }
-
-    private sealed class PromoteRoleMutation(MutationContext context, string nextVersion) : IMutation<RoleState>
-    {
-        public MutationIntent Intent { get; } = new()
-        {
-            OperationName = "PromoteRole",
-            Category = "Security",
-            Description = "Promote tenant role after governance approval"
-        };
-
-        public MutationContext Context { get; } = context;
-
-        public MutationResult<RoleState> Apply(RoleState state)
-        {
-            var newState = state with
-            {
-                Role = "Admin",
-                Version = nextVersion
-            };
-
-            return MutationResult<RoleState>.Success(
-                newState,
-                ChangeSet.Single(StateChange.Modified("Role", state.Role, newState.Role)),
-                [
-                    SideEffect.Create(
-                        type: "RoleElevated",
-                        description: "Governed execution elevated the role",
-                        data: new GovernanceExecutionSideEffectData
-                        {
-                            RequestStateId = state.StateId,
-                            NewRole = newState.Role
-                        })
-                ]);
-        }
-
-        public ValidationResult Validate(RoleState state)
-        {
-            return state.Role == "Admin"
-                ? ValidationResult.WithError("Role", "Role is already Admin.")
-                : ValidationResult.Success();
-        }
-
-        public MutationResult<RoleState> Simulate(RoleState state) => Apply(state);
-    }
-
-    [SideEffectDataContract("governance.execution-effect", 1)]
-    private sealed record GovernanceExecutionSideEffectData
-    {
-        public required string RequestStateId { get; init; }
-
-        public required string NewRole { get; init; }
     }
 }

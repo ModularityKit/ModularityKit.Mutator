@@ -14,8 +14,11 @@ internal static class MutationRequestLifecycleState
     {
         return request with
         {
-            PendingReason = null,
-            ExpiresAt = null
+            Lifecycle = request.Lifecycle with
+            {
+                PendingReason = null,
+                ExpiresAt = null
+            }
         };
     }
 

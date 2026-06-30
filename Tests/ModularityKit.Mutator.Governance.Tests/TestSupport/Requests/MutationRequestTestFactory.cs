@@ -4,10 +4,16 @@ using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Factory;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 
-namespace ModularityKit.Mutator.Governance.Tests.TestSupport;
+namespace ModularityKit.Mutator.Governance.Tests.TestSupport.Requests;
 
+/// <summary>
+/// Creates baseline mutation requests used across governance tests.
+/// </summary>
 internal static class MutationRequestTestFactory
 {
+    /// <summary>
+    /// Creates a pending request with stable defaults for lifecycle tests.
+    /// </summary>
     public static MutationRequest CreatePendingRequest()
     {
         return MutationRequestFactory.Pending(
@@ -25,6 +31,9 @@ internal static class MutationRequestTestFactory
             expectedStateVersion: "v12");
     }
 
+    /// <summary>
+    /// Creates an approved request with security-oriented defaults.
+    /// </summary>
     public static MutationRequest CreateApprovedSecurityRequest(string expectedStateVersion)
     {
         return MutationRequestFactory.Approved(

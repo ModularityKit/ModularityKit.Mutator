@@ -48,8 +48,11 @@ internal sealed class MutationRequestTransitionExecutor(IMutationRequestStore re
 
         var updatedRequest = applyState(request) with
         {
-            Status = targetStatus,
-            UpdatedAt = decision.Timestamp,
+            Lifecycle = request.Lifecycle with
+            {
+                Status = targetStatus,
+                UpdatedAt = decision.Timestamp
+            },
             Decisions = [.. request.Decisions, decision]
         };
 

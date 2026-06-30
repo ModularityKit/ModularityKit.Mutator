@@ -11,6 +11,16 @@ internal sealed class GovernedExecutionRequestPersistence(IMutationRequestStore 
 {
     private readonly IMutationRequestStore _requestStore = requestStore ?? throw new ArgumentNullException(nameof(requestStore));
 
+    /// <summary>
+    /// Persists next governed request snapshot when the previous revision still matches storage.
+    /// </summary>
+    /// <param name="previousRequest">Previously persisted request snapshot that provides the expected revision.</param>
+    /// <param name="nextRequest">Next request snapshot to persist.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The persisted request snapshot with updated revision.</returns>
+    /// <exception cref="MutationRequestConcurrencyException">
+    /// Thrown when the persisted request revision no longer matches the expected revision.
+    /// </exception>
     public async Task<MutationRequest> Persist(
         MutationRequest previousRequest,
         MutationRequest nextRequest,
@@ -20,9 +30,8 @@ internal sealed class GovernedExecutionRequestPersistence(IMutationRequestStore 
             .TryStore(nextRequest, previousRequest.Revision, cancellationToken)
             .ConfigureAwait(false);
 
-        if (persistedRequest is null)
-            throw new MutationRequestConcurrencyException(previousRequest.RequestId, previousRequest.Revision);
-
-        return persistedRequest;
+        return persistedRequest is null
+            ? throw new MutationRequestConcurrencyException(previousRequest.RequestId, previousRequest.Revision)
+            : persistedRequest;
     }
 }

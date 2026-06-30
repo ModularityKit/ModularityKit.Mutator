@@ -7,7 +7,7 @@ using ModularityKit.Mutator.Abstractions.Results;
 using ModularityKit.Mutator.Runtime;
 using Xunit;
 
-namespace ModularityKit.Mutator.Tests.Runtime;
+namespace ModularityKit.Mutator.Tests.Runtime.Mutation;
 
 public sealed class MutationBaseTests
 {

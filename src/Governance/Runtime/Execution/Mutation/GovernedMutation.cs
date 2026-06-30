@@ -2,6 +2,7 @@ using ModularityKit.Mutator.Abstractions.Context;
 using ModularityKit.Mutator.Abstractions.Engine;
 using ModularityKit.Mutator.Abstractions.Intent;
 using ModularityKit.Mutator.Abstractions.Results;
+using ModularityKit.Mutator.Governance.Abstractions.Execution.Model.Compensation;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 
 namespace ModularityKit.Mutator.Governance.Runtime.Execution.Mutation;
@@ -15,6 +16,8 @@ internal sealed class GovernedMutation<TState> : IMutation<TState>
     private const string GovernanceRequestMetadataKey = "GovernanceRequestMetadata";
     private const string GovernanceIntentMetadataKey = "GovernanceIntentMetadata";
     private const string GovernanceEstimatedBlastRadiusMetadataKey = "GovernanceEstimatedBlastRadius";
+    private const string GovernanceExecutionKindMetadataKey = "GovernanceExecutionKind";
+    private const string GovernanceCompensationMetadataKey = "GovernanceCompensation";
 
     private readonly IMutation<TState> _inner;
 
@@ -58,7 +61,8 @@ internal sealed class GovernedMutation<TState> : IMutation<TState>
     {
         var metadata = new Dictionary<string, object>(_inner.Context.Metadata)
         {
-            [GovernanceRequestIdMetadataKey] = request.RequestId
+            [GovernanceRequestIdMetadataKey] = request.RequestId,
+            [GovernanceExecutionKindMetadataKey] = request.Execution.Kind.ToString()
         };
 
         if (request.Metadata.Count > 0)
@@ -70,6 +74,9 @@ internal sealed class GovernedMutation<TState> : IMutation<TState>
         if (request.Intent.EstimatedBlastRadius is not null)
             metadata[GovernanceEstimatedBlastRadiusMetadataKey] = request.Intent.EstimatedBlastRadius;
 
+        if (request.Execution.Compensation is not null)
+            metadata[GovernanceCompensationMetadataKey] = CreateCompensationMetadata(request.Execution.Compensation);
+
         return metadata;
     }
 
@@ -77,11 +84,37 @@ internal sealed class GovernedMutation<TState> : IMutation<TState>
     {
         var metadata = new Dictionary<string, object>(request.Intent.Metadata)
         {
-            [GovernanceRequestIdMetadataKey] = request.RequestId
+            [GovernanceRequestIdMetadataKey] = request.RequestId,
+            [GovernanceExecutionKindMetadataKey] = request.Execution.Kind.ToString()
         };
 
         if (_inner.Intent.Metadata.Count > 0)
             metadata["ExecutionIntentMetadata"] = _inner.Intent.Metadata;
+
+        if (request.Execution.Compensation is not null)
+            metadata[GovernanceCompensationMetadataKey] = CreateCompensationMetadata(request.Execution.Compensation);
+
+        return metadata;
+    }
+
+    private static IReadOnlyDictionary<string, object> CreateCompensationMetadata(
+        GovernedCompensationPlan compensation)
+    {
+        var metadata = new Dictionary<string, object>
+        {
+            ["OriginalRequestId"] = compensation.OriginalRequestId,
+            ["Kind"] = compensation.Kind.ToString(),
+            ["Trigger"] = compensation.Trigger.ToString()
+        };
+
+        if (!string.IsNullOrWhiteSpace(compensation.BatchId))
+            metadata["BatchId"] = compensation.BatchId;
+
+        if (compensation.RelatedRequestIds.Count > 0)
+            metadata["RelatedRequestIds"] = compensation.RelatedRequestIds;
+
+        if (!string.IsNullOrWhiteSpace(compensation.Reason))
+            metadata["Reason"] = compensation.Reason;
 
         return metadata;
     }

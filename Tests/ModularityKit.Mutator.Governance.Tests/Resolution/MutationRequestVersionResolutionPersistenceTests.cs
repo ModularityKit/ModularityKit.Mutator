@@ -2,12 +2,11 @@ using ModularityKit.Mutator.Abstractions.Context;
 using ModularityKit.Mutator.Governance.Abstractions.Exceptions.Storage;
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Decisions;
-using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Resolution.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Resolution.Strategies;
 using ModularityKit.Mutator.Governance.Runtime.Resolution.Execution;
 using ModularityKit.Mutator.Governance.Runtime.Storage;
-using ModularityKit.Mutator.Governance.Tests.TestSupport;
+using ModularityKit.Mutator.Governance.Tests.TestSupport.Requests;
 using Xunit;
 
 namespace ModularityKit.Mutator.Governance.Tests.Resolution;
@@ -87,7 +86,7 @@ public sealed class MutationRequestVersionResolutionPersistenceTests
             loaded.Decisions[^1].Type);
         Assert.Equal(MutationRequestStatus.Pending, loaded.Status);
         Assert.Equal(PendingMutationReason.Revalidation, loaded.PendingReason);
-        Assert.Equal("v15", loaded.ExpectedStateVersion);
+        Assert.Equal("v15", loaded.Versioning.ExpectedStateVersion);
         Assert.Equal(1, loaded.Revision);
         Assert.Equal(MutationRequestVersionResolutionOutcome.RevalidateOnLatestState, resolution.Outcome);
         Assert.Equal(loaded, resolution.Request);

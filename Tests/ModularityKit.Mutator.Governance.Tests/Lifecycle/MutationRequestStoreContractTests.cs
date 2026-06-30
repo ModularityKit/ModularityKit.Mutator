@@ -2,9 +2,8 @@ using ModularityKit.Mutator.Abstractions.Context;
 using ModularityKit.Mutator.Governance.Abstractions.Exceptions.Storage;
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Decisions;
-using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 using ModularityKit.Mutator.Governance.Runtime.Storage;
-using ModularityKit.Mutator.Governance.Tests.TestSupport;
+using ModularityKit.Mutator.Governance.Tests.TestSupport.Requests;
 using Xunit;
 
 namespace ModularityKit.Mutator.Governance.Tests.Lifecycle;
@@ -34,8 +33,11 @@ public sealed class MutationRequestStoreContractTests
 
         var firstUpdate = created with
         {
-            Status = MutationRequestStatus.Approved,
-            PendingReason = null,
+            Lifecycle = created.Lifecycle with
+            {
+                Status = MutationRequestStatus.Approved,
+                PendingReason = null
+            },
             Decisions =
             [
                 .. created.Decisions,
@@ -50,8 +52,11 @@ public sealed class MutationRequestStoreContractTests
 
         var staleUpdate = created with
         {
-            Status = MutationRequestStatus.Canceled,
-            PendingReason = null,
+            Lifecycle = created.Lifecycle with
+            {
+                Status = MutationRequestStatus.Canceled,
+                PendingReason = null
+            },
             Decisions =
             [
                 .. created.Decisions,

@@ -1,7 +1,7 @@
 namespace ModularityKit.Mutator.Governance.Abstractions.Requests.Decisions;
 
 /// <summary>
-/// Represents high-level lifecycle decisions taken against a mutation request.
+/// Represents lifecycle decisions taken against mutation request.
 /// </summary>
 public enum MutationRequestLifecycleDecisionType
 {
@@ -36,5 +36,10 @@ public enum MutationRequestLifecycleDecisionType
     /// <summary>
     /// The request executed successfully.
     /// </summary>
-    Executed = 7
+    Executed = 7,
+
+    /// <summary>
+    /// A successful compensation execution was recorded against this request.
+    /// </summary>
+    Compensated = 8
 }
