@@ -2,12 +2,11 @@ using ModularityKit.Mutator.Abstractions.Context;
 using ModularityKit.Mutator.Governance.Abstractions.Exceptions.Storage;
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Decisions;
-using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Resolution.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Resolution.Strategies;
 using ModularityKit.Mutator.Governance.Runtime.Resolution.Execution;
 using ModularityKit.Mutator.Governance.Runtime.Storage;
-using ModularityKit.Mutator.Governance.Tests.TestSupport;
+using ModularityKit.Mutator.Governance.Tests.TestSupport.Requests;
 using Xunit;
 
 namespace ModularityKit.Mutator.Governance.Tests.Resolution;

@@ -2,17 +2,26 @@ using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Storage;
 
-namespace ModularityKit.Mutator.Governance.Tests.TestSupport;
+namespace ModularityKit.Mutator.Governance.Tests.TestSupport.Lifecycle.Storage;
 
+/// <summary>
+/// Stores a stale request snapshot to exercise optimistic concurrency scenarios.
+/// </summary>
 internal sealed class StaleSnapshotMutationRequestStore(MutationRequest seedRequest) : IMutationRequestStore
 {
-    private readonly object _gate = new();
+    private readonly Lock _gate = new();
     private readonly MutationRequest _seedRequest = seedRequest;
     private readonly List<MutationRequest> _getSnapshots = [];
     private MutationRequest _current = seedRequest;
 
+    /// <summary>
+    /// Gets the number of store attempts observed by the test double.
+    /// </summary>
     public int StoreCount { get; private set; }
 
+    /// <summary>
+    /// Gets the current in-memory request snapshot.
+    /// </summary>
     public MutationRequest Current
     {
         get
@@ -24,6 +33,9 @@ internal sealed class StaleSnapshotMutationRequestStore(MutationRequest seedRequ
         }
     }
 
+    /// <summary>
+    /// Gets the request snapshots returned by <see cref="Get"/>.
+    /// </summary>
     public IReadOnlyList<MutationRequest> GetSnapshots => _getSnapshots;
 
     public Task<MutationRequest> Create(
