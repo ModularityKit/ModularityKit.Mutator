@@ -102,6 +102,47 @@ Core runtime concurrency is controlled by `MutationEngineOptions.MaxConcurrentMu
 - `PolicyDecision`
 - `PolicyRequirement`
 
+### Async policies and external checks
+
+`IMutationPolicy<TState>` supports both synchronous and asynchronous evaluation.
+
+- implement `Evaluate(...)` for lightweight in-process rules
+- implement `EvaluateAsync(..., CancellationToken)` for external identity, ticketing, quota, or compliance checks
+- the runtime evaluates policies in descending `Priority` order
+- when `MutationEngineOptions.PolicyEvaluationTimeout` is set, the timeout is applied per policy evaluation
+- caller cancellation still flows through unchanged
+- policy failures are surfaced as `PolicyEvaluationException`
+- policy timeouts are surfaced as `PolicyEvaluationTimeoutException`
+
+```csharp
+public sealed class RequireApprovedTicketPolicy : IMutationPolicy<QuotaState>
+{
+    private readonly ITicketGateway _tickets;
+
+    public RequireApprovedTicketPolicy(ITicketGateway tickets)
+    {
+        _tickets = tickets;
+    }
+
+    public string Name => "RequireApprovedTicket";
+    public int Priority => 200;
+    public string? Description => "Checks ticket approval status before quota changes execute.";
+
+    public async Task<PolicyDecision> EvaluateAsync(
+        IMutation<QuotaState> mutation,
+        QuotaState state,
+        CancellationToken cancellationToken = default)
+    {
+        var ticketId = mutation.Context.CorrelationId;
+        var approved = await _tickets.IsApprovedAsync(ticketId!, cancellationToken);
+
+        return approved
+            ? PolicyDecision.Allow(Name, "External ticket is approved.")
+            : PolicyDecision.Deny("External ticket is not approved.", Name);
+    }
+}
+```
+
 ### Results and changes
 
 - `MutationResult<TState>`

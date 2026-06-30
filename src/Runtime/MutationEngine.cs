@@ -1,8 +1,6 @@
 using System.Diagnostics;
 using ModularityKit.Mutator.Abstractions;
 using ModularityKit.Mutator.Abstractions.Audit;
-using ModularityKit.Mutator.Abstractions.Changes;
-using ModularityKit.Mutator.Abstractions.Context;
 using ModularityKit.Mutator.Abstractions.Engine;
 using ModularityKit.Mutator.Abstractions.Exceptions;
 using ModularityKit.Mutator.Abstractions.History;
@@ -10,11 +8,15 @@ using ModularityKit.Mutator.Abstractions.Interception;
 using ModularityKit.Mutator.Abstractions.Metrics;
 using ModularityKit.Mutator.Abstractions.Policies;
 using ModularityKit.Mutator.Abstractions.Results;
-using ModularityKit.Mutator.Runtime.Internal;
-using ModularityExecutionContext = ModularityKit.Mutator.Abstractions.Context.ExecutionContext;
+using ModularityKit.Mutator.Runtime.Internal.Execution;
+using ModularityKit.Mutator.Runtime.Internal.Evaluation;
+using ModularityKit.Mutator.Runtime.Diagnostics;
 
 namespace ModularityKit.Mutator.Runtime;
 
+/// <summary>
+/// Coordinates mutation execution by handling admission, failure wrapping, and public runtime APIs.
+/// </summary>
 internal sealed class MutationEngine(
     IMutationExecutor executor,
     IPolicyRegistry policyRegistry,
@@ -25,15 +27,32 @@ internal sealed class MutationEngine(
     MutationEngineOptions options)
     : IMutationEngine
 {
-    private readonly IMutationExecutor _executor = executor ?? throw new ArgumentNullException(nameof(executor));
     private readonly IPolicyRegistry _policyRegistry = policyRegistry ?? throw new ArgumentNullException(nameof(policyRegistry));
     private readonly IInterceptorPipeline _interceptorPipeline = interceptorPipeline ?? throw new ArgumentNullException(nameof(interceptorPipeline));
-    private readonly IMutationAuditor _auditor = auditor ?? throw new ArgumentNullException(nameof(auditor));
     private readonly IMutationHistoryStore _historyStore = historyStore ?? throw new ArgumentNullException(nameof(historyStore));
     private readonly IMetricsCollector _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
     private readonly MutationEngineOptions _options = options ?? throw new ArgumentNullException(nameof(options));
     private readonly MutationExecutionConcurrencyGate _concurrencyGate = CreateConcurrencyGate(options);
+    private readonly MutationExecutionFailureHandler _failureHandler = new(interceptorPipeline, auditor);
+    private readonly MutationExecutionPipeline _executionPipeline =
+        new(
+            new MutationPolicyEvaluator(policyRegistry, options),
+            interceptorPipeline,
+            new MutationExecutionModeRunner(executor, options),
+            new MutationExecutionOutcomeProcessor(interceptorPipeline, auditor, historyStore, metricsCollector),
+            options);
 
+    /// <summary>
+    /// Executes a single mutation using the full governance pipeline.
+    /// </summary>
+    /// <typeparam name="TState">The type of the state being mutated.</typeparam>
+    /// <param name="mutation">The mutation to execute.</param>
+    /// <param name="state">The current state.</param>
+    /// <param name="cancellationToken">Token used to cancel execution.</param>
+    /// <returns>
+    /// A <see cref="MutationResult{TState}" /> containing the execution outcome,
+    /// produced changes, and resulting state.
+    /// </returns>
     public async Task<MutationResult<TState>> ExecuteAsync<TState>(
         IMutation<TState> mutation,
         TState state,
@@ -50,40 +69,43 @@ internal sealed class MutationEngine(
         if (_options.EnableDetailedMetrics)
             metricsScope = _metricsCollector.BeginScope(executionId);
 
+        var executionContext = new MutationExecutionContext<TState>
+        {
+            Mutation = mutation,
+            State = state,
+            ExecutionId = executionId,
+            Stopwatch = stopwatch,
+            MetricsScope = metricsScope,
+            CancellationToken = cancellationToken
+        };
+
         try
         {
-            return await ExecutePipelineAsync(
-                mutation,
-                state,
-                executionId,
-                stopwatch,
-                metricsScope,
-                cancellationToken);
+            return await ExecutePipelineAsync(executionContext).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
+            throw;
+        }
+        catch (MutationException ex)
+        {
+            stopwatch.Stop();
+
+            await _failureHandler.HandleKnownExceptionAsync(
+                executionContext,
+                ex,
+                stopwatch.Elapsed).ConfigureAwait(false);
+
             throw;
         }
         catch (Exception ex)
         {
             stopwatch.Stop();
 
-            await _interceptorPipeline.OnMutationFailedAsync(
-                mutation.Intent,
-                mutation.Context,
-                state!,
+            throw await _failureHandler.HandleUnexpectedExceptionAsync(
+                executionContext,
                 ex,
-                executionId,
-                cancellationToken);
-
-            await AuditExceptionAsync(mutation, state, ex, executionId, stopwatch.Elapsed);
-
-            throw new MutationException(
-                $"Mutation execution failed: {ex.Message}",
-                ex)
-            {
-                ExecutionId = executionId
-            };
+                stopwatch.Elapsed).ConfigureAwait(false);
         }
         finally
         {
@@ -91,165 +113,29 @@ internal sealed class MutationEngine(
         }
     }
 
-    private async Task<MutationResult<TState>> ExecutePipelineAsync<TState>(
-        IMutation<TState> mutation,
-        TState state,
-        string executionId,
-        Stopwatch stopwatch,
-        IMetricsScope? metricsScope,
-        CancellationToken cancellationToken)
-    {
-        await _interceptorPipeline.OnBeforeMutationAsync(
-            mutation.Intent,
-            mutation.Context,
-            state!,
-            executionId,
-            cancellationToken);
+    /// <summary>
+    /// Delegates the core execution flow to the internal mutation pipeline.
+    /// </summary>
+    /// <typeparam name="TState">The state type handled by the mutation.</typeparam>
+    /// <param name="executionContext">The shared execution context carrying the mutation, state, and runtime metadata.</param>
+    /// <returns>The <see cref="MutationResult{TState}" /> produced by the pipeline.</returns>
+    private Task<MutationResult<TState>> ExecutePipelineAsync<TState>(MutationExecutionContext<TState> executionContext)
+        => _executionPipeline.ExecuteAsync(executionContext);
 
-        var policyEvaluationStart = stopwatch.Elapsed;
-        var policyDecision = await EvaluatePoliciesAsync(mutation, state, cancellationToken);
-        metricsScope?.RecordPolicyEvaluationTime(stopwatch.Elapsed - policyEvaluationStart);
-
-        if (!policyDecision.IsAllowed)
-        {
-            var policyBlockedResult = MutationResult<TState>.PolicyBlocked(policyDecision);
-
-            await _interceptorPipeline.OnPolicyBlockedAsync(
-                mutation.Intent,
-                mutation.Context,
-                state!,
-                policyDecision,
-                executionId,
-                cancellationToken);
-
-            await AuditFailureAsync(mutation, state, policyBlockedResult, executionId, stopwatch.Elapsed);
-
-            return await FinalizeResultAsync(
-                policyBlockedResult,
-                state,
-                executionId,
-                stopwatch,
-                metricsScope,
-                cancellationToken);
-        }
-
-        if (mutation.Context.Mode != MutationMode.Commit || _options.AlwaysValidate)
-        {
-            var validationStart = stopwatch.Elapsed;
-            var validation = mutation.Validate(state);
-            metricsScope?.RecordValidationTime(stopwatch.Elapsed - validationStart);
-
-            if (!validation.IsValid)
-            {
-                var validationFailureResult = MutationResult<TState>.Failure(validation);
-                await AuditFailureAsync(mutation, state, validationFailureResult, executionId, stopwatch.Elapsed);
-
-                return await FinalizeResultAsync(
-                    validationFailureResult,
-                    state,
-                    executionId,
-                    stopwatch,
-                    metricsScope,
-                    cancellationToken);
-            }
-        }
-
-        var mutationResult = await ExecuteByModeAsync(mutation, state, cancellationToken, executionId);
-        var totalElapsed = stopwatch.Elapsed;
-
-        mutationResult = PolicyModificationApplier.Apply(mutationResult, policyDecision.Modifications);
-
-        await _interceptorPipeline.OnAfterMutationAsync(
-            mutation.Intent,
-            mutation.Context,
-            state,
-            mutationResult.NewState,
-            mutationResult.Changes,
-            executionId,
-            cancellationToken);
-
-        await AuditSuccessAsync(
-            mutation,
-            state,
-            mutationResult,
-            policyDecision,
-            executionId,
-            totalElapsed);
-
-        if (mutationResult.IsSuccess && mutation.Context.Mode == MutationMode.Commit)
-        {
-            await StoreInHistoryAsync(
-                mutation,
-                mutationResult,
-                executionId,
-                totalElapsed,
-                cancellationToken);
-        }
-
-        return await FinalizeResultAsync(
-            mutationResult,
-            state,
-            executionId,
-            stopwatch,
-            metricsScope,
-            cancellationToken);
-    }
-
-    private async Task<MutationResult<TState>> FinalizeResultAsync<TState>(
-        MutationResult<TState> result,
-        TState state,
-        string executionId,
-        Stopwatch stopwatch,
-        IMetricsScope? metricsScope,
-        CancellationToken cancellationToken)
-    {
-        var totalElapsed = stopwatch.Elapsed;
-        metricsScope?.RecordStateSize(StateSizeEstimator.Estimate(state));
-
-        if (metricsScope != null)
-            await _metricsCollector.RecordAsync(executionId, metricsScope.Build(), cancellationToken);
-
-        return result with
-        {
-            Metrics = result.Metrics with { ExecutionTime = totalElapsed }
-        };
-    }
-
-    private Task<MutationResult<TState>> ExecuteByModeAsync<TState>(
-        IMutation<TState> mutation,
-        TState state,
-        CancellationToken cancellationToken,
-        string executionId)
-    {
-        var executionContext = new ModularityExecutionContext
-        {
-            ExecutionId = executionId,
-            Timeout = _options.ExecutionTimeout,
-            CancellationToken = cancellationToken
-        };
-
-        return mutation.Context.Mode switch
-        {
-            MutationMode.Simulate => Task.FromResult(mutation.Simulate(state)),
-            MutationMode.Validate => Task.FromResult(BuildValidationOnlyResult(mutation, state)),
-            _ => _executor.ExecuteAsync(
-                mutation,
-                state,
-                executionContext,
-                cancellationToken)
-        };
-    }
-
-    private static MutationResult<TState> BuildValidationOnlyResult<TState>(
-        IMutation<TState> mutation,
-        TState state)
-    {
-        var validation = mutation.Validate(state);
-        return validation.IsValid
-            ? MutationResult<TState>.Success(state, ChangeSet.Empty)
-            : MutationResult<TState>.Failure(validation);
-    }
-
+    /// <summary>
+    /// Executes a batch of mutations as a single logical transaction.
+    /// </summary>
+    /// <typeparam name="TState">The type of the state being mutated.</typeparam>
+    /// <param name="mutations">The sequence of mutations to execute.</param>
+    /// <param name="state">The initial state.</param>
+    /// <param name="cancellationToken">Token used to cancel execution.</param>
+    /// <returns>
+    /// A <see cref="BatchMutationResult{TState}" /> describing the outcome of the batch execution.
+    /// </returns>
+    /// <remarks>
+    /// Batch execution is ordered and sequential. Each step passes through the same core concurrency
+    /// controls as a single execution. Fail-fast vs best-effort behavior is controlled by <see cref="MutationEngineOptions" />.
+    /// </remarks>
     public async Task<BatchMutationResult<TState>> ExecuteBatchAsync<TState>(
         IEnumerable<IMutation<TState>> mutations,
         TState state,
@@ -263,20 +149,65 @@ internal sealed class MutationEngine(
             cancellationToken);
     }
 
+    /// <summary>
+    /// Executes a batch of mutations as a single logical transaction.
+    /// </summary>
+    /// <typeparam name="TState">The type of the state being mutated.</typeparam>
+    /// <param name="state">The initial state.</param>
+    /// <param name="mutations">The mutations to execute in order.</param>
+    /// <returns>
+    /// A <see cref="BatchMutationResult{TState}" /> describing the outcome of the batch execution.
+    /// </returns>
+    /// <remarks>
+    /// This overload is optimized for call sites that want a compact mutation list without
+    /// manually allocating an array.
+    /// </remarks>
     public Task<BatchMutationResult<TState>> ExecuteBatchAsync<TState>(
         TState state,
         params IMutation<TState>[] mutations)
         => ExecuteBatchAsync(mutations, state);
 
+    /// <summary>
+    /// Registers a global mutation policy.
+    /// </summary>
+    /// <typeparam name="TState">The state type the policy applies to.</typeparam>
+    /// <param name="policy">The policy to register.</param>
+    /// <remarks>
+    /// Global policies participate in evaluation for every compatible mutation
+    /// and represent the primary governance mechanism.
+    /// </remarks>
     public void RegisterPolicy<TState>(IMutationPolicy<TState> policy) =>
         _policyRegistry.Register(policy);
 
+    /// <summary>
+    /// Registers a global mutation interceptor.
+    /// </summary>
+    /// <param name="interceptor">The interceptor to register.</param>
+    /// <remarks>
+    /// Interceptors observe and react to mutation lifecycle events but must not
+    /// directly alter mutation semantics.
+    /// </remarks>
     public void RegisterInterceptor(IMutationInterceptor interceptor) =>
         _interceptorPipeline.Register(interceptor);
 
+    /// <summary>
+    /// Retrieves the mutation history for a given state identifier.
+    /// </summary>
+    /// <param name="stateId">The identifier of the state.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>
+    /// A <see cref="MutationHistory" /> containing all recorded mutations for the state.
+    /// </returns>
     public async Task<MutationHistory> GetHistoryAsync(string stateId, CancellationToken cancellationToken = default) =>
         await _historyStore.GetHistoryAsync(stateId, cancellationToken);
 
+    /// <summary>
+    /// Retrieves aggregated mutation execution statistics.
+    /// </summary>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>
+    /// A <see cref="MutationStatistics" /> snapshot representing engine-level metrics.
+    /// </returns>
     public async Task<MutationStatistics> GetStatisticsAsync(
         CancellationToken cancellationToken = default)
     {
@@ -296,95 +227,13 @@ internal sealed class MutationEngine(
         };
     }
 
-    private Task<PolicyDecision> EvaluatePoliciesAsync<TState>(
-        IMutation<TState> mutation,
-        TState state,
-        CancellationToken cancellationToken)
-    {
-        var policies = _policyRegistry.GetPolicies<TState>();
-
-        foreach (var policy in policies.OrderByDescending(p => p.Priority))
-        {
-            var decision = policy.Evaluate(mutation, state);
-
-            if (!decision.IsAllowed || decision.Modifications != null)
-                return Task.FromResult(decision);
-        }
-
-        return Task.FromResult(PolicyDecision.Allow());
-    }
-
-    private async Task AuditSuccessAsync<TState>(
-        IMutation<TState> mutation,
-        TState state,
-        MutationResult<TState> result,
-        PolicyDecision policyDecision,
-        string executionId,
-        TimeSpan duration)
-    {
-        var entry = MutationAuditEntryFactory.CreateSuccess(
-            mutation,
-            result,
-            policyDecision,
-            executionId,
-            duration);
-
-        await _auditor.AuditAsync(entry);
-    }
-
-    private async Task AuditFailureAsync<TState>(
-        IMutation<TState> mutation,
-        TState state,
-        MutationResult<TState> result,
-        string executionId,
-        TimeSpan duration)
-    {
-        var entry = MutationAuditEntryFactory.CreateFailure(
-            mutation,
-            result,
-            executionId,
-            duration);
-
-        await _auditor.AuditAsync(entry);
-    }
-
-    private async Task AuditExceptionAsync<TState>(
-        IMutation<TState> mutation,
-        TState state,
-        Exception exception,
-        string executionId,
-        TimeSpan duration)
-    {
-        var entry = MutationAuditEntryFactory.CreateException(
-            mutation,
-            exception,
-            executionId,
-            duration);
-
-        await _auditor.AuditAsync(entry);
-    }
-
-    private async Task StoreInHistoryAsync<TState>(
-        IMutation<TState> mutation,
-        MutationResult<TState> result,
-        string executionId,
-        TimeSpan duration,
-        CancellationToken cancellationToken)
-    {
-        var stateId = MutationAuditEntryFactory.ResolveStateId(mutation.Context);
-        if (string.IsNullOrEmpty(stateId))
-            return;
-
-        var entry = MutationAuditEntryFactory.CreateHistoryEntry(
-            mutation,
-            result,
-            executionId,
-            stateId,
-            duration);
-
-        await _historyStore.StoreAsync(entry, cancellationToken);
-    }
-
+    /// <summary>
+    /// Creates the runtime concurrency gate from configured engine options.
+    /// </summary>
+    /// <param name="options">The engine options containing the <see cref="MutationEngineOptions.MaxConcurrentMutations" /> value.</param>
+    /// <returns>A configured <see cref="MutationExecutionConcurrencyGate" />.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options" /> is <see langword="null" />.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <see cref="MutationEngineOptions.MaxConcurrentMutations" /> is less than 1.</exception>
     private static MutationExecutionConcurrencyGate CreateConcurrencyGate(MutationEngineOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
