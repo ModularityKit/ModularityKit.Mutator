@@ -69,9 +69,9 @@ internal static class GovernanceRedisQueriesScenario
         }
         catch (RedisConnectionException exception)
         {
-            Console.Error.WriteLine($"Could not connect to Redis at '{redisConnectionString}'.");
-            Console.Error.WriteLine(exception.Message);
-            Console.Error.WriteLine("Start Redis locally or set MODULARITYKIT_REDIS to a reachable endpoint.");
+            await Console.Error.WriteLineAsync($"Could not connect to Redis at '{redisConnectionString}'.");
+            await Console.Error.WriteLineAsync(exception.Message);
+            await Console.Error.WriteLineAsync("Start Redis locally or set MODULARITYKIT_REDIS to a reachable endpoint.");
         }
     }
 
@@ -137,8 +137,13 @@ internal static class GovernanceRedisQueriesScenario
         with
         {
             RequestId = requestId,
-            CreatedAt = createdAt,
-            UpdatedAt = createdAt
+            Lifecycle = new MutationRequestLifecycleDetails
+            {
+                Status = MutationRequestStatus.Pending,
+                PendingReason = PendingMutationReason.Approval,
+                CreatedAt = createdAt,
+                UpdatedAt = createdAt
+            }
         };
 
     private static MutationRequest CreateExecutedRequest(
@@ -160,10 +165,16 @@ internal static class GovernanceRedisQueriesScenario
         with
         {
             RequestId = requestId,
-            Status = MutationRequestStatus.Executed,
-            CreatedAt = executedAt.AddMinutes(-15),
-            UpdatedAt = executedAt,
-            ExecutedAt = executedAt,
+            Lifecycle = new MutationRequestLifecycleDetails
+            {
+                Status = MutationRequestStatus.Executed,
+                CreatedAt = executedAt.AddMinutes(-15),
+                UpdatedAt = executedAt
+            },
+            Versioning = new MutationRequestVersioningDetails
+            {
+                ExecutedAt = executedAt
+            },
             SideEffects =
             [
                 SideEffect.Critical(
@@ -200,7 +211,7 @@ internal static class GovernanceRedisQueriesScenario
             ]
         };
 
-    [SideEffectDataContract("examples.redis.execution-side-effect", 1)]
+    [SideEffectDataContract("examples.redis.execution-side-effect")]
     private sealed record RedisExecutionSideEffectData
     {
         public required string Ticket { get; init; }
