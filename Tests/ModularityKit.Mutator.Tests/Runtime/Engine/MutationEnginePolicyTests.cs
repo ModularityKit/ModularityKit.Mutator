@@ -1,26 +1,22 @@
-using Microsoft.Extensions.DependencyInjection;
-using ModularityKit.Mutator.Abstractions;
-using ModularityKit.Mutator.Abstractions.Changes;
-using ModularityKit.Mutator.Abstractions.Context;
 using ModularityKit.Mutator.Abstractions.Engine;
 using ModularityKit.Mutator.Abstractions.Exceptions;
-using ModularityKit.Mutator.Abstractions.Intent;
-using ModularityKit.Mutator.Abstractions.Policies;
-using ModularityKit.Mutator.Abstractions.Results;
-using ModularityKit.Mutator.Runtime;
+using ModularityKit.Mutator.Tests.TestSupport.Engine.Host;
+using ModularityKit.Mutator.Tests.TestSupport.Engine.Policy;
+using ModularityKit.Mutator.Tests.TestSupport.Engine.Samples;
+using ModularityKit.Mutator.Tests.TestSupport.Mutations;
 using Xunit;
 
-namespace ModularityKit.Mutator.Tests.Runtime;
+namespace ModularityKit.Mutator.Tests.Runtime.Engine;
 
 public sealed class MutationEnginePolicyTests
 {
     [Fact]
     public async Task ExecuteAsync_supports_async_policy_evaluation()
     {
-        var engine = CreateEngine();
+        var engine = MutationEngineTestHost.CreateEngine();
         engine.RegisterPolicy(new AsyncBlockingPolicy());
 
-        var result = await engine.ExecuteAsync(new SampleMutation(), new SampleState("initial"));
+        var result = await engine.ExecuteAsync(new PolicySampleMutation(), new PolicySampleState("initial"));
 
         Assert.False(result.IsSuccess);
         Assert.Single(result.PolicyDecisions);
@@ -31,11 +27,11 @@ public sealed class MutationEnginePolicyTests
     [Fact]
     public async Task ExecuteAsync_throws_policy_evaluation_timeout_exception_for_slow_policy()
     {
-        var engine = CreateEngine(options => options.PolicyEvaluationTimeout = TimeSpan.FromMilliseconds(50));
+        var engine = MutationEngineTestHost.CreateEngine(options => options.PolicyEvaluationTimeout = TimeSpan.FromMilliseconds(50));
         engine.RegisterPolicy(new SlowAsyncPolicy());
 
         var exception = await Assert.ThrowsAsync<PolicyEvaluationTimeoutException>(() =>
-            engine.ExecuteAsync(new SampleMutation(), new SampleState("initial")));
+            engine.ExecuteAsync(new PolicySampleMutation(), new PolicySampleState("initial")));
 
         Assert.Equal("SlowExternalCheck", exception.PolicyName);
     }
@@ -43,11 +39,11 @@ public sealed class MutationEnginePolicyTests
     [Fact]
     public async Task ExecuteAsync_wraps_policy_evaluation_failures()
     {
-        var engine = CreateEngine();
+        var engine = MutationEngineTestHost.CreateEngine();
         engine.RegisterPolicy(new FailingAsyncPolicy());
 
         var exception = await Assert.ThrowsAsync<PolicyEvaluationException>(() =>
-            engine.ExecuteAsync(new SampleMutation(), new SampleState("initial")));
+            engine.ExecuteAsync(new PolicySampleMutation(), new PolicySampleState("initial")));
 
         Assert.Equal("FailingExternalCheck", exception.PolicyName);
         Assert.IsType<InvalidOperationException>(exception.InnerException);
@@ -56,21 +52,21 @@ public sealed class MutationEnginePolicyTests
     [Fact]
     public async Task ExecuteAsync_preserves_caller_cancellation_during_policy_evaluation()
     {
-        var engine = CreateEngine();
+        var engine = MutationEngineTestHost.CreateEngine();
         engine.RegisterPolicy(new CancelAwareAsyncPolicy());
         using var cancellationSource = new CancellationTokenSource(millisecondsDelay: 50);
 
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
-            engine.ExecuteAsync(new SampleMutation(), new SampleState("initial"), cancellationSource.Token));
+            engine.ExecuteAsync(new PolicySampleMutation(), new PolicySampleState("initial"), cancellationSource.Token));
     }
 
     [Fact]
     public async Task ExecuteAsync_uses_sync_policy_path_without_async_override()
     {
-        var engine = CreateEngine();
+        var engine = MutationEngineTestHost.CreateEngine();
         engine.RegisterPolicy(new SyncAllowPolicy());
 
-        var result = await engine.ExecuteAsync(new SampleMutation(), new SampleState("initial"));
+        var result = await engine.ExecuteAsync(new PolicySampleMutation(), new PolicySampleState("initial"));
 
         Assert.True(result.IsSuccess);
         Assert.Equal("updated", result.NewState!.Value);
@@ -79,143 +75,15 @@ public sealed class MutationEnginePolicyTests
     [Fact]
     public async Task ExecuteAsync_allows_sync_and_async_policies_to_coexist_without_ambiguous_ordering()
     {
-        var engine = CreateEngine();
+        var engine = MutationEngineTestHost.CreateEngine();
         var observed = new List<string>();
 
         engine.RegisterPolicy(new ObservedSyncAllowPolicy(observed));
         engine.RegisterPolicy(new ObservedAsyncAllowPolicy(observed));
 
-        var result = await engine.ExecuteAsync(new SampleMutation(), new SampleState("initial"));
+        var result = await engine.ExecuteAsync(new PolicySampleMutation(), new PolicySampleState("initial"));
 
         Assert.True(result.IsSuccess);
         Assert.Equal(["async", "sync"], observed);
-    }
-
-    private static IMutationEngine CreateEngine(Action<MutationEngineOptions>? configure = null)
-    {
-        var services = new ServiceCollection();
-        services.AddMutators(configure: configure);
-
-        var provider = services.BuildServiceProvider();
-        return provider.GetRequiredService<IMutationEngine>();
-    }
-
-    private sealed record SampleState(string Value);
-
-    private sealed class SampleMutation : MutationBase<SampleState>
-    {
-        public SampleMutation()
-            : base(
-                CreateIntent(
-                    operationName: "UpdateSample",
-                    category: "Test",
-                    description: "Exercise policy evaluation"),
-                MutationContext.System("Policy test") with { StateId = "sample-1" })
-        {
-        }
-
-        public override MutationResult<SampleState> Apply(SampleState state)
-            => Success(state with { Value = "updated" }, StateChange.Modified("Value", state.Value, "updated"));
-    }
-
-    private sealed class SyncAllowPolicy : IMutationPolicy<SampleState>
-    {
-        public string Name => "SyncAllow";
-        public int Priority => 10;
-        public string? Description => "Simple synchronous allow policy.";
-
-        public PolicyDecision Evaluate(IMutation<SampleState> mutation, SampleState state)
-            => PolicyDecision.Allow(Name, "Synchronous policy allowed the mutation.");
-    }
-
-    private sealed class ObservedSyncAllowPolicy(List<string> observed) : IMutationPolicy<SampleState>
-    {
-        public string Name => "ObservedSyncAllow";
-        public int Priority => 10;
-        public string? Description => "Records synchronous policy evaluation order.";
-
-        public PolicyDecision Evaluate(IMutation<SampleState> mutation, SampleState state)
-        {
-            observed.Add("sync");
-            return PolicyDecision.Allow(Name, "Synchronous policy allowed the mutation.");
-        }
-    }
-
-    private sealed class ObservedAsyncAllowPolicy(List<string> observed) : IMutationPolicy<SampleState>
-    {
-        public string Name => "ObservedAsyncAllow";
-        public int Priority => 100;
-        public string? Description => "Records asynchronous policy evaluation order.";
-
-        public async Task<PolicyDecision> EvaluateAsync(
-            IMutation<SampleState> mutation,
-            SampleState state,
-            CancellationToken cancellationToken = default)
-        {
-            await Task.Delay(10, cancellationToken);
-            observed.Add("async");
-            return PolicyDecision.Allow(Name, "Asynchronous policy allowed the mutation.");
-        }
-    }
-
-    private sealed class AsyncBlockingPolicy : IMutationPolicy<SampleState>
-    {
-        public string Name => "AsyncBlocking";
-        public int Priority => 100;
-        public string? Description => "Simulates an external compliance check.";
-
-        public async Task<PolicyDecision> EvaluateAsync(
-            IMutation<SampleState> mutation,
-            SampleState state,
-            CancellationToken cancellationToken = default)
-        {
-            await Task.Delay(10, cancellationToken);
-            return PolicyDecision.Deny("External compliance check rejected the mutation.", Name);
-        }
-    }
-
-    private sealed class SlowAsyncPolicy : IMutationPolicy<SampleState>
-    {
-        public string Name => "SlowExternalCheck";
-        public int Priority => 100;
-        public string? Description => "Simulates a slow external dependency.";
-
-        public async Task<PolicyDecision> EvaluateAsync(
-            IMutation<SampleState> mutation,
-            SampleState state,
-            CancellationToken cancellationToken = default)
-        {
-            await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
-            return PolicyDecision.Allow(Name, "Finished too late.");
-        }
-    }
-
-    private sealed class FailingAsyncPolicy : IMutationPolicy<SampleState>
-    {
-        public string Name => "FailingExternalCheck";
-        public int Priority => 100;
-        public string? Description => "Simulates an external dependency failure.";
-
-        public Task<PolicyDecision> EvaluateAsync(
-            IMutation<SampleState> mutation,
-            SampleState state,
-            CancellationToken cancellationToken = default)
-            => throw new InvalidOperationException("Remote ticketing system unavailable.");
-    }
-
-    private sealed class CancelAwareAsyncPolicy : IMutationPolicy<SampleState>
-    {
-        public string Name => "CancelAware";
-        public int Priority => 100;
-        public string? Description => "Waits for cancellation.";
-
-        public async Task<PolicyDecision> EvaluateAsync(
-            IMutation<SampleState> mutation,
-            SampleState state,
-            CancellationToken cancellationToken = default)
-        {
-            await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
-            return PolicyDecision.Allow(Name, "Completed.");
-        }
     }
 }
