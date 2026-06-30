@@ -4,7 +4,7 @@ using Xunit;
 
 namespace ModularityKit.Mutator.Tests.Effects;
 
-public sealed class SideEffectTypedDataTests
+public sealed partial class SideEffectTypedDataTests
 {
     [Fact]
     public void Create_with_typed_payload_populates_contract_metadata()
@@ -72,19 +72,9 @@ public sealed class SideEffectTypedDataTests
         Assert.Equal("workflow.started.unregistered", roundtrip!.DataContractType);
         Assert.Equal(1, roundtrip.DataContractVersion);
 
-        var payload = Assert.IsAssignableFrom<IReadOnlyDictionary<string, object?>>(roundtrip.Data);
+        var payload = Assert.IsType<IReadOnlyDictionary<string, object?>>(roundtrip.Data, exactMatch: false);
         Assert.Equal("alice", payload["Initiator"]);
         Assert.Equal(2L, payload["StepCount"]);
         Assert.Equal("wf-42", payload["WorkflowId"]);
-    }
-
-    [SideEffectDataContract("workflow.started", 1)]
-    private sealed record WorkflowStartedSideEffectData
-    {
-        public required string Initiator { get; init; }
-
-        public required int StepCount { get; init; }
-
-        public required string WorkflowId { get; init; }
     }
 }
