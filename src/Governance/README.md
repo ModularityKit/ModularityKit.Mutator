@@ -90,6 +90,8 @@ decision wrapper when the category is already known.
 - `IGovernanceExecutionManager`
 - `GovernanceExecutionManager`
 - `GovernedExecutionResult<TState>`
+- `GovernedCompensationPlan`
+- `GovernedExecutionKind`
 
 `IGovernanceExecutionManager.ExecuteApproved(...)` also has an overload for `IVersionedState`
 implementations, which removes the need to pass the current and resulting version selectors when
@@ -137,11 +139,13 @@ Included today:
 - optimistic concurrency in request storage
 - version-aware resolution before execution
 - governed execution orchestration
+- compensation-aware governed execution links and history
 - in-memory support for local runtime scenarios
 
 Not included yet:
 
 - production persistence providers such as EF Core or PostgreSQL
 - reporting/query stores for operational governance views
-- compensation or retry orchestration
+- distributed saga-style compensation orchestration
+- retry orchestration
 - external approval system integrations
