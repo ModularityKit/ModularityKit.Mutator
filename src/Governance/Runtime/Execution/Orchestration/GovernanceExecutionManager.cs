@@ -219,7 +219,10 @@ public sealed class GovernanceExecutionManager(
 
         var updatedOriginalRequest = originalRequest with
         {
-            UpdatedAt = linkedAt,
+            Lifecycle = originalRequest.Lifecycle with
+            {
+                UpdatedAt = linkedAt
+            },
             Execution = originalRequest.Execution with
             {
                 RelatedExecutions =

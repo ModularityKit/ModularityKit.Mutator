@@ -31,7 +31,7 @@ var request = MutationRequestFactory.PendingApproval(
     ]);
 
 var persisted = await store.Create(request);
-Console.WriteLine($"{persisted.RequestId} -> {persisted.Status}");
+Console.WriteLine($"{persisted.RequestId} -> {persisted.Lifecycle.Status}");
 ```
 
 ## Primary APIs

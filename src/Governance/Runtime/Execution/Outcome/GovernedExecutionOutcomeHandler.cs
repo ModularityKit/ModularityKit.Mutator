@@ -60,9 +60,12 @@ internal sealed class GovernedExecutionOutcomeHandler(GovernedExecutionRequestPe
 
         var rejectedRequest = request with
         {
-            Status = MutationRequestStatus.Rejected,
-            PendingReason = null,
-            UpdatedAt = decision.Timestamp,
+            Lifecycle = request.Lifecycle with
+            {
+                Status = MutationRequestStatus.Rejected,
+                PendingReason = null,
+                UpdatedAt = decision.Timestamp
+            },
             Decisions = [.. request.Decisions, decision],
             SideEffects = sideEffects ?? []
         };
@@ -95,15 +98,18 @@ internal sealed class GovernedExecutionOutcomeHandler(GovernedExecutionRequestPe
 
         var executedRequest = request with
         {
-            Status = MutationRequestStatus.Executed,
-            PendingReason = null,
+            Lifecycle = request.Lifecycle with
+            {
+                Status = MutationRequestStatus.Executed,
+                PendingReason = null,
+                UpdatedAt = decision.Timestamp
+            },
             Versioning = request.Versioning with
             {
                 ExpectedStateVersion = resultingStateVersion,
                 ResultingStateVersion = resultingStateVersion,
                 ExecutedAt = decision.Timestamp
             },
-            UpdatedAt = decision.Timestamp,
             Decisions = [.. request.Decisions, decision],
             SideEffects = mutationResult.SideEffects.ToList()
         };
