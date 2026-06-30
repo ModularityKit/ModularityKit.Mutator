@@ -67,7 +67,7 @@ The sample is intentionally sequential. It shows how stateful process can be adv
 - creates workflow steps from names
 - initializes a new workflow ID
 - emits change entry for the created step list
-- emits a `WorkflowStarted` side effect through `SideEffect.Create(...)`
+- emits a `WorkflowStarted` side effect through `SideEffect.Create(...)` with a typed contract payload
 
 ### Approve step
 
@@ -85,7 +85,7 @@ The sample is intentionally sequential. It shows how stateful process can be adv
 - applies rejection to every step
 - records the actor who rejected the workflow
 - emits workflow level change
-- emits a critical `WorkflowRejected` side effect through `SideEffect.Critical(...)`
+- emits a critical `WorkflowRejected` side effect through `SideEffect.Critical(...)` with a typed contract payload
 
 ## Policies
 
@@ -135,7 +135,8 @@ It shows:
 
 - a standard side effect created with `SideEffect.Create(...)`
 - a critical side effect created with `SideEffect.Critical(...)`
-- how `Severity`, `RequiresAction`, and `Data` can be read from `MutationResult.SideEffects`
+- how typed payload contracts are registered through `SideEffectDataContractRegistry`
+- how `Severity`, `RequiresAction`, `DataContractType`, and typed `Data` can be read from `MutationResult.SideEffects`
 
 ## What to read first
 

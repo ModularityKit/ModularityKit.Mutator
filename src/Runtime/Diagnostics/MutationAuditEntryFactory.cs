@@ -7,10 +7,23 @@ using ModularityKit.Mutator.Abstractions.History;
 using ModularityKit.Mutator.Abstractions.Policies;
 using ModularityKit.Mutator.Abstractions.Results;
 
-namespace ModularityKit.Mutator.Runtime.Internal;
+namespace ModularityKit.Mutator.Runtime.Diagnostics;
 
+/// <summary>
+/// Factory for creating audit and history entries for mutations.
+/// </summary>
 internal static class MutationAuditEntryFactory
 {
+    /// <summary>
+    /// Creates a successful mutation audit entry.
+    /// </summary>
+    /// <typeparam name="TState">The state type handled by the mutation.</typeparam>
+    /// <param name="mutation">The mutation that was executed.</param>
+    /// <param name="result">The result of the mutation execution.</param>
+    /// <param name="policyDecision">The policy decision applied to the mutation.</param>
+    /// <param name="executionId">The unique identifier of the execution.</param>
+    /// <param name="duration">The execution duration.</param>
+    /// <returns>A configured <see cref="MutationAuditEntry"/> representing success.</returns>
     public static MutationAuditEntry CreateSuccess<TState>(
         IMutation<TState> mutation,
         MutationResult<TState> result,
@@ -30,6 +43,15 @@ internal static class MutationAuditEntryFactory
             userAgent: mutation.Context.UserAgent);
     }
 
+    /// <summary>
+    /// Creates a failed mutation audit entry.
+    /// </summary>
+    /// <typeparam name="TState">The state type handled by the mutation.</typeparam>
+    /// <param name="mutation">The mutation that was executed.</param>
+    /// <param name="result">The result of the mutation execution.</param>
+    /// <param name="executionId">The unique identifier of the execution.</param>
+    /// <param name="duration">The execution duration.</param>
+    /// <returns>A configured <see cref="MutationAuditEntry"/> representing failure.</returns>
     public static MutationAuditEntry CreateFailure<TState>(
         IMutation<TState> mutation,
         MutationResult<TState> result,
@@ -47,6 +69,15 @@ internal static class MutationAuditEntryFactory
             sideEffects: result.SideEffects);
     }
 
+    /// <summary>
+    /// Creates a failed mutation audit entry due to an exception.
+    /// </summary>
+    /// <typeparam name="TState">The state type handled by the mutation.</typeparam>
+    /// <param name="mutation">The mutation that was executed.</param>
+    /// <param name="exception">The exception that occurred.</param>
+    /// <param name="executionId">The unique identifier of the execution.</param>
+    /// <param name="duration">The execution duration.</param>
+    /// <returns>A configured <see cref="MutationAuditEntry"/> representing an exception failure.</returns>
     public static MutationAuditEntry CreateException<TState>(
         IMutation<TState> mutation,
         Exception exception,
@@ -61,6 +92,16 @@ internal static class MutationAuditEntryFactory
             errorMessage: exception.Message);
     }
 
+    /// <summary>
+    /// Creates a mutation history entry for persistence.
+    /// </summary>
+    /// <typeparam name="TState">The state type handled by the mutation.</typeparam>
+    /// <param name="mutation">The mutation that was executed.</param>
+    /// <param name="result">The result of the mutation execution.</param>
+    /// <param name="executionId">The unique identifier of the execution.</param>
+    /// <param name="stateId">The identifier of the target state.</param>
+    /// <param name="duration">The execution duration.</param>
+    /// <returns>A configured <see cref="MutationHistoryEntry"/>.</returns>
     public static MutationHistoryEntry CreateHistoryEntry<TState>(
         IMutation<TState> mutation,
         MutationResult<TState> result,
@@ -81,9 +122,17 @@ internal static class MutationAuditEntryFactory
         };
     }
 
+    /// <summary>
+    /// Resolves the state identifier from the mutation context.
+    /// </summary>
+    /// <param name="context">The mutation context.</param>
+    /// <returns>The resolved state ID or correlation ID.</returns>
     public static string? ResolveStateId(MutationContext context) =>
         context.StateId ?? context.CorrelationId;
 
+    /// <summary>
+    /// Helper method to create a mutation audit entry.
+    /// </summary>
     private static MutationAuditEntry Create<TState>(
         IMutation<TState> mutation,
         string executionId,

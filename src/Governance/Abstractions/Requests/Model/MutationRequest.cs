@@ -1,4 +1,5 @@
 using ModularityKit.Mutator.Abstractions.Context;
+using ModularityKit.Mutator.Abstractions.Effects;
 using ModularityKit.Mutator.Abstractions.Intent;
 using ModularityKit.Mutator.Abstractions.Policies;
 using ModularityKit.Mutator.Governance.Abstractions.Approval.Model;
@@ -66,6 +67,11 @@ public sealed record MutationRequest
     /// Governance decisions recorded against this request over time.
     /// </summary>
     public IReadOnlyList<MutationRequestDecision> Decisions { get; init; } = [];
+
+    /// <summary>
+    /// Side effects captured from governed execution results for this request.
+    /// </summary>
+    public IReadOnlyList<SideEffect> SideEffects { get; init; } = [];
 
     /// <summary>
     /// Optimistic concurrency revision for the governed request.

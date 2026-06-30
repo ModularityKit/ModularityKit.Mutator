@@ -1,8 +1,11 @@
 using System.Collections;
 using System.Text;
 
-namespace ModularityKit.Mutator.Runtime.Internal;
+namespace ModularityKit.Mutator.Runtime.Diagnostics;
 
+/// <summary>
+/// Provides a best-effort estimate of the in-memory size of a state object in bytes.
+/// </summary>
 internal static class StateSizeEstimator
 {
     private static readonly IReadOnlyDictionary<Type, int> PrimitiveTypeSizes = new Dictionary<Type, int>
@@ -23,6 +26,14 @@ internal static class StateSizeEstimator
         [typeof(Guid)] = 16
     };
 
+    /// <summary>
+    /// Estimates the size of the given state in bytes.
+    /// </summary>
+    /// <param name="state">The state object to estimate. Can be <see langword="null" />.</param>
+    /// <returns>
+    /// The estimated byte size: UTF-8 byte count for strings, byte length for primitive arrays,
+    /// element count for collections, or <c>0</c> for unrecognized or null values.
+    /// </returns>
     public static long Estimate(object? state)
     {
         if (state is null)
@@ -37,6 +48,12 @@ internal static class StateSizeEstimator
         return state is ICollection collection ? collection.Count : 0;
     }
 
+    /// <summary>
+    /// Attempts to estimate the byte size of a primitive array.
+    /// </summary>
+    /// <param name="state">The object to inspect.</param>
+    /// <param name="sizeInBytes">When successful, contains the estimated byte size of the array.</param>
+    /// <returns><see langword="true" /> if <paramref name="state" /> is a primitive array with a known element size; otherwise <see langword="false" />.</returns>
     private static bool TryEstimateArraySize(object state, out long sizeInBytes)
     {
         sizeInBytes = 0;

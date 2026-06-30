@@ -1,6 +1,7 @@
 using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Approvals;
 using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Decisions;
 using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests.Evaluation;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 
 namespace ModularityKit.Mutator.Governance.Redis.Storage.Queries.Materialization;
@@ -16,10 +17,9 @@ internal static class RedisMutationRequestOrdering
     /// <param name="requests">Requests to order.</param>
     /// <returns>Materialized request results in ascending creation order.</returns>
     public static IReadOnlyList<MutationRequest> ByCreated(IEnumerable<MutationRequest> requests)
-        => requests
+        => [.. requests
             .OrderBy(request => request.CreatedAt)
-            .ThenBy(request => request.RequestId)
-            .ToList();
+            .ThenBy(request => request.RequestId)];
 
     /// <summary>
     /// Orders requests by the most recent approval activity and applies an optional result limit.
@@ -39,7 +39,7 @@ internal static class RedisMutationRequestOrdering
         if (take is >= 0)
             results = results.Take(take.Value);
 
-        return results.ToList();
+        return [.. results];
     }
 
     /// <summary>
@@ -49,12 +49,11 @@ internal static class RedisMutationRequestOrdering
     /// <returns>Materialized approval views in pending queue order.</returns>
     public static IReadOnlyList<MutationApprovalView> ByPendingApprovalView(
         IEnumerable<MutationApprovalView> views)
-        => views
+        => [.. views
             .OrderBy(view => view.Request.CreatedAt)
             .ThenBy(view => view.Request.RequestId)
             .ThenBy(view => view.Approval.StepOrder)
-            .ThenBy(view => view.Approval.ApprovalId)
-            .ToList();
+            .ThenBy(view => view.Approval.ApprovalId)];
 
     /// <summary>
     /// Orders decision projections by decision recency and applies an optional result limit.
@@ -74,6 +73,6 @@ internal static class RedisMutationRequestOrdering
         if (take is >= 0)
             results = results.Take(take.Value);
 
-        return results.ToList();
+        return [.. results];
     }
 }

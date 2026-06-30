@@ -2,6 +2,7 @@ using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Approvals;
 using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Decisions;
 using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests.Evaluation;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 
 namespace ModularityKit.Mutator.Governance.Redis.Storage.Queries.Materialization;

@@ -4,6 +4,7 @@ using ModularityKit.Mutator.Abstractions.Engine;
 using ModularityKit.Mutator.Abstractions.Effects;
 using ModularityKit.Mutator.Abstractions.Intent;
 using ModularityKit.Mutator.Abstractions.Results;
+using WorkflowApprovals.Contracts;
 using WorkflowApprovals.State;
 
 namespace WorkflowApprovals.Mutations;
@@ -48,9 +49,9 @@ internal sealed class RejectWorkflowMutation(
                 SideEffect.Critical(
                     type: "WorkflowRejected",
                     description: "Workflow rejection requires manual follow-up",
-                    data: new
+                    data: new WorkflowRejectedSideEffectData
                     {
-                        Rejector,
+                        Rejector = Rejector,
                         StepCount = steps.Count,
                         State = "Rejected"
                     })

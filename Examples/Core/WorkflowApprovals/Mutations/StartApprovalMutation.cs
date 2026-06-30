@@ -4,6 +4,7 @@ using ModularityKit.Mutator.Abstractions.Engine;
 using ModularityKit.Mutator.Abstractions.Effects;
 using ModularityKit.Mutator.Abstractions.Intent;
 using ModularityKit.Mutator.Abstractions.Results;
+using WorkflowApprovals.Contracts;
 using WorkflowApprovals.State;
 
 namespace WorkflowApprovals.Mutations;
@@ -54,9 +55,9 @@ internal sealed class StartApprovalMutation(
                 SideEffect.Create(
                     type: "WorkflowStarted",
                     description: "Approval workflow started and ready for first review",
-                    data: new
+                    data: new WorkflowStartedSideEffectData
                     {
-                        Initiator,
+                        Initiator = Initiator,
                         StepCount = steps.Count,
                         WorkflowId = newState.WorkflowId
                     })

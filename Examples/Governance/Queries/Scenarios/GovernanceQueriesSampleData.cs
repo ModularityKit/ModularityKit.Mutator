@@ -1,4 +1,5 @@
 using ModularityKit.Mutator.Abstractions.Context;
+using ModularityKit.Mutator.Abstractions.Effects;
 using ModularityKit.Mutator.Abstractions.Intent;
 using ModularityKit.Mutator.Abstractions.Policies;
 using ModularityKit.Mutator.Governance.Abstractions.Approval.Model;
@@ -351,6 +352,16 @@ internal static class GovernanceQueriesSampleData
             CreatedAt = executedAt.AddMinutes(-15),
             UpdatedAt = executedAt,
             ExecutedAt = executedAt,
+            SideEffects =
+            [
+                SideEffect.Critical(
+                    type: "QuotaChangeRequiresReview",
+                    description: "Executed quota change requires review",
+                    data: new GovernanceExecutionSideEffectData
+                    {
+                        Ticket = "BILL-22"
+                    })
+            ],
             Metadata = new Dictionary<string, object>
             {
                 ["ticket"] = "BILL-22"
@@ -380,4 +391,10 @@ internal static class GovernanceQueriesSampleData
                 }
             ]
         };
+
+    [SideEffectDataContract("examples.governance.execution-side-effect", 1)]
+    private sealed record GovernanceExecutionSideEffectData
+    {
+        public required string Ticket { get; init; }
+    }
 }

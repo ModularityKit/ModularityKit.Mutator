@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using ModularityKit.Mutator.Abstractions.Context;
+using ModularityKit.Mutator.Abstractions.Effects;
 using ModularityKit.Mutator.Abstractions.Intent;
 using ModularityKit.Mutator.Abstractions.Policies;
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
@@ -7,6 +8,7 @@ using ModularityKit.Mutator.Governance.Abstractions.Queries.Contracts;
 using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Approvals;
 using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Decisions;
 using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests.Filters;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Decisions;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Factory;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
@@ -48,6 +50,16 @@ internal static class GovernanceRedisQueriesScenario
             PrintApprovals(await queryStore.GetPendingApprovalsAsync(new MutationApprovalQuery
             {
                 ApproverIds = new HashSet<string> { "security-lead" }
+            }));
+
+            PrintSection("Requests With Actionable Side Effects");
+            PrintRequests(await queryStore.QueryAsync(new MutationRequestQuery
+            {
+                SideEffects = new MutationRequestSideEffectFilter
+                {
+                    DataContractTypes = new HashSet<string> { "examples.redis.execution-side-effect" },
+                    RequiresAction = true
+                }
             }));
 
             PrintSection("Recent Execution Outcomes");
@@ -152,6 +164,16 @@ internal static class GovernanceRedisQueriesScenario
             CreatedAt = executedAt.AddMinutes(-15),
             UpdatedAt = executedAt,
             ExecutedAt = executedAt,
+            SideEffects =
+            [
+                SideEffect.Critical(
+                    type: "ExecutedRequestRequiresFollowUp",
+                    description: "Executed request still requires manual follow-up",
+                    data: new RedisExecutionSideEffectData
+                    {
+                        Ticket = "BILL-12"
+                    })
+            ],
             Decisions =
             [
                 MutationRequestDecision.Lifecycle(
@@ -177,6 +199,12 @@ internal static class GovernanceRedisQueriesScenario
                 }
             ]
         };
+
+    [SideEffectDataContract("examples.redis.execution-side-effect", 1)]
+    private sealed record RedisExecutionSideEffectData
+    {
+        public required string Ticket { get; init; }
+    }
 
     private static void PrintSection(string title)
     {

@@ -102,6 +102,56 @@ Core runtime concurrency is controlled by `MutationEngineOptions.MaxConcurrentMu
 - `PolicyDecision`
 - `PolicyRequirement`
 
+### Async policies and external checks
+
+`IMutationPolicy<TState>` supports both synchronous and asynchronous evaluation.
+
+- implement `Evaluate(...)` for lightweight in-process rules
+- implement `EvaluateAsync(..., CancellationToken)` for external identity, ticketing, quota, or compliance checks
+- the runtime evaluates policies in descending `Priority` order
+- sync and async policies can be registered together; they participate in the same priority-ordered pipeline
+- when `MutationEngineOptions.PolicyEvaluationTimeout` is set, the timeout is applied per policy evaluation
+- caller cancellation still flows through unchanged
+- policy failures are surfaced as `PolicyEvaluationException`
+- policy timeouts are surfaced as `PolicyEvaluationTimeoutException`
+
+Typical integration cases include:
+
+- external approval evidence checks
+- actor/identity resolution against IAM or directory systems
+- ticket status validation before execution
+- quota lookups in remote control planes
+- compliance or risk verification before commit
+
+```csharp
+public sealed class RequireApprovedTicketPolicy : IMutationPolicy<QuotaState>
+{
+    private readonly ITicketGateway _tickets;
+
+    public RequireApprovedTicketPolicy(ITicketGateway tickets)
+    {
+        _tickets = tickets;
+    }
+
+    public string Name => "RequireApprovedTicket";
+    public int Priority => 200;
+    public string? Description => "Checks ticket approval status before quota changes execute.";
+
+    public async Task<PolicyDecision> EvaluateAsync(
+        IMutation<QuotaState> mutation,
+        QuotaState state,
+        CancellationToken cancellationToken = default)
+    {
+        var ticketId = mutation.Context.CorrelationId;
+        var approved = await _tickets.IsApprovedAsync(ticketId!, cancellationToken);
+
+        return approved
+            ? PolicyDecision.Allow(Name, "External ticket is approved.")
+            : PolicyDecision.Deny("External ticket is not approved.", Name);
+    }
+}
+```
+
 ### Results and changes
 
 - `MutationResult<TState>`
@@ -109,6 +159,37 @@ Core runtime concurrency is controlled by `MutationEngineOptions.MaxConcurrentMu
 - `ValidationResult`
 - `ChangeSet`
 - `StateChange`
+- `SideEffect`
+- `SideEffectDataContractAttribute`
+- `SideEffectDataContractRegistry`
+
+### Typed side effects
+
+Use typed side effect payloads when the emitted data is meant to survive serialization, audit, or downstream integration:
+
+```csharp
+[SideEffectDataContract("workflow.started", 1)]
+public sealed record WorkflowStartedSideEffectData
+{
+    public required string Initiator { get; init; }
+    public required int StepCount { get; init; }
+    public required string WorkflowId { get; init; }
+}
+
+SideEffectDataContractRegistry.Register<WorkflowStartedSideEffectData>();
+
+var effect = SideEffect.Create(
+    type: "WorkflowStarted",
+    description: "Approval workflow started",
+    data: new WorkflowStartedSideEffectData
+    {
+        Initiator = "alice",
+        StepCount = 2,
+        WorkflowId = "wf-42"
+    });
+```
+
+The side effect keeps `DataContractType` and `DataContractVersion` alongside `Data`, so persistence and integration layers do not have to guess the payload shape.
 
 ### Context and intent
 

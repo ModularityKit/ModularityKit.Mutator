@@ -66,7 +66,8 @@ public static class MutatorsServiceCollectionExtensions
                 EnableDetailedMetrics = presetOptions.EnableDetailedMetrics,
                 StopBatchOnFirstFailure = presetOptions.StopBatchOnFirstFailure,
                 MaxConcurrentMutations = presetOptions.MaxConcurrentMutations,
-                ExecutionTimeout = presetOptions.ExecutionTimeout
+                ExecutionTimeout = presetOptions.ExecutionTimeout,
+                PolicyEvaluationTimeout = presetOptions.PolicyEvaluationTimeout
             }
             : new MutationEngineOptions();
         

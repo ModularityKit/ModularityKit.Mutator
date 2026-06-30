@@ -3,6 +3,7 @@ using ModularityKit.Mutator.Abstractions;
 using ModularityKit.Mutator.Abstractions.Audit;
 using ModularityKit.Mutator.Abstractions.Changes;
 using ModularityKit.Mutator.Abstractions.Context;
+using ModularityKit.Mutator.Abstractions.Effects;
 using ModularityKit.Mutator.Abstractions.Engine;
 using ModularityKit.Mutator.Abstractions.History;
 using ModularityKit.Mutator.Abstractions.Intent;
@@ -77,6 +78,9 @@ public sealed class GovernanceExecutionManagerTests
         Assert.Equal("v11", result.Request.ResultingStateVersion);
         Assert.Equal("v11", result.Request.ExpectedStateVersion);
         Assert.NotNull(result.Request.ExecutedAt);
+        Assert.Single(result.Request.SideEffects);
+        Assert.Equal("RoleElevated", result.Request.SideEffects[0].Type);
+        Assert.Equal("governance.execution-effect", result.Request.SideEffects[0].DataContractType);
         Assert.Equal(
             MutationRequestDecisionType.Lifecycle(MutationRequestLifecycleDecisionType.Executed),
             result.Request.Decisions[^1].Type);
@@ -255,7 +259,17 @@ public sealed class GovernanceExecutionManagerTests
 
             return MutationResult<RoleState>.Success(
                 newState,
-                ChangeSet.Single(StateChange.Modified("Role", state.Role, newState.Role)));
+                ChangeSet.Single(StateChange.Modified("Role", state.Role, newState.Role)),
+                [
+                    SideEffect.Create(
+                        type: "RoleElevated",
+                        description: "Governed execution elevated the role",
+                        data: new GovernanceExecutionSideEffectData
+                        {
+                            RequestStateId = state.StateId,
+                            NewRole = newState.Role
+                        })
+                ]);
         }
 
         public ValidationResult Validate(RoleState state)
@@ -266,5 +280,13 @@ public sealed class GovernanceExecutionManagerTests
         }
 
         public MutationResult<RoleState> Simulate(RoleState state) => Apply(state);
+    }
+
+    [SideEffectDataContract("governance.execution-effect", 1)]
+    private sealed record GovernanceExecutionSideEffectData
+    {
+        public required string RequestStateId { get; init; }
+
+        public required string NewRole { get; init; }
     }
 }
