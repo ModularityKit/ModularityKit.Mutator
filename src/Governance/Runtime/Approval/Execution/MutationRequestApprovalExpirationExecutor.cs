@@ -67,11 +67,14 @@ internal sealed class MutationRequestApprovalExpirationExecutor(IMutationRequest
 
             var updatedRequest = request with
             {
-                Status = MutationRequestStatus.Rejected,
-                PendingReason = null,
+                Lifecycle = request.Lifecycle with
+                {
+                    Status = MutationRequestStatus.Rejected,
+                    PendingReason = null,
+                    UpdatedAt = decisions[^1].Timestamp
+                },
                 ApprovalRequirements = updatedRequirements,
                 Decisions = decisions,
-                UpdatedAt = decisions[^1].Timestamp
             };
 
             expiredRequests.Add(await _persistence.Persist(request, updatedRequest, cancellationToken).ConfigureAwait(false));

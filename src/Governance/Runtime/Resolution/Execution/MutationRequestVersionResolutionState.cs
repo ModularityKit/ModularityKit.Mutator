@@ -32,9 +32,12 @@ internal static class MutationRequestVersionResolutionState
     public static MutationRequest ApplyRejectedAsStale(MutationRequest request, string currentStateVersion, MutationRequestDecision decision) => AppendDecision(
         request with
         {
-            Status = MutationRequestStatus.Rejected,
-            PendingReason = null,
-            UpdatedAt = decision.Timestamp
+            Lifecycle = request.Lifecycle with
+            {
+                Status = MutationRequestStatus.Rejected,
+                PendingReason = null,
+                UpdatedAt = decision.Timestamp
+            }
         }, decision);
 
     /// <summary>
@@ -50,13 +53,16 @@ internal static class MutationRequestVersionResolutionState
         MutationRequestDecision decision) => AppendDecision(
             request with
             {
-                Status = MutationRequestStatus.Pending,
-                PendingReason = PendingMutationReason.Approval,
+                Lifecycle = request.Lifecycle with
+                {
+                    Status = MutationRequestStatus.Pending,
+                    PendingReason = PendingMutationReason.Approval,
+                    UpdatedAt = decision.Timestamp
+                },
                 Versioning = request.Versioning with
                 {
                     ExpectedStateVersion = currentStateVersion
-                },
-                UpdatedAt = decision.Timestamp
+                }
             },
             decision);
 
@@ -73,13 +79,16 @@ internal static class MutationRequestVersionResolutionState
         MutationRequestDecision decision) => AppendDecision(
             request with
             {
-                Status = MutationRequestStatus.Pending,
-                PendingReason = PendingMutationReason.Revalidation,
+                Lifecycle = request.Lifecycle with
+                {
+                    Status = MutationRequestStatus.Pending,
+                    PendingReason = PendingMutationReason.Revalidation,
+                    UpdatedAt = decision.Timestamp
+                },
                 Versioning = request.Versioning with
                 {
                     ExpectedStateVersion = currentStateVersion
-                },
-                UpdatedAt = decision.Timestamp
+                }
             },
             decision);
 

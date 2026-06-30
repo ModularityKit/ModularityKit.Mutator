@@ -42,8 +42,11 @@ public sealed class MutationRequestLifecycleManager(IMutationRequestStore reques
             reason,
             request => request with
             {
-                PendingReason = pendingReason,
-                ExpiresAt = expiresAt
+                Lifecycle = request.Lifecycle with
+                {
+                    PendingReason = pendingReason,
+                    ExpiresAt = expiresAt
+                }
             },
             metadata,
             cancellationToken);
@@ -64,7 +67,10 @@ public sealed class MutationRequestLifecycleManager(IMutationRequestStore reques
             reason,
             request => request with
             {
-                PendingReason = null
+                Lifecycle = request.Lifecycle with
+                {
+                    PendingReason = null
+                }
             },
             metadata,
             cancellationToken);
