@@ -1,6 +1,6 @@
 using System.Collections.Concurrent;
 
-namespace ModularityKit.Mutator.Runtime.Internal;
+namespace ModularityKit.Mutator.Runtime.Internal.Execution;
 
 /// <summary>
 /// Coordinates core mutation execution concurrency across the engine.

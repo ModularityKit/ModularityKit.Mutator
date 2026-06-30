@@ -1,10 +1,27 @@
 using ModularityKit.Mutator.Abstractions.Effects;
 using ModularityKit.Mutator.Abstractions.Results;
 
-namespace ModularityKit.Mutator.Runtime.Internal;
+namespace ModularityKit.Mutator.Runtime.Internal.Evaluation;
 
+/// <summary>
+/// Applies policy-level state and side-effect modifications to a mutation result.
+/// </summary>
 internal static class PolicyModificationApplier
 {
+    /// <summary>
+    /// Applies the given policy modifications to <paramref name="result" />, returning an updated result.
+    /// </summary>
+    /// <typeparam name="TState">The state type handled by the mutation.</typeparam>
+    /// <param name="result">The original mutation result to apply modifications to.</param>
+    /// <param name="modifications">
+    /// A dictionary of modifications. Recognised keys are <c>"State"</c> (overrides the new state),
+    /// <c>"SideEffect"</c> (appends a single <see cref="SideEffect" />), and
+    /// <c>"SideEffects"</c> (appends a collection of <see cref="SideEffect" />).
+    /// </param>
+    /// <returns>
+    /// The original <paramref name="result" /> unchanged when no applicable modifications exist or the result is not successful;
+    /// otherwise a new result record with the modifications applied.
+    /// </returns>
     public static MutationResult<TState> Apply<TState>(
         MutationResult<TState> result,
         IReadOnlyDictionary<string, object>? modifications)
