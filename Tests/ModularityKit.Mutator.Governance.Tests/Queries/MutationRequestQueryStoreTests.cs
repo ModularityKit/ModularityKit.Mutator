@@ -1,4 +1,5 @@
 using ModularityKit.Mutator.Abstractions.Context;
+using ModularityKit.Mutator.Abstractions.Effects;
 using ModularityKit.Mutator.Abstractions.Intent;
 using ModularityKit.Mutator.Governance.Abstractions.Approval.Model;
 using ModularityKit.Mutator.Abstractions.Policies;
@@ -187,6 +188,78 @@ public sealed class MutationRequestQueryStoreTests
 
         Assert.Single(results);
         Assert.Equal("req-platform", results[0].RequestId);
+    }
+
+    [Fact]
+    public async Task QueryAsync_can_filter_by_persisted_side_effect_dimensions()
+    {
+        var store = new InMemoryMutationRequestStore();
+
+        await store.Create(CreateGovernedRequest(
+            requestId: "req-side-effect",
+            stateId: "tenant-42:roles",
+            stateType: "IamRoleState",
+            mutationType: "GrantRoleMutation",
+            actorId: "alice",
+            actorName: "Alice",
+            category: "Security",
+            tags: new HashSet<string> { "security" },
+            intentMetadata: new Dictionary<string, object> { ["risk-owner"] = "platform" },
+            requestMetadata: new Dictionary<string, object> { ["ticket"] = "INC-42" },
+            blastRadius: BlastRadius.Module,
+            createdAt: new DateTimeOffset(2026, 6, 1, 10, 0, 0, TimeSpan.Zero),
+            updatedAt: new DateTimeOffset(2026, 6, 1, 11, 0, 0, TimeSpan.Zero),
+            status: MutationRequestStatus.Executed,
+            pendingReason: null,
+            decisions: [],
+            sideEffects:
+            [
+                SideEffect.Critical(
+                    type: "WorkflowRejected",
+                    description: "Manual review required",
+                    data: new GovernanceSideEffectData
+                    {
+                        Reference = "INC-42"
+                    })
+            ]));
+
+        await store.Create(CreateGovernedRequest(
+            requestId: "req-other-effect",
+            stateId: "tenant-42:quota",
+            stateType: "QuotaState",
+            mutationType: "IncreaseQuotaMutation",
+            actorId: "bob",
+            actorName: "Bob",
+            category: "Billing",
+            tags: new HashSet<string> { "billing" },
+            intentMetadata: new Dictionary<string, object> { ["risk-owner"] = "finance" },
+            requestMetadata: new Dictionary<string, object> { ["ticket"] = "FIN-9" },
+            blastRadius: BlastRadius.Single,
+            createdAt: new DateTimeOffset(2026, 6, 1, 12, 0, 0, TimeSpan.Zero),
+            updatedAt: new DateTimeOffset(2026, 6, 1, 12, 30, 0, TimeSpan.Zero),
+            status: MutationRequestStatus.Executed,
+            pendingReason: null,
+            decisions: [],
+            sideEffects:
+            [
+                SideEffect.Create(
+                    type: "QuotaRaised",
+                    description: "Quota updated")
+            ]));
+
+        var results = await store.QueryAsync(new MutationRequestQuery
+        {
+            SideEffects = new MutationRequestSideEffectFilter
+            {
+                Types = new HashSet<string> { "WorkflowRejected" },
+                DataContractTypes = new HashSet<string> { "governance.side-effect" },
+                Severities = new HashSet<SideEffectSeverity> { SideEffectSeverity.Critical },
+                RequiresAction = true
+            }
+        });
+
+        Assert.Single(results);
+        Assert.Equal("req-side-effect", results[0].RequestId);
     }
 
     [Fact]
@@ -474,7 +547,8 @@ public sealed class MutationRequestQueryStoreTests
         DateTimeOffset updatedAt,
         MutationRequestStatus status,
         PendingMutationReason? pendingReason,
-        IReadOnlyList<MutationRequestDecision> decisions)
+        IReadOnlyList<MutationRequestDecision> decisions,
+        IReadOnlyList<SideEffect>? sideEffects = null)
         => new MutationRequest
         {
             RequestId = requestId,
@@ -495,6 +569,13 @@ public sealed class MutationRequestQueryStoreTests
             CreatedAt = createdAt,
             UpdatedAt = updatedAt,
             Decisions = decisions,
-            Metadata = requestMetadata
+            Metadata = requestMetadata,
+            SideEffects = sideEffects ?? []
         };
+
+    [SideEffectDataContract("governance.side-effect", 1)]
+    private sealed record GovernanceSideEffectData
+    {
+        public required string Reference { get; init; }
+    }
 }

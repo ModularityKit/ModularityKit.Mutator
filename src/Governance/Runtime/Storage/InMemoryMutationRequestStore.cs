@@ -4,6 +4,7 @@ using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Approvals;
 using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Decisions;
 using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests;
 using ModularityKit.Mutator.Governance.Abstractions.Lifecycle.Model;
+using ModularityKit.Mutator.Governance.Abstractions.Queries.Model.Requests.Evaluation;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Decisions;
 using ModularityKit.Mutator.Governance.Abstractions.Requests.Model;
 using ModularityKit.Mutator.Governance.Abstractions.Storage;
@@ -19,6 +20,19 @@ public sealed class InMemoryMutationRequestStore : IMutationRequestStore, IMutat
     private readonly Dictionary<string, MutationRequest> _requests = new();
     private readonly Lock _lock = new();
 
+    /// <summary>
+    /// Initializes new in-memory governed request store.
+    /// </summary>
+    public InMemoryMutationRequestStore()
+    {
+    }
+
+    /// <summary>
+    /// Creates governed request in the in-memory store.
+    /// </summary>
+    /// <param name="request">The request to persist.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The persisted request snapshot.</returns>
     public Task<MutationRequest> Create(
         MutationRequest request,
         CancellationToken cancellationToken = default)
@@ -40,6 +54,13 @@ public sealed class InMemoryMutationRequestStore : IMutationRequestStore, IMutat
         }
     }
 
+    /// <summary>
+    /// Stores governed request when the expected revision matches the current revision.
+    /// </summary>
+    /// <param name="request">The request to persist.</param>
+    /// <param name="expectedRevision">The expected current revision.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The persisted request snapshot on success; otherwise <see langword="null"/>.</returns>
     public Task<MutationRequest?> TryStore(
         MutationRequest request,
         long expectedRevision,
@@ -65,6 +86,12 @@ public sealed class InMemoryMutationRequestStore : IMutationRequestStore, IMutat
         }
     }
 
+    /// <summary>
+    /// Gets request by its stable identifier.
+    /// </summary>
+    /// <param name="requestId">The request identifier.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The request snapshot when present; otherwise <see langword="null"/>.</returns>
     public Task<MutationRequest?> Get(
         string requestId,
         CancellationToken cancellationToken = default)
@@ -76,6 +103,12 @@ public sealed class InMemoryMutationRequestStore : IMutationRequestStore, IMutat
         }
     }
 
+    /// <summary>
+    /// Gets requests targeting specific state.
+    /// </summary>
+    /// <param name="stateId">The state identifier.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Requests ordered by creation time.</returns>
     public Task<IReadOnlyList<MutationRequest>> GetByStateId(
         string stateId,
         CancellationToken cancellationToken = default)
@@ -91,6 +124,12 @@ public sealed class InMemoryMutationRequestStore : IMutationRequestStore, IMutat
         }
     }
 
+    /// <summary>
+    /// Gets pending requests, optionally narrowed by pending reason.
+    /// </summary>
+    /// <param name="reason">The optional pending reason.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Pending requests ordered by creation time.</returns>
     public Task<IReadOnlyList<MutationRequest>> GetPending(
         PendingMutationReason? reason = null,
         CancellationToken cancellationToken = default)
@@ -108,6 +147,13 @@ public sealed class InMemoryMutationRequestStore : IMutationRequestStore, IMutat
         }
     }
 
+    /// <summary>
+    /// Gets pending requests for specific state, optionally narrowed by pending reason.
+    /// </summary>
+    /// <param name="stateId">The state identifier.</param>
+    /// <param name="reason">The optional pending reason.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>Pending requests ordered by creation time.</returns>
     public Task<IReadOnlyList<MutationRequest>> GetPendingByStateId(
         string stateId,
         PendingMutationReason? reason = null,
@@ -127,6 +173,12 @@ public sealed class InMemoryMutationRequestStore : IMutationRequestStore, IMutat
         }
     }
 
+    /// <summary>
+    /// Queries governed requests using the supplied criteria.
+    /// </summary>
+    /// <param name="query">The query to evaluate.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The matching requests ordered by creation time and identifier.</returns>
     public Task<IReadOnlyList<MutationRequest>> QueryAsync(
         MutationRequestQuery query,
         CancellationToken cancellationToken = default)
@@ -145,6 +197,12 @@ public sealed class InMemoryMutationRequestStore : IMutationRequestStore, IMutat
         }
     }
 
+    /// <summary>
+    /// Gets pending requests, optionally narrowed by an additional query.
+    /// </summary>
+    /// <param name="query">The optional request query.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The matching pending requests.</returns>
     public Task<IReadOnlyList<MutationRequest>> GetPendingRequestsAsync(
         MutationRequestQuery? query = null,
         CancellationToken cancellationToken = default)
@@ -162,6 +220,12 @@ public sealed class InMemoryMutationRequestStore : IMutationRequestStore, IMutat
         }
     }
 
+    /// <summary>
+    /// Gets the pending approval queue, optionally narrowed by an additional query.
+    /// </summary>
+    /// <param name="query">The optional request query.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The matching pending approval queue requests.</returns>
     public Task<IReadOnlyList<MutationRequest>> GetPendingApprovalQueueAsync(
         MutationRequestQuery? query = null,
         CancellationToken cancellationToken = default)
@@ -181,6 +245,13 @@ public sealed class InMemoryMutationRequestStore : IMutationRequestStore, IMutat
         }
     }
 
+    /// <summary>
+    /// Gets recent approval driven requests, optionally narrowed by an additional query.
+    /// </summary>
+    /// <param name="query">The optional request query.</param>
+    /// <param name="take">The optional maximum number of results to return.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The matching approval-driven requests ordered from newest activity to oldest.</returns>
     public Task<IReadOnlyList<MutationRequest>> GetRecentApprovalsAsync(
         MutationRequestQuery? query = null,
         int? take = null,
@@ -205,6 +276,12 @@ public sealed class InMemoryMutationRequestStore : IMutationRequestStore, IMutat
         }
     }
 
+    /// <summary>
+    /// Gets approval centric views for pending governed requests.
+    /// </summary>
+    /// <param name="query">The optional approval query.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The matching approval views ordered for queue processing.</returns>
     public Task<IReadOnlyList<MutationApprovalView>> GetPendingApprovalsAsync(
         MutationApprovalQuery? query = null,
         CancellationToken cancellationToken = default)
@@ -230,6 +307,13 @@ public sealed class InMemoryMutationRequestStore : IMutationRequestStore, IMutat
         }
     }
 
+    /// <summary>
+    /// Gets recent decision-centric views across governed requests.
+    /// </summary>
+    /// <param name="query">The optional decision query.</param>
+    /// <param name="take">The optional maximum number of results to return.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The matching decision views ordered from newest to oldest.</returns>
     public Task<IReadOnlyList<MutationRequestDecisionView>> GetRecentDecisionsAsync(
         MutationRequestDecisionQuery? query = null,
         int? take = null,

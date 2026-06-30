@@ -36,4 +36,9 @@ public sealed record MutationRequestQuery
     /// Time-window filters for request creation and update activity.
     /// </summary>
     public MutationRequestTimeRangeFilter TimeRange { get; init; } = new();
+
+    /// <summary>
+    /// Filters for persisted side effects captured on governed execution requests.
+    /// </summary>
+    public MutationRequestSideEffectFilter SideEffects { get; init; } = new();
 }

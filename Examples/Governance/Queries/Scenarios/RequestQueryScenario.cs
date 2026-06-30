@@ -55,6 +55,16 @@ internal static class RequestQueryScenario
             }
         }));
 
+        GovernanceQueriesSampleData.PrintSection("Requests With Actionable Execution Side Effects");
+        GovernanceQueriesSampleData.PrintRequests(await queryStore.QueryAsync(new MutationRequestQuery
+        {
+            SideEffects = new MutationRequestSideEffectFilter
+            {
+                DataContractTypes = new HashSet<string> { "examples.governance.execution-side-effect" },
+                RequiresAction = true
+            }
+        }));
+
         GovernanceQueriesSampleData.PrintSection("Recent Approval Driven Requests");
         GovernanceQueriesSampleData.PrintRequests(await queryStore.GetRecentApprovalsAsync(take: 3));
     }
