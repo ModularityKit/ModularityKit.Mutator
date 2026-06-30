@@ -119,7 +119,7 @@ internal static class GovernanceRequestLifecycleScenario
         foreach (var request in requests)
         {
             Console.WriteLine(
-                $"- {request.RequestId} | {request.StateId} | {request.Status} | pending: {request.PendingReason?.ToString() ?? "-"}");
+                $"- {request.RequestId} | {request.Scope.StateId} | {request.Lifecycle.Status} | pending: {request.Lifecycle.PendingReason?.ToString() ?? "-"}");
         }
 
         if (requests.Count == 0)
@@ -129,10 +129,10 @@ internal static class GovernanceRequestLifecycleScenario
     private static void PrintRequestDetails(MutationRequest request)
     {
         Console.WriteLine($"{request.RequestId}");
-        Console.WriteLine($"  state: {request.StateId}");
-        Console.WriteLine($"  status: {request.Status}");
-        Console.WriteLine($"  pending: {request.PendingReason?.ToString() ?? "-"}");
-        Console.WriteLine($"  expires: {request.ExpiresAt?.ToString("O") ?? "-"}");
+        Console.WriteLine($"  state: {request.Scope.StateId}");
+        Console.WriteLine($"  status: {request.Lifecycle.Status}");
+        Console.WriteLine($"  pending: {request.Lifecycle.PendingReason?.ToString() ?? "-"}");
+        Console.WriteLine($"  expires: {request.Lifecycle.ExpiresAt?.ToString(\"O\") ?? \"-\"}");
         Console.WriteLine("  decisions:");
 
         foreach (var decision in request.Decisions)

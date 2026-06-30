@@ -72,7 +72,7 @@ internal static class GovernanceQueriesSampleData
         foreach (var request in requests)
         {
             Console.WriteLine(
-                $"- {request.RequestId} | {request.StateId} | {request.Intent.Category} | {request.Status} | pending: {request.PendingReason?.ToString() ?? "-"}");
+                $"- {request.RequestId} | {request.Scope.StateId} | {request.Payload.Intent.Category} | {request.Lifecycle.Status} | pending: {request.Lifecycle.PendingReason?.ToString() ?? "-"}");
         }
 
         if (requests.Count == 0)
@@ -84,7 +84,7 @@ internal static class GovernanceQueriesSampleData
         foreach (var approval in approvals)
         {
             Console.WriteLine(
-                $"- {approval.Request.RequestId} | {approval.Request.Intent.Category} | approver: {approval.Approval.ApproverId} | status: {approval.Approval.Status}");
+                $"- {approval.Request.RequestId} | {approval.Request.Payload.Intent.Category} | approver: {approval.Approval.ApproverId} | status: {approval.Approval.Status}");
         }
 
         if (approvals.Count == 0)

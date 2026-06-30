@@ -91,8 +91,8 @@ internal static class GovernanceVersionedResolutionScenario
         Console.WriteLine($"Was stale: {resolution.IsStale}");
         Console.WriteLine($"Expected version: {resolution.ExpectedStateVersion ?? "-"}");
         Console.WriteLine($"Current version: {resolution.CurrentStateVersion}");
-        Console.WriteLine($"Request status: {resolution.Request.Status}");
-        Console.WriteLine($"Next expected version: {resolution.Request.ExpectedStateVersion ?? "-"}");
+        Console.WriteLine($"Request status: {resolution.Request.Lifecycle.Status}");
+        Console.WriteLine($"Next expected version: {resolution.Request.Versioning.ExpectedStateVersion ?? "-"}");
         Console.WriteLine($"Last decision: {decision.Type}");
         Console.WriteLine($"Decision reason: {decision.Reason}");
     }

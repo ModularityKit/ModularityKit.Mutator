@@ -57,7 +57,7 @@ var resolution = await manager.ResolveAndStore(
     strategy: VersionedRequestResolutionStrategy.RejectStale);
 
 Console.WriteLine(resolution.Outcome);
-Console.WriteLine(resolution.Request.Status);
+Console.WriteLine(resolution.Request.Lifecycle.Status);
 Console.WriteLine(resolution.Request.Decisions[^1].Type);
 ```
 

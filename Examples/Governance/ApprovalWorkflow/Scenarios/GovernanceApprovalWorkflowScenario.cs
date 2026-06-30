@@ -151,8 +151,8 @@ internal static class GovernanceApprovalWorkflowScenario
 
     private static void PrintRequest(MutationRequest request)
     {
-        Console.WriteLine($"Request status: {request.Status}");
-        Console.WriteLine($"Pending reason: {request.PendingReason?.ToString() ?? "-"}");
+        Console.WriteLine($"Request status: {request.Lifecycle.Status}");
+        Console.WriteLine($"Pending reason: {request.Lifecycle.PendingReason?.ToString() ?? "-"}");
         Console.WriteLine($"Revision: {request.Revision}");
         Console.WriteLine("Approval requirements:");
 
