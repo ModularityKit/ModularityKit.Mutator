@@ -37,6 +37,16 @@ public sealed class MutationEngineOptions
     public TimeSpan? ExecutionTimeout { get; set; }
 
     /// <summary>
+    /// The maximum allowed evaluation time for a single policy.
+    /// </summary>
+    /// <remarks>
+    /// When specified, each registered policy evaluation gets its own timeout window.
+    /// This is primarily intended for async policies that call external identity, ticketing,
+    /// quota, or compliance systems.
+    /// </remarks>
+    public TimeSpan? PolicyEvaluationTimeout { get; set; }
+
+    /// <summary>
     /// Indicates whether batch execution should stop after the first failure.
     /// </summary>
     /// <remarks>
@@ -49,7 +59,7 @@ public sealed class MutationEngineOptions
     /// Enables collection of detailed execution metrics.
     /// </summary>
     /// <remarks>
-    /// Detailed metrics provide deep observability but may have a measurable
+    /// Detailed metrics provide deep observability but may have measurable
     /// performance impact in high-throughput scenarios.
     /// </remarks>
     public bool EnableDetailedMetrics { get; set; } = false;
@@ -82,7 +92,7 @@ public sealed class MutationEngineOptions
     };
 
     /// <summary>
-    /// Performance-oriented configuration minimizing overhead.
+    /// Performance oriented configuration minimizing overhead.
     /// </summary>
     /// <remarks>
     /// Intended for trusted environments where validation and detailed metrics
