@@ -78,19 +78,28 @@ public static class MutationRequestFactory
     {
         return new MutationRequest
         {
-            StateId = stateId,
-            StateType = stateType,
-            MutationType = mutationType,
-            Intent = intent,
-            Context = context,
-            Status = MutationRequestStatus.Pending,
-            PendingReason = pendingReason,
+            Scope = new MutationRequestScopeDetails
+            {
+                StateId = stateId,
+                StateType = stateType,
+                MutationType = mutationType
+            },
+            Payload = new MutationRequestPayloadDetails
+            {
+                Intent = intent,
+                Context = context
+            },
+            Lifecycle = new MutationRequestLifecycleDetails
+            {
+                Status = MutationRequestStatus.Pending,
+                PendingReason = pendingReason,
+                ExpiresAt = expiresAt
+            },
             Requirements = requirements ?? [],
             Versioning = new MutationRequestVersioningDetails
             {
                 ExpectedStateVersion = expectedStateVersion
             },
-            ExpiresAt = expiresAt,
             Metadata = metadata ?? new Dictionary<string, object>(),
             Decisions =
             [
@@ -171,20 +180,29 @@ public static class MutationRequestFactory
 
         return new MutationRequest
         {
-            StateId = stateId,
-            StateType = stateType,
-            MutationType = mutationType,
-            Intent = intent,
-            Context = context,
-            Status = MutationRequestStatus.Pending,
-            PendingReason = PendingMutationReason.Approval,
+            Scope = new MutationRequestScopeDetails
+            {
+                StateId = stateId,
+                StateType = stateType,
+                MutationType = mutationType
+            },
+            Payload = new MutationRequestPayloadDetails
+            {
+                Intent = intent,
+                Context = context
+            },
+            Lifecycle = new MutationRequestLifecycleDetails
+            {
+                Status = MutationRequestStatus.Pending,
+                PendingReason = PendingMutationReason.Approval,
+                ExpiresAt = expiresAt
+            },
             Requirements = requirements,
             ApprovalRequirements = approvalRequirements,
             Versioning = new MutationRequestVersioningDetails
             {
                 ExpectedStateVersion = expectedStateVersion
             },
-            ExpiresAt = expiresAt,
             Metadata = metadata ?? new Dictionary<string, object>(),
             Decisions =
             [
@@ -257,12 +275,21 @@ public static class MutationRequestFactory
     {
         return new MutationRequest
         {
-            StateId = stateId,
-            StateType = stateType,
-            MutationType = mutationType,
-            Intent = intent,
-            Context = context,
-            Status = MutationRequestStatus.Approved,
+            Scope = new MutationRequestScopeDetails
+            {
+                StateId = stateId,
+                StateType = stateType,
+                MutationType = mutationType
+            },
+            Payload = new MutationRequestPayloadDetails
+            {
+                Intent = intent,
+                Context = context
+            },
+            Lifecycle = new MutationRequestLifecycleDetails
+            {
+                Status = MutationRequestStatus.Approved
+            },
             Versioning = new MutationRequestVersioningDetails
             {
                 ExpectedStateVersion = expectedStateVersion
