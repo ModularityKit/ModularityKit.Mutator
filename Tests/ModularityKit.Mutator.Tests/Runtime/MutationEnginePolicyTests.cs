@@ -76,6 +76,21 @@ public sealed class MutationEnginePolicyTests
         Assert.Equal("updated", result.NewState!.Value);
     }
 
+    [Fact]
+    public async Task ExecuteAsync_allows_sync_and_async_policies_to_coexist_without_ambiguous_ordering()
+    {
+        var engine = CreateEngine();
+        var observed = new List<string>();
+
+        engine.RegisterPolicy(new ObservedSyncAllowPolicy(observed));
+        engine.RegisterPolicy(new ObservedAsyncAllowPolicy(observed));
+
+        var result = await engine.ExecuteAsync(new SampleMutation(), new SampleState("initial"));
+
+        Assert.True(result.IsSuccess);
+        Assert.Equal(["async", "sync"], observed);
+    }
+
     private static IMutationEngine CreateEngine(Action<MutationEngineOptions>? configure = null)
     {
         var services = new ServiceCollection();
@@ -111,6 +126,36 @@ public sealed class MutationEnginePolicyTests
 
         public PolicyDecision Evaluate(IMutation<SampleState> mutation, SampleState state)
             => PolicyDecision.Allow(Name, "Synchronous policy allowed the mutation.");
+    }
+
+    private sealed class ObservedSyncAllowPolicy(List<string> observed) : IMutationPolicy<SampleState>
+    {
+        public string Name => "ObservedSyncAllow";
+        public int Priority => 10;
+        public string? Description => "Records synchronous policy evaluation order.";
+
+        public PolicyDecision Evaluate(IMutation<SampleState> mutation, SampleState state)
+        {
+            observed.Add("sync");
+            return PolicyDecision.Allow(Name, "Synchronous policy allowed the mutation.");
+        }
+    }
+
+    private sealed class ObservedAsyncAllowPolicy(List<string> observed) : IMutationPolicy<SampleState>
+    {
+        public string Name => "ObservedAsyncAllow";
+        public int Priority => 100;
+        public string? Description => "Records asynchronous policy evaluation order.";
+
+        public async Task<PolicyDecision> EvaluateAsync(
+            IMutation<SampleState> mutation,
+            SampleState state,
+            CancellationToken cancellationToken = default)
+        {
+            await Task.Delay(10, cancellationToken);
+            observed.Add("async");
+            return PolicyDecision.Allow(Name, "Asynchronous policy allowed the mutation.");
+        }
     }
 
     private sealed class AsyncBlockingPolicy : IMutationPolicy<SampleState>

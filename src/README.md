@@ -109,10 +109,19 @@ Core runtime concurrency is controlled by `MutationEngineOptions.MaxConcurrentMu
 - implement `Evaluate(...)` for lightweight in-process rules
 - implement `EvaluateAsync(..., CancellationToken)` for external identity, ticketing, quota, or compliance checks
 - the runtime evaluates policies in descending `Priority` order
+- sync and async policies can be registered together; they participate in the same priority-ordered pipeline
 - when `MutationEngineOptions.PolicyEvaluationTimeout` is set, the timeout is applied per policy evaluation
 - caller cancellation still flows through unchanged
 - policy failures are surfaced as `PolicyEvaluationException`
 - policy timeouts are surfaced as `PolicyEvaluationTimeoutException`
+
+Typical integration cases include:
+
+- external approval evidence checks
+- actor/identity resolution against IAM or directory systems
+- ticket status validation before execution
+- quota lookups in remote control planes
+- compliance or risk verification before commit
 
 ```csharp
 public sealed class RequireApprovedTicketPolicy : IMutationPolicy<QuotaState>
