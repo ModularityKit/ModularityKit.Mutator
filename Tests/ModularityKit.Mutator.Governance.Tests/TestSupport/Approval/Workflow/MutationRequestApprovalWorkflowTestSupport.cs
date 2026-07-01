@@ -30,6 +30,60 @@ internal static class MutationRequestApprovalWorkflowTestSupport
     }
 
     /// <summary>
+    /// Creates a request that exercises approval mapping for manager, quorum, role, and group targets.
+    /// </summary>
+    public static MutationRequest CreateTargetMappingApprovalRequest(DateTimeOffset expiresAt)
+    {
+        return MutationRequestFactory.PendingApproval(
+            stateId: "tenant-42:roles",
+            stateType: "IamRoleState",
+            mutationType: "GrantRoleMutation",
+            intent: CreateIntent(),
+            context: MutationContext.User("requester", "Requester", "Needs privileged access"),
+            requirements:
+            [
+                PolicyRequirement.Approval("alice", "Manager approval"),
+                new PolicyRequirement
+                {
+                    Type = "Approval",
+                    Description = "Security quorum",
+                    Data = new
+                    {
+                        Approvers = new[] { "bob", "carol", "dave" },
+                        StepOrder = 2,
+                        ApprovalGroupId = "security-quorum",
+                        Quorum = 2,
+                        ExpiresAt = expiresAt,
+                        Reason = "Security sign-off"
+                    }
+                },
+                new PolicyRequirement
+                {
+                    Type = "Approval",
+                    Description = "Finance role approval",
+                    Data = new
+                    {
+                        ApproverRole = "finance-approver",
+                        StepOrder = 3,
+                        Reason = "Finance sign-off"
+                    }
+                },
+                new PolicyRequirement
+                {
+                    Type = "Approval",
+                    Description = "Operations group approval",
+                    Data = new
+                    {
+                        ApproverGroup = "ops-oncall",
+                        StepOrder = 4,
+                        Reason = "Operations sign-off"
+                    }
+                }
+            ],
+            expectedStateVersion: "v10");
+    }
+
+    /// <summary>
     /// Creates a request that exercises quorum-based approval requirements.
     /// </summary>
     public static MutationRequest CreateQuorumApprovalRequest()

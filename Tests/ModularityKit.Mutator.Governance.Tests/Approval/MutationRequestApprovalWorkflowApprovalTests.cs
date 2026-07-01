@@ -16,7 +16,7 @@ public sealed partial class MutationRequestApprovalWorkflowTests
     {
         var expiresAt = DateTimeOffset.UtcNow.AddHours(1);
 
-        var request = MutationRequestApprovalWorkflowTestSupport.CreateLinearApprovalRequest();
+        var request = MutationRequestApprovalWorkflowTestSupport.CreateTargetMappingApprovalRequest(expiresAt);
 
         Assert.Equal(MutationRequestStatus.Pending, request.Status);
         Assert.Equal(PendingMutationReason.Approval, request.PendingReason);
