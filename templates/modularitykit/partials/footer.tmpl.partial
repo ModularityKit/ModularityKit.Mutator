@@ -29,6 +29,7 @@
 
     if (path === '/' || /\/index\.html?$/.test(path) || isPrefix('/Docs/Home')) {
       match = 'index.html';
+      document.body.classList.add('is-homepage');
     } else if (isPrefix('/src/Redis')) {
       match = 'src/Redis/README.html';
     } else if (isPrefix('/src/Governance')) {

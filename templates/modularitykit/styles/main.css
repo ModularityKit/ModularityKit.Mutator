@@ -342,6 +342,14 @@ a:focus {
   margin-top: 0;
 }
 
+body.is-homepage .article.row.grid > .col-md-10 {
+  width: 100%;
+}
+
+body.is-homepage .article.row.grid > .hidden-sm.col-md-2[role="complementary"] {
+  display: none;
+}
+
 /* Managed reference / API pages */
 .article.row.grid-right {
   align-items: flex-start;
@@ -1172,67 +1180,4 @@ body.api-sidebar-collapsed .api-layout-tools {
   display: inline-flex;
   padding: 0.2rem 0.4rem;
   border-radius: 4px;
-}
-
-@media (max-width: 767px) {
-  .site-footer__inner,
-  .site-navbar .container {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .site-search {
-    width: 100%;
-  }
-
-  .site-search .form-control {
-    width: 100%;
-  }
-
-  .site-navbar__actions {
-    width: 100%;
-    margin-left: 0;
-  }
-
-  .site-nav {
-    margin-left: 0;
-  }
-
-  .site-brand {
-    padding-bottom: 0.25rem;
-  }
-
-  .content {
-    padding: 1rem;
-  }
-
-  .content .hero {
-    grid-template-columns: 1fr;
-  }
-
-  .home-hero__copy h1 {
-    font-size: 2rem;
-  }
-
-  .content .section-grid,
-  .section-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .sidefilter,
-  .sidetoc {
-    position: static;
-    width: auto;
-    border-radius: 0;
-  }
-
-  .sidefilter {
-    border-top-left-radius: 8px;
-    border-top-right-radius: 8px;
-  }
-
-  .sidetoc {
-    border-bottom-left-radius: 8px;
-    border-bottom-right-radius: 8px;
-  }
 }
