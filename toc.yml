@@ -1,5 +1,5 @@
 - name: Home
-  href: README.md
+  href: Docs/Home.md
 - name: Packages
   items:
     - name: ModularityKit.Mutator

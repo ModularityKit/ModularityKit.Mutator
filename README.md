@@ -43,6 +43,7 @@ Build the DocFX site locally with:
 
 ```bash
 dotnet tool update -g docfx
+dotnet build ModularityKit.Mutator.slnx -c Release
 docfx docfx.json
 ```
 

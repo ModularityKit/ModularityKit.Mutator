@@ -1,0 +1,9 @@
+{{!Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license.}}
+
+<a class="navbar-brand site-brand" href="{{_rel}}{{{_appLogoUrl}}}{{^_appLogoUrl}}Docs/Home.html{{/_appLogoUrl}}">
+  <img id="logo" class="site-brand__logo" src="{{_rel}}{{{_appLogoPath}}}{{^_appLogoPath}}assets/brand/logo.png{{/_appLogoPath}}" alt="{{_appName}}">
+  <span class="site-brand__copy">
+    <span class="site-brand__title">{{_appTitle}}</span>
+    <span class="site-brand__subtitle">Docs</span>
+  </span>
+</a>
