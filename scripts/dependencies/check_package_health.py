@@ -32,7 +32,6 @@ def run_dotnet_list(solution: str, mode: str) -> subprocess.CompletedProcess[str
             "--include-transitive",
             "--format",
             "console",
-            "--no-restore",
         ],
         cwd=repository_root(),
         env=env,
