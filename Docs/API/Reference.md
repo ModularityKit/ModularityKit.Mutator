@@ -1,6 +1,7 @@
 # API Reference
 
-DocFX generates the public API reference from the compiled assemblies and XML documentation files.
+DocFX generates the public API reference from the project code, compiled assemblies, and XML
+documentation files.
 
 ## Included packages
 
@@ -8,11 +9,11 @@ DocFX generates the public API reference from the compiled assemblies and XML do
 - `ModularityKit.Mutator.Governance`
 - `ModularityKit.Mutator.Governance.Redis`
 
-## Build locally
+## Browse the generated API
 
-```bash
-dotnet tool update -g docfx
-docfx docfx.json
-```
+Use the package roots below to explore the public types for each package. These pages are generated
+from the code, not hand-written docs:
 
-The rendered API pages appear under the `API` section of the generated site.
+- [Core package root](../../obj/api/core/ModularityKit.Mutator.Abstractions.html)
+- [Governance package root](../../obj/api/governance/ModularityKit.Mutator.Governance.Abstractions.html)
+- [Redis provider root](../../obj/api/redis/ModularityKit.Mutator.Governance.Redis.html)

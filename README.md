@@ -45,7 +45,6 @@ Build the DocFX site locally with:
 dotnet tool update -g docfx
 dotnet build ModularityKit.Mutator.slnx -c Release
 docfx docfx.json
-cp index.html _site/index.html
 ```
 
 The generated site includes the conceptual docs under `Docs/` and the public API reference for the

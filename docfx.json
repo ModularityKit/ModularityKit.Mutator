@@ -4,19 +4,38 @@
       "src": [
         {
           "files": [
-            "src/bin/Release/net10.0/ModularityKit.Mutator.dll",
-            "src/bin/Release/net10.0/ModularityKit.Mutator.Governance.dll",
-            "src/Redis/bin/Release/net10.0/ModularityKit.Mutator.Governance.Redis.dll"
+            "src/ModularityKit.Mutator.csproj"
           ]
         }
       ],
-      "dest": "obj/api"
+      "dest": "obj/api/core"
+    },
+    {
+      "src": [
+        {
+          "files": [
+            "src/ModularityKit.Mutator.Governance.csproj"
+          ]
+        }
+      ],
+      "dest": "obj/api/governance"
+    },
+    {
+      "src": [
+        {
+          "files": [
+            "src/Redis/ModularityKit.Mutator.Governance.Redis.csproj"
+          ]
+        }
+      ],
+      "dest": "obj/api/redis"
     }
   ],
   "build": {
     "content": [
       {
         "files": [
+          "index.md",
           "README.md",
           "toc.yml",
           "Docs/**/*.md",
@@ -32,15 +51,18 @@
       },
       {
         "files": [
-          "obj/api/**.yml",
-          "obj/api/**.md"
+          "obj/api/core/**/*.yml",
+          "obj/api/core/**/*.md",
+          "obj/api/governance/**/*.yml",
+          "obj/api/governance/**/*.md",
+          "obj/api/redis/**/*.yml",
+          "obj/api/redis/**/*.md"
         ]
       }
     ],
     "resource": [
       {
         "files": [
-          "index.html",
           "assets/**"
         ],
         "exclude": [

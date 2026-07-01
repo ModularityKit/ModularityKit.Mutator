@@ -1,5 +1,5 @@
 - name: Home
-  href: index.html
+  href: index.md
 - name: Packages
   items:
     - name: ModularityKit.Mutator
@@ -18,11 +18,11 @@
       href: Docs/ExecutionModel.md
     - name: Roadmap
       href: Docs/Roadmap.md
+- name: Decision
+  items:
+    - name: ADR Index
+      href: Docs/Decision/listadr.md
 - name: API
   items:
     - name: Reference
       href: Docs/API/Reference.md
-    - name: Core API
-      href: Docs/API/API.md
-    - name: Redis API
-      href: Docs/API/Redis.md
