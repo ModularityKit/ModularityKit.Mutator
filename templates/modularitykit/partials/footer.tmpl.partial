@@ -1,0 +1,14 @@
+{{!Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license.}}
+
+<footer class="site-footer">
+  <div class="grad-bottom"></div>
+  <div class="footer">
+    <div class="container site-footer__inner">
+      <span class="site-footer__brand">ModularityKit.Mutator</span>
+      <span class="site-footer__text">Generated from XML docs and published from main.</span>
+      <span class="pull-right">
+        <a href="#top">{{__global.backToTop}}</a>
+      </span>
+    </div>
+  </div>
+</footer>
