@@ -4,6 +4,8 @@
         <TargetFramework>net10.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);1591</NoWarn>
         <PackageId>ModularityKit.Mutator.Governance.Redis</PackageId>
         <Version>0.1.0</Version>
         <Authors>ModularityKit</Authors>

@@ -6,16 +6,13 @@ using ModularityExecutionContext = ModularityKit.Mutator.Abstractions.Context.Ex
 namespace ModularityKit.Mutator.Runtime;
 
 /// <summary>
-/// Responsible for executing single mutation against given state.
+/// Responsible for executing a single mutation against a given state.
 /// </summary>
 /// <remarks>
 /// <para>
 /// <see cref="MutationExecutor"/> applies mutations in synchronous fashion (the <see cref="IMutation{TState}.Apply"/>
-/// method is executed inline) while respecting timeouts and cancellation tokens provided via
-/// <see cref="System.Threading.ExecutionContext"/> and <paramref>
-///     <name>cancellationToken</name>
-/// </paramref>
-/// .
+/// method is executed inline) while respecting timeouts and cancellation tokens provided via the execution context and
+/// the caller's cancellation token.
 /// </para>
 /// <para>
 /// This class does not perform policy checks, auditing, or interceptor pipelines — it is a low level executor
@@ -36,10 +33,10 @@ internal sealed class MutationExecutor : IMutationExecutor
     /// <param name="cancellationToken">Optional token to observe cancellation requests.</param>
     /// <returns>The result of the mutation execution, including the new state and applied changes.</returns>
     /// <exception cref="OperationCanceledException">
-    /// Thrown if the mutation execution exceeds the configured <see cref="cancellationToken"/>.
+    /// Thrown if the mutation execution is canceled via <paramref name="cancellationToken" />.
     /// </exception>
     /// <exception cref="ExecutionTimeoutException">
-    /// Thrown if the <paramref name="cancellationToken"/> is signaled before or during execution.
+    /// Thrown if the configured execution timeout elapses before or during execution.
     /// </exception>
     public Task<MutationResult<TState>> ExecuteAsync<TState>(
         IMutation<TState> mutation,
