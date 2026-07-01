@@ -26,3 +26,13 @@
 ```bash
 dotnet build ModularityKit.Mutator.slnx -c Release
 ```
+
+## Dependency checks
+
+Run these after `dotnet restore ModularityKit.Mutator.slnx`:
+
+```bash
+python3 -m scripts.dependencies.check_package_health --solution ModularityKit.Mutator.slnx
+```
+
+The check reports vulnerable packages as a failing condition and prints outdated packages for review. When a package needs attention, update the affected `PackageReference` version in the owning project and rerun the check.

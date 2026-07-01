@@ -29,6 +29,24 @@ jobs:
       - name: Build ${{ matrix.configuration }}
         run: dotnet build ModularityKit.Mutator.slnx -c ${{ matrix.configuration }} --no-restore
 
+  dependency-health:
+    name: dependency health
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Restore
+        run: dotnet restore ModularityKit.Mutator.slnx
+
+      - name: Check dependency health
+        run: python3 -m scripts.dependencies.check_package_health --solution ModularityKit.Mutator.slnx
+
   tests:
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
@@ -158,6 +176,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build
+      - dependency-health
       - tests
       - examples-core
       - examples-governance
@@ -168,12 +187,14 @@ jobs:
       - name: Report job results
         run: |
           echo "build: ${{ needs.build.result }}"
+          echo "dependency-health: ${{ needs.dependency-health.result }}"
           echo "tests: ${{ needs.tests.result }}"
           echo "examples-core: ${{ needs.examples-core.result }}"
           echo "examples-governance: ${{ needs.examples-governance.result }}"
           echo "examples-governance-redis: ${{ needs.examples-governance-redis.result }}"
 
           if [ "${{ needs.build.result }}" != "success" ] || \
+             [ "${{ needs.dependency-health.result }}" != "success" ] || \
              [ "${{ needs.tests.result }}" != "success" ] || \
              [ "${{ needs.examples-core.result }}" != "success" ] || \
              [ "${{ needs.examples-governance.result }}" != "success" ] || \
