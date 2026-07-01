@@ -47,6 +47,24 @@ jobs:
       - name: Check dependency health
         run: python3 -m scripts.dependencies.check_package_health --solution ModularityKit.Mutator.slnx
 
+  docs:
+    name: docs
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Install DocFX
+        run: dotnet tool update -g docfx
+
+      - name: Build docs
+        run: docfx docfx.json
+
   tests:
     name: ${{ matrix.name }}
     runs-on: ubuntu-latest
@@ -177,6 +195,7 @@ jobs:
     needs:
       - build
       - dependency-health
+      - docs
       - tests
       - examples-core
       - examples-governance
@@ -188,6 +207,7 @@ jobs:
         run: |
           echo "build: ${{ needs.build.result }}"
           echo "dependency-health: ${{ needs.dependency-health.result }}"
+          echo "docs: ${{ needs.docs.result }}"
           echo "tests: ${{ needs.tests.result }}"
           echo "examples-core: ${{ needs.examples-core.result }}"
           echo "examples-governance: ${{ needs.examples-governance.result }}"
@@ -195,6 +215,7 @@ jobs:
 
           if [ "${{ needs.build.result }}" != "success" ] || \
              [ "${{ needs.dependency-health.result }}" != "success" ] || \
+             [ "${{ needs.docs.result }}" != "success" ] || \
              [ "${{ needs.tests.result }}" != "success" ] || \
              [ "${{ needs.examples-core.result }}" != "success" ] || \
              [ "${{ needs.examples-governance.result }}" != "success" ] || \

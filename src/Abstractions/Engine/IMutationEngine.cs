@@ -26,7 +26,7 @@ namespace ModularityKit.Mutator.Abstractions.Engine;
 /// </list>
 /// <para>
 /// Core runtime concurrency is governed by <see cref="ModularityKit.Mutator.Abstractions.MutationEngineOptions.MaxConcurrentMutations"/>.
-/// Mutations that target the same <see cref="MutationContext.StateId"/> are serialized by the runtime so shared-state workloads
+/// Mutations that target the same <see cref="ModularityKit.Mutator.Abstractions.Context.MutationContext.StateId"/> are serialized by the runtime so shared-state workloads
 /// remain deterministic. This is separate from governance request storage concurrency, which protects request lifecycle writes
 /// in the governance package.
 /// </para>
@@ -78,7 +78,6 @@ public interface IMutationEngine
     /// <typeparam name="TState">The type of the state being mutated.</typeparam>
     /// <param name="state">The initial state.</param>
     /// <param name="mutations">The mutations to execute in order.</param>
-    /// <param name="cancellationToken">Token used to cancel execution.</param>
     /// <returns>
     /// A <see cref="BatchMutationResult{TState}"/> describing the outcome of the batch execution.
     /// </returns>

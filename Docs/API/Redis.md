@@ -132,5 +132,5 @@ in-memory provider.
 
 - [`src/Redis/README.md`](../../src/Redis/README.md)
 - [`Examples/Governance/RedisQueries/README.md`](../../Examples/Governance/RedisQueries/README.md)
-- [`API-Reference.md`](API-Reference.md)
+- [`Reference.md`](Reference.md)
 - [Governance API](API.md)

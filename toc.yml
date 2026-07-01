@@ -1,0 +1,28 @@
+- name: Home
+  href: README.md
+- name: Packages
+  items:
+    - name: ModularityKit.Mutator
+      href: src/README.md
+    - name: ModularityKit.Mutator.Governance
+      href: src/Governance/README.md
+    - name: ModularityKit.Mutator.Governance.Redis
+      href: src/Redis/README.md
+- name: Guides
+  items:
+    - name: Architecture
+      href: Docs/Architecture.md
+    - name: Core Concepts
+      href: Docs/Core-Concepts.md
+    - name: Execution Model
+      href: Docs/ExecutionModel.md
+    - name: Roadmap
+      href: Docs/Roadmap.md
+- name: API
+  items:
+    - name: Reference
+      href: Docs/API/Reference.md
+    - name: Core API
+      href: Docs/API/API.md
+    - name: Redis API
+      href: Docs/API/Redis.md

@@ -36,3 +36,15 @@ python3 -m scripts.dependencies.check_package_health --solution ModularityKit.Mu
 ```
 
 The check reports vulnerable packages as a failing condition and prints outdated packages for review. When a package needs attention, update the affected `PackageReference` version in the owning project and rerun the check.
+
+## Documentation
+
+Build the DocFX site locally with:
+
+```bash
+dotnet tool update -g docfx
+docfx docfx.json
+```
+
+The generated site includes the conceptual docs under `Docs/` and the public API reference for the
+three published packages.
