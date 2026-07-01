@@ -35,6 +35,9 @@ jobs:
       - name: Build docs
         run: docfx docfx.json
 
+      - name: Copy root index
+        run: cp index.html _site/index.html
+
       - name: Mark site as non-Jekyll
         run: touch _site/.nojekyll
 
