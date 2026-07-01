@@ -13,17 +13,22 @@
     </div>
     <div class="collapse navbar-collapse" id="navbar">
       <ul class="nav navbar-nav site-nav">
-        <li><a href="{{_rel}}Docs/Home.html">Home</a></li>
+        <li><a href="{{_rel}}index.html">Home</a></li>
         <li><a href="{{_rel}}src/README.html">Core</a></li>
         <li><a href="{{_rel}}src/Governance/README.html">Governance</a></li>
         <li><a href="{{_rel}}src/Redis/README.html">Redis</a></li>
         <li><a href="{{_rel}}Docs/API/Reference.html">API</a></li>
       </ul>
-      <form class="navbar-form navbar-right site-search" role="search" id="search">
-        <div class="form-group">
-          <input type="text" class="form-control" id="search-query" placeholder="{{__global.search}}" autocomplete="off">
-        </div>
-      </form>
+      <div class="site-navbar__actions">
+        <form class="navbar-form navbar-right site-search" role="search" id="search">
+          <div class="form-group">
+            <input type="text" class="form-control" id="search-query" placeholder="{{__global.search}}" autocomplete="off">
+          </div>
+        </form>
+        <a class="site-github-link" href="https://github.com/ModularityKit/ModularityKit.Mutator" target="_blank" rel="noreferrer" aria-label="Open project on GitHub" title="Open project on GitHub">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2C6.48 2 2 6.58 2 12.23c0 4.52 2.87 8.36 6.84 9.71.5.09.68-.22.68-.48 0-.24-.01-.87-.01-1.71-2.78.62-3.37-1.36-3.37-1.36-.46-1.2-1.12-1.53-1.12-1.53-.91-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.89 1.56 2.34 1.11 2.91.85.09-.66.35-1.11.64-1.37-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.31.1-2.73 0 0 .84-.28 2.75 1.05A9.3 9.3 0 0 1 12 6.83c.85 0 1.71.12 2.51.34 1.91-1.33 2.75-1.05 2.75-1.05.55 1.42.2 2.47.1 2.73.64.72 1.03 1.63 1.03 2.75 0 3.94-2.35 4.81-4.58 5.06.36.32.68.94.68 1.9 0 1.37-.01 2.48-.01 2.82 0 .26.18.57.69.47A10.02 10.02 0 0 0 22 12.23C22 6.58 17.52 2 12 2Z"></path></svg>
+        </a>
+      </div>
     </div>
   </div>
 </nav>

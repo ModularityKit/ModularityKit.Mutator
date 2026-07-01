@@ -97,7 +97,7 @@ decision wrapper when the category is already known.
 implementations, which removes the need to pass the current and resulting version selectors when
 both come from `state.Version`.
 
-See [`Docs/API/API.md`](../../Docs/API/API.md) for the practical usage surface and example call patterns.
+See the generated package root at [`obj/api/governance/ModularityKit.Mutator.Governance.Abstractions.html`](../../obj/api/governance/ModularityKit.Mutator.Governance.Abstractions.html) for the public usage surface and type tree.
 
 ## Package structure
 
