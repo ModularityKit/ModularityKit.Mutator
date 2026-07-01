@@ -48,3 +48,7 @@ docfx docfx.json
 
 The generated site includes the conceptual docs under `Docs/` and the public API reference for the
 three published packages.
+
+The published site is deployed from `main` to GitHub Pages:
+
+https://modularitykit.github.io/ModularityKit.Mutator/
