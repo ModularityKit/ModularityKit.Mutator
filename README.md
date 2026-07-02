@@ -68,3 +68,9 @@ three published packages.
 The published site is deployed from `main` to GitHub Pages:
 
 https://modularitykit.github.io/ModularityKit.Mutator/
+
+## Package signing
+
+Release packages are signed and verified in the standard package publish workflow. See
+[`Docs/Package-Signing.md`](Docs/Package-Signing.md) for the signing approach, required secrets, and
+local verification expectations.

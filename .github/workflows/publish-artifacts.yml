@@ -34,6 +34,15 @@ on:
         required: false
         type: boolean
         default: true
+    secrets:
+      NUGET_SIGN_CERTIFICATE_BASE64:
+        required: true
+      NUGET_SIGN_CERTIFICATE_PASSWORD:
+        required: true
+      NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT:
+        required: true
+      NUGET_SIGN_TIMESTAMP_URL:
+        required: true
 
 permissions:
   contents: read
@@ -127,6 +136,61 @@ jobs:
           --no-restore
           -o nupkg
           -p:PackageVersion=${{ steps.version.outputs.redis_version }}
+
+      - name: Import signing certificate
+        env:
+          NUGET_SIGN_CERTIFICATE_BASE64: ${{ secrets.NUGET_SIGN_CERTIFICATE_BASE64 }}
+        run: |
+          if [ -z "$NUGET_SIGN_CERTIFICATE_BASE64" ]; then
+            echo "NUGET_SIGN_CERTIFICATE_BASE64 secret is required for package signing." >&2
+            exit 1
+          fi
+
+          printf '%s' "$NUGET_SIGN_CERTIFICATE_BASE64" | base64 --decode > signing-cert.pfx
+
+      - name: Sign packages
+        env:
+          NUGET_SIGN_CERTIFICATE_PASSWORD: ${{ secrets.NUGET_SIGN_CERTIFICATE_PASSWORD }}
+          NUGET_SIGN_TIMESTAMP_URL: ${{ secrets.NUGET_SIGN_TIMESTAMP_URL }}
+        run: |
+          if [ -z "$NUGET_SIGN_CERTIFICATE_PASSWORD" ]; then
+            echo "NUGET_SIGN_CERTIFICATE_PASSWORD secret is required for package signing." >&2
+            exit 1
+          fi
+
+          if [ -z "$NUGET_SIGN_TIMESTAMP_URL" ]; then
+            echo "NUGET_SIGN_TIMESTAMP_URL secret is required for package signing." >&2
+            exit 1
+          fi
+
+          for package in nupkg/*.nupkg; do
+            dotnet nuget sign "$package" \
+              --certificate-path signing-cert.pfx \
+              --certificate-password "$NUGET_SIGN_CERTIFICATE_PASSWORD" \
+              --timestamper "$NUGET_SIGN_TIMESTAMP_URL" \
+              --timestamp-hash-algorithm SHA256 \
+              --hash-algorithm SHA256 \
+              --overwrite
+          done
+
+      - name: Verify signed packages
+        env:
+          NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT: ${{ secrets.NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT }}
+        run: |
+          if [ -z "$NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT" ]; then
+            echo "NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT secret is required for package verification." >&2
+            exit 1
+          fi
+
+          for package in nupkg/*.nupkg; do
+            dotnet nuget verify "$package" \
+              --all \
+              --certificate-fingerprint "$NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT"
+          done
+
+      - name: Remove signing certificate
+        if: ${{ always() }}
+        run: rm -f signing-cert.pfx
 
       - name: Upload packages
         uses: actions/upload-artifact@v4

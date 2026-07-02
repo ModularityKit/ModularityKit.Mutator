@@ -7,6 +7,21 @@ on:
         description: Release version without the leading "v"
         required: false
         type: string
+  workflow_call:
+    inputs:
+      version:
+        description: Release version without the leading "v"
+        required: false
+        type: string
+    secrets:
+      NUGET_SIGN_CERTIFICATE_BASE64:
+        required: true
+      NUGET_SIGN_CERTIFICATE_PASSWORD:
+        required: true
+      NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT:
+        required: true
+      NUGET_SIGN_TIMESTAMP_URL:
+        required: true
 
 permissions:
   contents: write
@@ -19,6 +34,11 @@ jobs:
     uses: ./.github/workflows/publish-artifacts.yml
     with:
       package_version: ${{ inputs.version }}
+    secrets:
+      NUGET_SIGN_CERTIFICATE_BASE64: ${{ secrets.NUGET_SIGN_CERTIFICATE_BASE64 }}
+      NUGET_SIGN_CERTIFICATE_PASSWORD: ${{ secrets.NUGET_SIGN_CERTIFICATE_PASSWORD }}
+      NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT: ${{ secrets.NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT }}
+      NUGET_SIGN_TIMESTAMP_URL: ${{ secrets.NUGET_SIGN_TIMESTAMP_URL }}
 
   release:
     name: Upload artifacts to draft release

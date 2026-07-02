@@ -11,6 +11,7 @@ approval flow, and Redis-backed storage.
 - [Architecture](Architecture.md)
 - [Core concepts](Core-Concepts.md)
 - [Execution model](ExecutionModel.md)
+- [Package signing](Package-Signing.md)
 - [ADR index](Decision/listadr.md)
 
 ## Packages
