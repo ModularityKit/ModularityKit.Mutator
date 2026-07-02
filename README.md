@@ -71,6 +71,7 @@ https://modularitykit.github.io/ModularityKit.Mutator/
 
 ## Package signing
 
-Release packages are signed and verified in the standard package publish workflow. See
-[`Docs/Package-Signing.md`](Docs/Package-Signing.md) for the signing approach, required secrets, and
-local verification expectations.
+Release packages can be signed and verified in the standard package publish workflow when signing
+secrets are configured. Without signing secrets, the attested release path still emits GitHub
+artifact attestations. See [`Docs/Package-Signing.md`](Docs/Package-Signing.md) for the signing
+approach, optional secrets, and local verification expectations.

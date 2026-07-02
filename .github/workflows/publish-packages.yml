@@ -130,14 +130,10 @@ jobs:
           merge-multiple: true
 
       - name: Verify signed packages
+        if: ${{ needs.package.outputs.signing_enabled == 'true' }}
         env:
           NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT: ${{ secrets.NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT }}
         run: |
-          if [ -z "$NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT" ]; then
-            echo "NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT secret is required for package verification." >&2
-            exit 1
-          fi
-
           for package in dist/*.nupkg; do
             dotnet nuget verify "$package" \
               --all \
@@ -184,14 +180,10 @@ jobs:
           merge-multiple: true
 
       - name: Verify signed packages
+        if: ${{ needs.package.outputs.signing_enabled == 'true' }}
         env:
           NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT: ${{ secrets.NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT }}
         run: |
-          if [ -z "$NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT" ]; then
-            echo "NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT secret is required for package verification." >&2
-            exit 1
-          fi
-
           for package in dist/*.nupkg; do
             dotnet nuget verify "$package" \
               --all \

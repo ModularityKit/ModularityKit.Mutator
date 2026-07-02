@@ -1,9 +1,10 @@
 # Package Signing
 
-`ModularityKit.Mutator` release packages are signed as part of the standard package publish path.
+`ModularityKit.Mutator` can sign release packages as part of the standard package publish path.
 
-The repository signs generated `.nupkg` artifacts before they are uploaded or pushed to package feeds.
-Unsigned release packages are treated as a validation failure.
+When signing material is configured, the repository signs generated `.nupkg` artifacts before they
+are uploaded or pushed to package feeds. When signing material is not configured, the release path
+continues with unsigned packages and relies on GitHub artifact attestations for provenance.
 
 ## Signing approach
 
@@ -21,21 +22,28 @@ This keeps signing explicit, auditable, and integrated with the existing `pack` 
 The standard package release path is:
 
 1. pack packages in `.github/workflows/publish-artifacts.yml`
-2. sign every `.nupkg`
-3. verify every signed `.nupkg`
-4. upload signed artifacts
-5. download and verify signed artifacts again before pushing to NuGet.org or GitHub Packages
+2. sign every `.nupkg` when signing secrets are configured
+3. verify every signed `.nupkg` when signing is enabled
+4. upload artifacts
+5. generate GitHub artifact attestations in `.github/workflows/publish-attested.yml`
+6. download and verify signed artifacts again before pushing to NuGet.org or GitHub Packages when signing is enabled
 
 The signing step changes package contents only by adding signature metadata.
 
-## Required GitHub secrets
+## GitHub secrets
 
-Configure these repository secrets before using the package publish workflows:
+Package signing is optional. Configure these repository secrets to enable signed package output:
 
 - `NUGET_SIGN_CERTIFICATE_BASE64`
 - `NUGET_SIGN_CERTIFICATE_PASSWORD`
 - `NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT`
 - `NUGET_SIGN_TIMESTAMP_URL`
+
+Without those secrets, the workflows still pack packages and the attested release path still emits
+GitHub provenance attestations.
+
+NuGet.org publishing still requires:
+
 - `NUGET_USERNAME`
 
 Notes:
@@ -55,7 +63,7 @@ Contributors can still:
 - pack projects locally
 - run tests and smoke tests
 
-Signing is enforced in the repository release workflows, not for ordinary local development.
+Signing is optional in the repository release workflows and not required for ordinary local development.
 
 If you have access to the signing certificate locally, you can validate package signatures with:
 

@@ -15,13 +15,13 @@ on:
         type: string
     secrets:
       NUGET_SIGN_CERTIFICATE_BASE64:
-        required: true
+        required: false
       NUGET_SIGN_CERTIFICATE_PASSWORD:
-        required: true
+        required: false
       NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT:
-        required: true
+        required: false
       NUGET_SIGN_TIMESTAMP_URL:
-        required: true
+        required: false
 
 permissions:
   contents: write
@@ -55,6 +55,11 @@ jobs:
           pattern: ModularityKit-packages
           path: dist
           merge-multiple: true
+
+      - name: Attest package artifacts
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: dist/*.nupkg
 
       - name: Create or update draft release
         env:
