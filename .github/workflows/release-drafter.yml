@@ -34,6 +34,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   publish-attested:
+    if: ${{ secrets.NUGET_SIGN_CERTIFICATE_BASE64 != '' && secrets.NUGET_SIGN_CERTIFICATE_PASSWORD != '' && secrets.NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT != '' && secrets.NUGET_SIGN_TIMESTAMP_URL != '' }}
     needs: update-release-draft
     uses: ./.github/workflows/publish-attested.yml
     with:
