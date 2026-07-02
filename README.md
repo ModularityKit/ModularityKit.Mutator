@@ -21,6 +21,21 @@
 - [`Docs`](Docs/)
 - [`Tests`](Tests/)
 
+## Common workflows
+
+Use the root [`Taskfile.yml`](Taskfile.yml) with [`task`](https://taskfile.dev/) as the preferred
+entrypoint for repeated local workflows:
+
+```bash
+task build
+task test
+task test:smoke
+task docs
+task verify
+```
+
+Run `task --list-all` from the repository root to see the full task surface.
+
 ## Build
 
 ```bash

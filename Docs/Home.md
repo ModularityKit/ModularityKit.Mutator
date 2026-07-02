@@ -35,3 +35,19 @@ dotnet tool update -g docfx
 dotnet build ModularityKit.Mutator.slnx -c Release
 docfx docfx.json
 ```
+
+## Common local workflows
+
+The repository root includes a [`Taskfile.yml`](../Taskfile.yml) for use with
+[`task`](https://taskfile.dev/) and covers the most common build, test, docs, and verification
+commands.
+
+Typical usage:
+
+```bash
+task build
+task test
+task test:smoke
+task docs
+task verify
+```
