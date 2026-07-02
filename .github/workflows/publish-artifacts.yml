@@ -6,6 +6,9 @@ on:
       signing_enabled:
         description: "Whether package signing was enabled for this run."
         value: ${{ jobs.package.outputs.signing_enabled }}
+      signature_verification_enabled:
+        description: "Whether signed package verification was enabled for this run."
+        value: ${{ jobs.package.outputs.signature_verification_enabled }}
     inputs:
       package_version:
         description: "Optional package version, usually the release tag without the leading v."
@@ -47,6 +50,8 @@ on:
         required: false
       NUGET_SIGN_TIMESTAMP_URL:
         required: false
+      NUGET_SIGN_SKIP_VERIFICATION:
+        required: false
 
 permissions:
   contents: read
@@ -57,6 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       signing_enabled: ${{ steps.signing.outputs.enabled }}
+      signature_verification_enabled: ${{ steps.signing.outputs.verify_enabled }}
 
     steps:
       - name: Checkout
@@ -150,6 +156,7 @@ jobs:
           NUGET_SIGN_CERTIFICATE_PASSWORD: ${{ secrets.NUGET_SIGN_CERTIFICATE_PASSWORD }}
           NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT: ${{ secrets.NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT }}
           NUGET_SIGN_TIMESTAMP_URL: ${{ secrets.NUGET_SIGN_TIMESTAMP_URL }}
+          NUGET_SIGN_SKIP_VERIFICATION: ${{ secrets.NUGET_SIGN_SKIP_VERIFICATION }}
         run: |
           if [ -n "$NUGET_SIGN_CERTIFICATE_BASE64" ] \
             && [ -n "$NUGET_SIGN_CERTIFICATE_PASSWORD" ] \
@@ -160,6 +167,14 @@ jobs:
           else
             echo "enabled=false" >> "$GITHUB_OUTPUT"
             echo "Package signing disabled. Continuing with unsigned packages."
+          fi
+
+          if [ "${NUGET_SIGN_SKIP_VERIFICATION,,}" = "true" ]; then
+            echo "verify_enabled=false" >> "$GITHUB_OUTPUT"
+            echo "Signed package verification disabled by NUGET_SIGN_SKIP_VERIFICATION."
+          else
+            echo "verify_enabled=true" >> "$GITHUB_OUTPUT"
+            echo "Signed package verification enabled."
           fi
 
       - name: Import signing certificate
@@ -186,7 +201,7 @@ jobs:
           done
 
       - name: Verify signed packages
-        if: ${{ steps.signing.outputs.enabled == 'true' }}
+        if: ${{ steps.signing.outputs.enabled == 'true' && steps.signing.outputs.verify_enabled == 'true' }}
         env:
           NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT: ${{ secrets.NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT }}
         run: |

@@ -106,6 +106,7 @@ jobs:
       NUGET_SIGN_CERTIFICATE_PASSWORD: ${{ secrets.NUGET_SIGN_CERTIFICATE_PASSWORD }}
       NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT: ${{ secrets.NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT }}
       NUGET_SIGN_TIMESTAMP_URL: ${{ secrets.NUGET_SIGN_TIMESTAMP_URL }}
+      NUGET_SIGN_SKIP_VERIFICATION: ${{ secrets.NUGET_SIGN_SKIP_VERIFICATION }}
 
   publish-nuget:
     name: Publish to NuGet.org
@@ -130,7 +131,7 @@ jobs:
           merge-multiple: true
 
       - name: Verify signed packages
-        if: ${{ needs.package.outputs.signing_enabled == 'true' }}
+        if: ${{ needs.package.outputs.signing_enabled == 'true' && needs.package.outputs.signature_verification_enabled == 'true' }}
         env:
           NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT: ${{ secrets.NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT }}
         run: |
@@ -180,7 +181,7 @@ jobs:
           merge-multiple: true
 
       - name: Verify signed packages
-        if: ${{ needs.package.outputs.signing_enabled == 'true' }}
+        if: ${{ needs.package.outputs.signing_enabled == 'true' && needs.package.outputs.signature_verification_enabled == 'true' }}
         env:
           NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT: ${{ secrets.NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT }}
         run: |
