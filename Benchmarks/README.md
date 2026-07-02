@@ -8,6 +8,11 @@ This folder contains BenchmarkDotNet measurements for `ModularityKit.Mutator`.
 - strict engine execution with policy checks
 - simulate and validate only paths
 - batch execution overhead
+- throughput for single mutation execution across multiple state sizes
+- throughput for batch mutation execution across multiple state sizes and batch sizes
+
+The throughput benchmarks use a cloned array-backed state so state-size effects remain visible in the
+actual mutation path rather than being hidden behind an artificial inner loop.
 
 ## Run
 
@@ -20,8 +25,19 @@ dotnet build Benchmarks/ModularityKit.Mutator.Benchmarks.csproj -c Release
 Run a specific benchmark:
 
 ```bash
-dotnet Benchmarks/bin/Release/net10.0/ModularityKit.Mutator.Benchmarks.dll --filter '*MutationEngineBenchmarks.Commit_Performance_NoPolicy*'
+dotnet Benchmarks/bin/Release/net10.0/ModularityKit.Mutator.Benchmarks.dll --filter '*MutationEngineCommitBenchmarks*'
 ```
+
+Run the throughput-focused suite:
+
+```bash
+dotnet Benchmarks/bin/Release/net10.0/ModularityKit.Mutator.Benchmarks.dll --filter '*MutationEngineThroughputBenchmarks*'
+```
+
+Key parameters reported by BenchmarkDotNet:
+
+- `StateSize` controls the size of the cloned mutation state
+- `BatchSize` controls the number of mutations executed in the batch benchmark
 
 ## Notes
 
