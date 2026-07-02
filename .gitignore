@@ -18,3 +18,5 @@ obj/
 *.dump
 *.mdmp
 *.core
+/scripts/__pycache__
+/scripts/dependencies/__pycache__

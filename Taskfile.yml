@@ -1,0 +1,100 @@
+version: '3'
+
+vars:
+  SOLUTION: ModularityKit.Mutator.slnx
+  CONFIGURATION: '{{default "Release" .CONFIGURATION}}'
+  CORE_TEST_PROJECT: Tests/ModularityKit.Mutator.Tests/ModularityKit.Mutator.Tests.csproj
+  GOVERNANCE_TEST_PROJECT: Tests/ModularityKit.Mutator.Governance.Tests/ModularityKit.Mutator.Governance.Tests.csproj
+  GOVERNANCE_REDIS_TEST_PROJECT: Tests/ModularityKit.Mutator.Governance.Redis.Tests/ModularityKit.Mutator.Governance.Redis.Tests.csproj
+  SMOKE_TEST_PROJECT: Tests/ModularityKit.Mutator.Examples.SmokeTests/ModularityKit.Mutator.Examples.SmokeTests.csproj
+
+tasks:
+  default:
+    desc: List available repository tasks
+    cmds:
+      - task --list-all
+    silent: true
+
+  restore:
+    desc: Restore the solution
+    cmds:
+      - dotnet restore {{.SOLUTION}}
+
+  clean:
+    desc: Clean the solution
+    cmds:
+      - dotnet clean {{.SOLUTION}} -c {{.CONFIGURATION}}
+
+  build:
+    desc: Build the solution
+    deps: [restore]
+    cmds:
+      - dotnet build {{.SOLUTION}} -c {{.CONFIGURATION}} --no-restore
+
+  test:
+    desc: Run the main test packages and smoke tests
+    deps:
+      - test:core
+      - test:governance
+      - test:governance:redis
+      - test:smoke
+
+  test:core:
+    desc: Run core runtime tests
+    deps: [restore]
+    cmds:
+      - dotnet test {{.CORE_TEST_PROJECT}} -c {{.CONFIGURATION}} --no-restore
+
+  test:governance:
+    desc: Run governance tests
+    deps: [restore]
+    cmds:
+      - dotnet test {{.GOVERNANCE_TEST_PROJECT}} -c {{.CONFIGURATION}} --no-restore
+
+  test:governance:redis:
+    desc: Run Redis governance tests
+    deps: [restore]
+    cmds:
+      - dotnet test {{.GOVERNANCE_REDIS_TEST_PROJECT}} -c {{.CONFIGURATION}} --no-restore
+
+  test:smoke:
+    desc: Run example smoke tests
+    deps: [restore]
+    cmds:
+      - dotnet test {{.SMOKE_TEST_PROJECT}} -c {{.CONFIGURATION}} --no-restore
+
+  test:project:
+    desc: Run a specific test project with an optional filter
+    deps: [restore]
+    preconditions:
+      - sh: test -n "{{.PROJECT}}"
+        msg: 'PROJECT is required. Example: task test:project PROJECT=Tests/ModularityKit.Mutator.Tests/ModularityKit.Mutator.Tests.csproj'
+    cmds:
+      - >
+        dotnet test {{.PROJECT}} -c {{.CONFIGURATION}} --no-restore{{if .FILTER}} --filter "{{.FILTER}}"{{end}}
+
+  format:
+    desc: Format the solution
+    deps: [restore]
+    cmds:
+      - dotnet format {{.SOLUTION}}
+
+  deps:
+    desc: Run dependency health checks
+    deps: [restore]
+    cmds:
+      - python3 -m scripts.dependencies.check_package_health --solution {{.SOLUTION}}
+
+  docs:
+    desc: Build the DocFX site
+    cmds:
+      - dotnet tool update -g docfx
+      - dotnet build {{.SOLUTION}} -c {{.CONFIGURATION}}
+      - docfx docfx.json
+
+  verify:
+    desc: Run the common local verification workflow
+    deps:
+      - build
+      - deps
+      - test
