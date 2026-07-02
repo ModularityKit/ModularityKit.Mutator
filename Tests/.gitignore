@@ -1,0 +1,6 @@
+.idea/
+bin/
+obj/
+_site/
+__pycache__/
+*.pyc

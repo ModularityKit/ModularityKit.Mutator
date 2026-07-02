@@ -1,6 +1,20 @@
-.idea/
+# DocFX generated HTML site
+_site/
+
+# DocFX metadata output
+obj/api/
+
+# .NET build artifacts
 bin/
 obj/
-_site/
-__pycache__/
-*.pyc
+*.dll
+*.exe
+*.pdb
+*.deps.json
+*.runtimeconfig.json
+
+# Dumps
+*.dmp
+*.dump
+*.mdmp
+*.core
