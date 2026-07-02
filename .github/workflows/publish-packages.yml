@@ -101,6 +101,11 @@ jobs:
       publish_core: ${{ inputs.publish_core }}
       publish_governance: ${{ inputs.publish_governance }}
       publish_redis: ${{ inputs.publish_redis }}
+    secrets:
+      NUGET_SIGN_CERTIFICATE_BASE64: ${{ secrets.NUGET_SIGN_CERTIFICATE_BASE64 }}
+      NUGET_SIGN_CERTIFICATE_PASSWORD: ${{ secrets.NUGET_SIGN_CERTIFICATE_PASSWORD }}
+      NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT: ${{ secrets.NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT }}
+      NUGET_SIGN_TIMESTAMP_URL: ${{ secrets.NUGET_SIGN_TIMESTAMP_URL }}
 
   publish-nuget:
     name: Publish to NuGet.org
@@ -123,6 +128,21 @@ jobs:
           pattern: ModularityKit-packages
           path: dist
           merge-multiple: true
+
+      - name: Verify signed packages
+        env:
+          NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT: ${{ secrets.NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT }}
+        run: |
+          if [ -z "$NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT" ]; then
+            echo "NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT secret is required for package verification." >&2
+            exit 1
+          fi
+
+          for package in dist/*.nupkg; do
+            dotnet nuget verify "$package" \
+              --all \
+              --certificate-fingerprint "$NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT"
+          done
 
       - name: NuGet login
         id: login
@@ -162,6 +182,21 @@ jobs:
           pattern: ModularityKit-packages
           path: dist
           merge-multiple: true
+
+      - name: Verify signed packages
+        env:
+          NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT: ${{ secrets.NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT }}
+        run: |
+          if [ -z "$NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT" ]; then
+            echo "NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT secret is required for package verification." >&2
+            exit 1
+          fi
+
+          for package in dist/*.nupkg; do
+            dotnet nuget verify "$package" \
+              --all \
+              --certificate-fingerprint "$NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT"
+          done
 
       - name: Push packages to GitHub Packages
         env:

@@ -92,6 +92,16 @@ tasks:
       - dotnet build {{.SOLUTION}} -c {{.CONFIGURATION}}
       - docfx docfx.json
 
+  verify:package-signing:
+    desc: Verify signed NuGet packages with a signer fingerprint
+    preconditions:
+      - sh: test -n "{{.PACKAGE}}"
+        msg: 'PACKAGE is required. Example: task verify:package-signing PACKAGE=dist/ModularityKit.Mutator.0.1.0.nupkg FINGERPRINT=<sha256>'
+      - sh: test -n "{{.FINGERPRINT}}"
+        msg: 'FINGERPRINT is required. Example: task verify:package-signing PACKAGE=dist/ModularityKit.Mutator.0.1.0.nupkg FINGERPRINT=<sha256>'
+    cmds:
+      - dotnet nuget verify {{.PACKAGE}} --all --certificate-fingerprint {{.FINGERPRINT}}
+
   verify:
     desc: Run the common local verification workflow
     deps:

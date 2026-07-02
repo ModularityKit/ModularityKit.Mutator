@@ -16,6 +16,8 @@
       href: Docs/Core-Concepts.md
     - name: Execution Model
       href: Docs/ExecutionModel.md
+    - name: Package Signing
+      href: Docs/Package-Signing.md
     - name: Roadmap
       href: Docs/Roadmap.md
 - name: Decision
