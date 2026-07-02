@@ -18,6 +18,7 @@
     <Project Path="Examples/Governance/VersionedResolution/VersionedResolution.csproj" />
   </Folder>
   <Folder Name="/Tests/">
+    <Project Path="Tests/ModularityKit.Mutator.Examples.SmokeTests/ModularityKit.Mutator.Examples.SmokeTests.csproj" />
     <Project Path="Tests/ModularityKit.Mutator.Tests/ModularityKit.Mutator.Tests.csproj" />
     <Project Path="Tests/ModularityKit.Mutator.Governance.Tests/ModularityKit.Mutator.Governance.Tests.csproj" />
     <Project Path="Tests/ModularityKit.Mutator.Governance.Redis.Tests/ModularityKit.Mutator.Governance.Redis.Tests.csproj" />
