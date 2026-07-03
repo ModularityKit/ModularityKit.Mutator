@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\src\ModularityKit.Mutator.csproj" />
+    <ProjectReference Include="..\src\ModularityKit.Mutator.Governance.csproj" />
   </ItemGroup>
 
   <ItemGroup>
