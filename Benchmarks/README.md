@@ -15,6 +15,7 @@ This folder contains BenchmarkDotNet measurements for `ModularityKit.Mutator`.
 - parallel execution, state gate contention, and concurrent batch scheduling pressure in the core runtime
 - mutation result creation and history/audit output materialization in the core runtime
 - governance approval workflow overhead in the governance runtime
+- governance request lifecycle overhead in the governance runtime
 
 The throughput benchmarks use cloned array backed state so state size effects remain visible in the
 actual mutation path rather than being hidden behind an artificial inner loop.
