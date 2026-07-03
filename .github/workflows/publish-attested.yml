@@ -22,6 +22,8 @@ on:
         required: false
       NUGET_SIGN_TIMESTAMP_URL:
         required: false
+      NUGET_SIGN_SKIP_VERIFICATION:
+        required: false
 
 permissions:
   contents: write
@@ -39,6 +41,7 @@ jobs:
       NUGET_SIGN_CERTIFICATE_PASSWORD: ${{ secrets.NUGET_SIGN_CERTIFICATE_PASSWORD }}
       NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT: ${{ secrets.NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT }}
       NUGET_SIGN_TIMESTAMP_URL: ${{ secrets.NUGET_SIGN_TIMESTAMP_URL }}
+      NUGET_SIGN_SKIP_VERIFICATION: ${{ secrets.NUGET_SIGN_SKIP_VERIFICATION }}
 
   release:
     name: Upload artifacts to draft release
