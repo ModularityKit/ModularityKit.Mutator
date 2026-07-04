@@ -4,6 +4,10 @@
 
 # ModularityKit.Mutator
 
+[![Publish Docs](https://github.com/ModularityKit/ModularityKit.Mutator/actions/workflows/publish-docs.yml/badge.svg)](https://github.com/ModularityKit/ModularityKit.Mutator/actions/workflows/publish-docs.yml)
+[![Publish Packages](https://github.com/ModularityKit/ModularityKit.Mutator/actions/workflows/publish-packages.yml/badge.svg?event=workflow_dispatch)](https://github.com/ModularityKit/ModularityKit.Mutator/actions/workflows/publish-packages.yml)
+[![Publish Attested](https://github.com/ModularityKit/ModularityKit.Mutator/actions/workflows/publish-attested.yml/badge.svg?event=workflow_dispatch)](https://github.com/ModularityKit/ModularityKit.Mutator/actions/workflows/publish-attested.yml)
+
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
 
