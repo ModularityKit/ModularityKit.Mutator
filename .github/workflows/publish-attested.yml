@@ -64,14 +64,17 @@ jobs:
         with:
           subject-path: dist/*.nupkg
 
-      - name: Create or update draft release
+      - name: Upload artifacts to release
+        if: ${{ inputs.version != '' }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
           REPOSITORY: ${{ github.repository }}
           DIST_DIR: dist
-          FIND_DRAFT: "true"
-          ENSURE_DRAFT: "true"
-          FAIL_MESSAGE: "No draft release found. Release Drafter must create the draft before artifacts can be uploaded."
+          RELEASE_TAG: ${{ inputs.version }}
           ASSET_PATTERNS: |
             *
         run: python3 -m scripts.releases.upload_release_assets
+
+      - name: Skip release upload
+        if: ${{ inputs.version == '' }}
+        run: echo "No version supplied; attested artifacts were produced without release upload."
