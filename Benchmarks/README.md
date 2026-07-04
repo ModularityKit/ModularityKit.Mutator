@@ -18,6 +18,7 @@ This folder contains BenchmarkDotNet measurements for `ModularityKit.Mutator`.
 - governance request lifecycle overhead in the governance runtime
 - governance execution orchestration overhead in the governance runtime
 - governance version resolution overhead in the governance runtime
+- governance query and read performance overhead in the governance runtime
 
 The throughput benchmarks use cloned array backed state so state size effects remain visible in the
 actual mutation path rather than being hidden behind an artificial inner loop.
