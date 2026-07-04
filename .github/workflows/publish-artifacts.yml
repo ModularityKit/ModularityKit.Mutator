@@ -1,6 +1,40 @@
 name: Publish Artifacts
 
-on:
+oon:
+  workflow_dispatch:
+    inputs:
+      package_version:
+        description: "Optional shared package version."
+        required: false
+        type: string
+      core_version:
+        description: "Optional manual version for ModularityKit.Mutator."
+        required: false
+        type: string
+      governance_version:
+        description: "Optional manual version for ModularityKit.Mutator.Governance."
+        required: false
+        type: string
+      redis_version:
+        description: "Optional manual version for ModularityKit.Mutator.Governance.Redis."
+        required: false
+        type: string
+      publish_core:
+        description: "Pack ModularityKit.Mutator."
+        required: false
+        type: boolean
+        default: true
+      publish_governance:
+        description: "Pack ModularityKit.Mutator.Governance."
+        required: false
+        type: boolean
+        default: true
+      publish_redis:
+        description: "Pack ModularityKit.Mutator.Governance.Redis."
+        required: false
+        type: boolean
+        default: true
+
   workflow_call:
     outputs:
       signing_enabled:
@@ -52,7 +86,7 @@ on:
         required: false
       NUGET_SIGN_SKIP_VERIFICATION:
         required: false
-
+        
 permissions:
   contents: read
 
