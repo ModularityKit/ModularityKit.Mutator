@@ -1,6 +1,6 @@
 name: Publish Artifacts
 
-oon:
+on:
   workflow_dispatch:
     inputs:
       package_version:
