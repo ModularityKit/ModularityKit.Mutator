@@ -41,9 +41,3 @@ jobs:
     uses: ./.github/workflows/publish-attested.yml
     with:
       version: ${{ needs.update-release-draft.outputs.tag_name }}
-    secrets:
-      NUGET_SIGN_CERTIFICATE_BASE64: ${{ secrets.NUGET_SIGN_CERTIFICATE_BASE64 }}
-      NUGET_SIGN_CERTIFICATE_PASSWORD: ${{ secrets.NUGET_SIGN_CERTIFICATE_PASSWORD }}
-      NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT: ${{ secrets.NUGET_SIGN_CERTIFICATE_SHA256_FINGERPRINT }}
-      NUGET_SIGN_TIMESTAMP_URL: ${{ secrets.NUGET_SIGN_TIMESTAMP_URL }}
-      NUGET_SIGN_SKIP_VERIFICATION: ${{ secrets.NUGET_SIGN_SKIP_VERIFICATION }}
