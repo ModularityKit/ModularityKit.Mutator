@@ -8,6 +8,7 @@
     <Project Path="Examples/Core/BillingQuotas/BillingQuotas.csproj" />
     <Project Path="Examples/Core/FeatureFlags/FeatureFlags.csproj" />
     <Project Path="Examples/Core/IamRoles/IamRoles.csproj" />
+    <Project Path="Examples/Core/PolicyComposition/PolicyComposition.csproj" />
     <Project Path="Examples/Core/WorkflowApprovals/WorkflowApprovals.csproj" />
     <Project Path="Examples/Governance/ApprovalWorkflow/ApprovalWorkflow.csproj" />
     <Project Path="Examples/Governance/GovernedExecution/GovernedExecution.csproj" />

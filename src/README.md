@@ -101,6 +101,8 @@ Core runtime concurrency is controlled by `MutationEngineOptions.MaxConcurrentMu
 - `IPolicyRegistry`
 - `PolicyDecision`
 - `PolicyRequirement`
+- `PolicyComposition`
+- `PolicyCompositionMode`
 
 ### Async policies and external checks
 
@@ -122,6 +124,18 @@ Typical integration cases include:
 - ticket status validation before execution
 - quota lookups in remote control planes
 - compliance or risk verification before commit
+
+When policies need to be reused as a set, `PolicyComposition.AllOf(...)`,
+`PolicyComposition.AnyOf(...)`, and `PolicyComposition.Priority(...)` provide a deterministic
+way to combine decisions without adding a separate rules language.
+
+Merge rules are explicit:
+
+- severity uses the highest severity from the selected policy branch
+- requirements are preserved and concatenated
+- side effects are concatenated
+- metadata merges by key and raises `PolicyCompositionConflictException` when two policies try to set the same key to different values
+- state and other mutation-result modifications follow the same conflict rule
 
 ```csharp
 public sealed class RequireApprovedTicketPolicy : IMutationPolicy<QuotaState>
