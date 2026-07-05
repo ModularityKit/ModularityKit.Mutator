@@ -31,6 +31,7 @@ The example covers three workflows:
 - [`Mutations/DisableFeatureMutation.cs`](Mutations/DisableFeatureMutation.cs)
 - [`Policies/BusinessHoursPolicy.cs`](Policies/BusinessHoursPolicy.cs)
 - [`Policies/RequireTwoManApprovalPolicy.cs`](Policies/RequireTwoManApprovalPolicy.cs)
+- [`Policies/FeatureFlagGovernancePolicies.cs`](Policies/FeatureFlagGovernancePolicies.cs)
 - [`Scenarios/EnableNewCheckoutScenario.cs`](Scenarios/EnableNewCheckoutScenario.cs)
 - [`Scenarios/DisableLegacyCheckoutScenario.cs`](Scenarios/DisableLegacyCheckoutScenario.cs)
 - [`Scenarios/BatchFeatureToggleScenario.cs`](Scenarios/BatchFeatureToggleScenario.cs)
@@ -41,7 +42,7 @@ The example covers three workflows:
 
 1. registers the engine with strict options
 2. resolves `IMutationEngine`
-3. registers `RequireTwoManApprovalPolicy`
+3. registers the composed `CriticalFeatureFlagGovernance` policy set
 4. runs the example scenarios
 5. prints history for the main state
 6. prints engine statistics
@@ -83,6 +84,16 @@ It demonstrates:
 [`BusinessHoursPolicy`](Policies/BusinessHoursPolicy.cs) is simple time based policy for highrisk changes.
 
 Use it as reference if you want to restrict rollout windows.
+
+### Composed governance set
+
+[`FeatureFlagGovernancePolicies.CriticalChanges`](Policies/FeatureFlagGovernancePolicies.cs) combines business-hours restrictions and two-man approval into one reusable policy set.
+
+It demonstrates:
+
+- `PolicyComposition.AllOf(...)`
+- explicit policy merge behavior
+- registering one composed policy instead of multiple hand-wired policy classes
 
 ## Scenarios
 
