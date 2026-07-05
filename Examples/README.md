@@ -16,6 +16,7 @@ The projects are intentionally small and focused. Each one demonstrates a differ
 | `BillingQuotas` | quota changes, validation, and policy limits | [`Examples/Core/BillingQuotas/README.md`](Core/BillingQuotas/README.md) |
 | `FeatureFlags` | feature toggles, audit/history, and batch execution | [`Examples/Core/FeatureFlags/README.md`](Core/FeatureFlags/README.md) |
 | `IamRoles` | role changes, approval rules, and batch migration | [`Examples/Core/IamRoles/README.md`](Core/IamRoles/README.md) |
+| `PolicyComposition` | reusable policy sets, merge rules, and conflict handling | [`Examples/Core/PolicyComposition/README.md`](Core/PolicyComposition/README.md) |
 | `WorkflowApprovals` | ordered workflow state transitions and approvals | [`Examples/Core/WorkflowApprovals/README.md`](Core/WorkflowApprovals/README.md) |
 
 ## Governance examples
@@ -55,6 +56,7 @@ You can also build just one example:
 dotnet build Examples/Core/BillingQuotas/BillingQuotas.csproj -c Release
 dotnet build Examples/Core/FeatureFlags/FeatureFlags.csproj -c Release
 dotnet build Examples/Core/IamRoles/IamRoles.csproj -c Release
+dotnet build Examples/Core/PolicyComposition/PolicyComposition.csproj -c Release
 dotnet build Examples/Core/WorkflowApprovals/WorkflowApprovals.csproj -c Release
 dotnet build Examples/Governance/RequestLifecycle/RequestLifecycle.csproj -c Release
 dotnet build Examples/Governance/GovernedExecution/GovernedExecution.csproj -c Release
@@ -75,6 +77,7 @@ From the repository root:
 dotnet run --project Examples/Core/BillingQuotas/BillingQuotas.csproj
 dotnet run --project Examples/Core/FeatureFlags/FeatureFlags.csproj
 dotnet run --project Examples/Core/IamRoles/IamRoles.csproj
+dotnet run --project Examples/Core/PolicyComposition/PolicyComposition.csproj
 dotnet run --project Examples/Core/WorkflowApprovals/WorkflowApprovals.csproj
 dotnet run --project Examples/Governance/RequestLifecycle/RequestLifecycle.csproj
 dotnet run --project Examples/Governance/GovernedExecution/GovernedExecution.csproj
@@ -133,6 +136,12 @@ See [`Core/FeatureFlags/README.md`](Core/FeatureFlags/README.md).
 Shows role grant and revoke workflows with approval-style rules. This is the example to read if you care about protection against unsafe privilege changes.
 
 See [`Core/IamRoles/README.md`](Core/IamRoles/README.md).
+
+### PolicyComposition
+
+Shows how to reuse governance policy sets with deterministic merge rules and explicit conflict handling. This is the example to read if you want `AllOf`, `AnyOf`, and priority-based composition without writing one large bespoke policy class.
+
+See [`Core/PolicyComposition/README.md`](Core/PolicyComposition/README.md).
 
 ### WorkflowApprovals
 
