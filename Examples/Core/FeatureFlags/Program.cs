@@ -17,8 +17,7 @@ internal static class Program
         var provider = services.BuildServiceProvider();
         var engine = provider.GetRequiredService<IMutationEngine>();
         
-        //engine.RegisterPolicy(new BusinessHoursPolicy());
-        engine.RegisterPolicy(new RequireTwoManApprovalPolicy());
+        engine.RegisterPolicy(FeatureFlagGovernancePolicies.CriticalChanges());
 
         Console.WriteLine("=== ModularityKit.Mutators - Complete Example ===\n");
         

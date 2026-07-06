@@ -201,7 +201,7 @@ Why this matters:
 
 ### 2. Governance-Aware Policy Composition
 
-Add composition primitives for complex policy sets.
+Composition primitives for complex policy sets are now available in the core policy abstractions.
 
 Scope:
 
