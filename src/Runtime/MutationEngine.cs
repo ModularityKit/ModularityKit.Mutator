@@ -64,7 +64,7 @@ internal sealed class MutationEngine(
         CancellationToken cancellationToken = default)
     {
         var executionId = Interlocked.Increment(ref _executionCounter).ToString("x8");
-        var stopwatch = Stopwatch.StartNew();
+        var startTimestamp = Stopwatch.GetTimestamp();
         IMetricsScope? metricsScope = null;
 
         await using var executionLease = await _concurrencyGate
@@ -79,7 +79,7 @@ internal sealed class MutationEngine(
             Mutation = mutation,
             State = state,
             ExecutionId = executionId,
-            Stopwatch = stopwatch,
+            StartTimestamp = startTimestamp,
             MetricsScope = metricsScope,
             CancellationToken = cancellationToken
         };
@@ -94,23 +94,19 @@ internal sealed class MutationEngine(
         }
         catch (MutationException ex)
         {
-            stopwatch.Stop();
-
             await _failureHandler.HandleKnownExceptionAsync(
                 executionContext,
                 ex,
-                stopwatch.Elapsed).ConfigureAwait(false);
+                Stopwatch.GetElapsedTime(startTimestamp)).ConfigureAwait(false);
 
             throw;
         }
         catch (Exception ex)
         {
-            stopwatch.Stop();
-
             throw await _failureHandler.HandleUnexpectedExceptionAsync(
                 executionContext,
                 ex,
-                stopwatch.Elapsed).ConfigureAwait(false);
+                Stopwatch.GetElapsedTime(startTimestamp)).ConfigureAwait(false);
         }
         finally
         {

@@ -1,7 +1,7 @@
 namespace ModularityKit.Mutator.Abstractions.Policies;
 
 /// <summary>
-/// Represents the decision of a policy regarding a mutation.
+/// Represents the decision of policy regarding mutation.
 /// Contains approval, denial, modification instructions, and metadata.
 /// </summary>
 public sealed class PolicyDecision
@@ -46,6 +46,8 @@ public sealed class PolicyDecision
     /// </summary>
     public DateTimeOffset Timestamp { get; init; } = DateTimeOffset.UtcNow;
 
+    private static readonly PolicyDecision _allow = new() { IsAllowed = true };
+
     /// <summary>
     /// Creates an allow decision.
     /// </summary>
@@ -53,15 +55,19 @@ public sealed class PolicyDecision
     /// <param name="reason">Optional human-readable reason.</param>
     /// <returns>A policy decision that allows the mutation.</returns>
     public static PolicyDecision Allow(string? policyName = null, string? reason = null)
-        => new()
+    {
+        if (policyName is null && reason is null)
+            return _allow;
+        return new PolicyDecision
         {
             IsAllowed = true,
             PolicyName = policyName,
             Reason = reason
         };
+    }
 
     /// <summary>
-    /// Creates a deny decision with standard error severity.
+    /// Creates deny decision with standard error severity.
     /// </summary>
     /// <param name="reason">Reason for denial.</param>
     /// <param name="policyName">Optional policy name.</param>
@@ -76,7 +82,7 @@ public sealed class PolicyDecision
         };
 
     /// <summary>
-    /// Creates a deny decision with critical severity.
+    /// Creates deny decision with critical severity.
     /// </summary>
     /// <param name="reason">Reason for denial.</param>
     /// <param name="policyName">Optional policy name.</param>
@@ -91,7 +97,7 @@ public sealed class PolicyDecision
         };
 
     /// <summary>
-    /// Creates a modification decision that adjusts mutation values.
+    /// Creates modification decision that adjusts mutation values.
     /// </summary>
     /// <param name="modifications">Dictionary of modifications to apply.</param>
     /// <param name="policyName">Optional policy name.</param>
@@ -107,7 +113,7 @@ public sealed class PolicyDecision
         };
 
     /// <summary>
-    /// Creates a decision that requires additional approval before proceeding.
+    /// Creates decision that requires additional approval before proceeding.
     /// </summary>
     /// <param name="requirement">The requirement that must be fulfilled.</param>
     /// <param name="policyName">Optional policy name.</param>

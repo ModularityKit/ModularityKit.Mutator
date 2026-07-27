@@ -7,6 +7,7 @@ namespace ModularityKit.Mutator.Benchmarks.Diagnostics.Support;
 /// </summary>
 internal sealed class NoOpAuditor : IMutationAuditor
 {
+    public bool IsEnabled => false;
     /// <summary>
     /// Ignores the supplied audit entry.
     /// </summary>

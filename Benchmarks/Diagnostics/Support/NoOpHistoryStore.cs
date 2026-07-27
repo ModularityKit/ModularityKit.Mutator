@@ -7,6 +7,7 @@ namespace ModularityKit.Mutator.Benchmarks.Diagnostics.Support;
 /// </summary>
 internal sealed class NoOpHistoryStore : IMutationHistoryStore
 {
+    public bool IsEnabled => false;
     /// <summary>
     /// Ignores the supplied history entry.
     /// </summary>
