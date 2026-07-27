@@ -12,6 +12,11 @@ namespace ModularityKit.Mutator.Abstractions.Audit;
 public interface IMutationAuditor
 {
     /// <summary>
+    /// When <see langword="false" />, the runtime may skip creating audit entries for this auditor.
+    /// </summary>
+    bool IsEnabled => true;
+
+    /// <summary>
     /// Records an audit entry for a mutation.
     /// </summary>
     /// <param name="entry">The mutation audit entry to store.</param>

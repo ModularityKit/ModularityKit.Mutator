@@ -116,7 +116,7 @@ internal static class MutationAuditEntryFactory
             Intent = mutation.Intent,
             Context = mutation.Context,
             Changes = result.Changes,
-            SideEffects = result.SideEffects.ToList(),
+            SideEffects = result.SideEffects,
             Timestamp = mutation.Context.Timestamp,
             ExecutionTime = duration
         };
