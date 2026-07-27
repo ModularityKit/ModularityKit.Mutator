@@ -15,8 +15,12 @@ using ModularityKit.Mutator.Runtime.Diagnostics;
 namespace ModularityKit.Mutator.Runtime;
 
 /// <summary>
-/// Coordinates mutation execution by handling admission, failure wrapping, and public runtime APIs.
+/// Coordinates mutation execution and runtime governance.
 /// </summary>
+/// <remarks>
+/// Handles mutation execution, policy evaluation, interception, auditing,
+/// history tracking, metrics, concurrency control, and failure processing.
+/// </remarks>
 internal sealed class MutationEngine(
     IMutationExecutor executor,
     IPolicyRegistry policyRegistry,
@@ -33,6 +37,7 @@ internal sealed class MutationEngine(
     private readonly IMetricsCollector _metricsCollector = metricsCollector ?? throw new ArgumentNullException(nameof(metricsCollector));
     private readonly MutationEngineOptions _options = options ?? throw new ArgumentNullException(nameof(options));
     private readonly MutationExecutionConcurrencyGate _concurrencyGate = CreateConcurrencyGate(options);
+    private static long _executionCounter;
     private readonly MutationExecutionFailureHandler _failureHandler = new(interceptorPipeline, auditor);
     private readonly MutationExecutionPipeline _executionPipeline =
         new(
@@ -58,7 +63,7 @@ internal sealed class MutationEngine(
         TState state,
         CancellationToken cancellationToken = default)
     {
-        var executionId = Guid.NewGuid().ToString();
+        var executionId = Interlocked.Increment(ref _executionCounter).ToString("x8");
         var stopwatch = Stopwatch.StartNew();
         IMetricsScope? metricsScope = null;
 
