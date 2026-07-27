@@ -28,6 +28,11 @@ namespace ModularityKit.Mutator.Abstractions.History;
 public interface IMutationHistoryStore
 {
     /// <summary>
+    /// When <see langword="false" />, the runtime may skip creating history entries for this store.
+    /// </summary>
+    bool IsEnabled => true;
+
+    /// <summary>
     /// Persists a mutation history entry.
     /// </summary>
     /// <param name="entry">The mutation history entry to store.</param>
