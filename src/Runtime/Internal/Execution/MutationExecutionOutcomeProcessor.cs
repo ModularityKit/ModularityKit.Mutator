@@ -153,7 +153,7 @@ internal sealed class MutationExecutionOutcomeProcessor(
     /// <param name="executionContext">The context containing execution timing and metrics information.</param>
     /// <param name="result">The mutation result to finalize.</param>
     /// <returns>The mutation result with finalized execution metrics.</returns>
-    public async Task<MutationResult<TState>> FinalizeResultAsync<TState>(
+    public Task<MutationResult<TState>> FinalizeResultAsync<TState>(
         MutationExecutionContext<TState> executionContext,
         MutationResult<TState> result)
     {
@@ -162,11 +162,21 @@ internal sealed class MutationExecutionOutcomeProcessor(
 
         if (executionContext.MetricsScope is not null)
         {
-            await _metricsCollector.RecordAsync(
-                executionContext.ExecutionId,
-                executionContext.MetricsScope.Build(),
-                executionContext.CancellationToken).ConfigureAwait(false);
+            return FinalizeWithMetricsAsync(executionContext, result, totalElapsed);
         }
+
+        return Task.FromResult(result);
+    }
+
+    private async Task<MutationResult<TState>> FinalizeWithMetricsAsync<TState>(
+        MutationExecutionContext<TState> executionContext,
+        MutationResult<TState> result,
+        TimeSpan totalElapsed)
+    {
+        await _metricsCollector.RecordAsync(
+            executionContext.ExecutionId,
+            executionContext.MetricsScope!.Build(),
+            executionContext.CancellationToken).ConfigureAwait(false);
 
         return result with
         {
