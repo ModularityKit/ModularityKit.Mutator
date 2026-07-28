@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Text.Json.Serialization;
 
 namespace ModularityKit.Mutator.Abstractions.Effects;
@@ -189,20 +190,33 @@ public sealed class SideEffect
         };
     }
 
+    private static readonly ConcurrentDictionary<Type, (string? ContractType, int? ContractVersion)> _contractCache = new();
+
     private static (string? ContractType, int? ContractVersion) ResolveContract(object? data)
     {
         if (data is null)
             return (null, null);
 
         var dataType = data.GetType();
+        if (_contractCache.TryGetValue(dataType, out var cached))
+            return cached;
+
         var contract = dataType.GetCustomAttributes(typeof(SideEffectDataContractAttribute), inherit: false)
             .OfType<SideEffectDataContractAttribute>()
             .SingleOrDefault();
 
+        (string?, int?) result;
         if (contract is null)
-            return (null, null);
+        {
+            result = (null, null);
+        }
+        else
+        {
+            SideEffectDataContractRegistry.Register(dataType);
+            result = (contract.ContractType, contract.ContractVersion);
+        }
 
-        SideEffectDataContractRegistry.Register(dataType);
-        return (contract.ContractType, contract.ContractVersion);
+        _contractCache.TryAdd(dataType, result);
+        return result;
     }
 }

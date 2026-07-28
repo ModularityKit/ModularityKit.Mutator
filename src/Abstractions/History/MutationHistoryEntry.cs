@@ -11,39 +11,39 @@ namespace ModularityKit.Mutator.Abstractions.History;
 /// <remarks>
 /// Each <see cref="MutationHistoryEntry"/> captures the details of a single mutation,
 /// including its intent, context, state changes, side effects, execution timing, and integrity hashes.
-/// This class is used by <see cref="MutationHistory"/> to store a chronological sequence of mutations.
+/// This type is used by <see cref="MutationHistory"/> to store a chronological sequence of mutations.
 /// </remarks>
-public sealed class MutationHistoryEntry
+public readonly record struct MutationHistoryEntry
 {
     /// <summary>
     /// Unique identifier for the execution of this mutation.
     /// </summary>
-    public string ExecutionId { get; init; } = string.Empty;
+    public string ExecutionId { get; init; }
 
     /// <summary>
     /// Identifier of the state this mutation was applied to.
     /// </summary>
-    public string StateId { get; init; } = string.Empty;
+    public string StateId { get; init; }
 
     /// <summary>
     /// The intent behind the mutation.
     /// </summary>
-    public MutationIntent Intent { get; init; } = null!;
+    public MutationIntent Intent { get; init; }
 
     /// <summary>
     /// Contextual information about the mutation execution.
     /// </summary>
-    public MutationContext Context { get; init; } = null!;
+    public MutationContext Context { get; init; }
 
     /// <summary>
     /// Set of changes applied by this mutation.
     /// </summary>
-    public ChangeSet Changes { get; init; } = ChangeSet.Empty;
+    public ChangeSet Changes { get; init; }
 
     /// <summary>
     /// Side effects produced by this mutation.
     /// </summary>
-    public IReadOnlyList<SideEffect> SideEffects { get; init; } = [];
+    public IReadOnlyList<SideEffect> SideEffects { get; init; }
 
     /// <summary>
     /// Timestamp indicating when the mutation occurred.

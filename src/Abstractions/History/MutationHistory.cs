@@ -3,10 +3,10 @@ using ModularityKit.Mutator.Abstractions.Changes;
 namespace ModularityKit.Mutator.Abstractions.History;
 
 /// <summary>
-/// Represents the full mutation history of a specific state object.
+/// Represents the full mutation history of specific state object.
 /// </summary>
 /// <remarks>
-/// MutationHistory stores a chronological sequence of <see cref="MutationHistoryEntry"/> entries.
+/// MutationHistory stores chronological sequence of <see cref="MutationHistoryEntry"/> entries.
 /// It allows replaying state changes, querying timelines for specific paths, and computing statistics.
 /// This is typically used in combination with <see cref="IMutationHistoryStore"/> to persist and retrieve histories.
 /// </remarks>
@@ -32,13 +32,13 @@ public sealed class MutationHistory
     /// Timestamp of the first mutation in the history.
     /// </summary>
     public DateTimeOffset? FirstMutationAt
-        => Entries.FirstOrDefault()?.Timestamp;
+        => Entries.Count > 0 ? Entries[0].Timestamp : null;
 
     /// <summary>
     /// Timestamp of the last mutation in the history.
     /// </summary>
     public DateTimeOffset? LastMutationAt
-        => Entries.LastOrDefault()?.Timestamp;
+        => Entries.Count > 0 ? Entries[^1].Timestamp : null;
 
     /// <summary>
     /// Total number of mutations recorded.

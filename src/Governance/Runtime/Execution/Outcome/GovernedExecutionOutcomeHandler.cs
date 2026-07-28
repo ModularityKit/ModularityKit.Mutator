@@ -182,7 +182,7 @@ internal sealed class GovernedExecutionOutcomeHandler(GovernedExecutionRequestPe
                 mutationResult.SideEffects,
                 cancellationToken).ConfigureAwait(false);
 
-            return BuildNonExecutedResult(
+            return BuildNonExecutedResult<TState>(
                 execution.Resolution with { Request = rejectedRequest },
                 mutationResult);
         }

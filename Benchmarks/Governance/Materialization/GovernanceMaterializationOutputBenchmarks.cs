@@ -37,7 +37,7 @@ public class GovernanceMaterializationOutputBenchmarks
             StateId = _fixture.Result.Request.StateId,
             Intent = _fixture.Mutation.Intent,
             Context = _fixture.Mutation.Context,
-            Changes = _fixture.Result.MutationResult!.Changes,
+            Changes = _fixture.Result.MutationResult!.Value.Changes,
             SideEffects = _fixture.Result.Request.SideEffects.ToList(),
             Timestamp = _fixture.Result.Request.Versioning.ExecutedAt ?? DateTimeOffset.UtcNow,
             ExecutionTime = TimeSpan.FromMilliseconds(2)
@@ -50,6 +50,7 @@ public class GovernanceMaterializationOutputBenchmarks
     [Benchmark]
     public MutationAuditEntry AuditEntry_FromGovernedExecution()
     {
+        var mr = _fixture.Result.MutationResult!.Value;
         return new MutationAuditEntry
         {
             ExecutionId = _fixture.Result.Request.RequestId,
@@ -57,10 +58,10 @@ public class GovernanceMaterializationOutputBenchmarks
             StateType = _fixture.Result.Request.StateType,
             MutationIntent = _fixture.Mutation.Intent,
             Context = _fixture.Mutation.Context,
-            Changes = _fixture.Result.MutationResult!.Changes,
-            IsSuccess = _fixture.Result.MutationResult.IsSuccess,
+            Changes = mr.Changes,
+            IsSuccess = mr.IsSuccess,
             ErrorMessage = null,
-            PolicyDecisions = _fixture.Result.MutationResult.PolicyDecisions,
+            PolicyDecisions = mr.PolicyDecisions,
             SideEffects = _fixture.Result.Request.SideEffects.ToList(),
             Timestamp = _fixture.Result.Request.Versioning.ExecutedAt ?? DateTimeOffset.UtcNow,
             Duration = TimeSpan.FromMilliseconds(2),

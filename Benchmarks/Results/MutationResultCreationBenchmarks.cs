@@ -14,17 +14,21 @@ namespace ModularityKit.Mutator.Benchmarks.Results;
 [InProcess]
 public class MutationResultCreationBenchmarks
 {
-    private ResultsBenchmarkSupport.ResultBenchmarkState _state = null!;
+    private ResultsBenchmarkSupport.ResultBenchmarkState _state = default!;
     private ChangeSet _changes = null!;
+    private IReadOnlyList<SideEffect> _singleSideEffect = null!;
+    private IReadOnlyList<SideEffect> _multipleSideEffects = null!;
 
     /// <summary>
-    /// Prepares the shared state and change set used by the result creation cases.
+    /// Prepares the shared state, change set, and side effect lists used by the result creation cases.
     /// </summary>
     [GlobalSetup]
     public void Setup()
     {
         _state = new ResultsBenchmarkSupport.ResultBenchmarkState(0, 42);
         _changes = ResultsBenchmarkSupport.CreateChangeSet(_state.Revision, 2);
+        _singleSideEffect = ResultsBenchmarkSupport.CreateSideEffects(1);
+        _multipleSideEffects = ResultsBenchmarkSupport.CreateSideEffects(4);
     }
 
     /// <summary>
@@ -45,22 +49,14 @@ public class MutationResultCreationBenchmarks
     /// </summary>
     [Benchmark]
     public MutationResult<ResultsBenchmarkSupport.ResultBenchmarkState> Success_SingleSideEffect()
-    {
-        var sideEffect = SideEffect.Create(
-            "ResultMaterialization",
-            "Single side effect",
-            new ResultsBenchmarkSupport.SideEffectPayload(1, "single"),
-            SideEffectSeverity.Info);
-
-        return MutationResult<ResultsBenchmarkSupport.ResultBenchmarkState>.Success(
+        => MutationResult<ResultsBenchmarkSupport.ResultBenchmarkState>.Success(
             _state with
             {
                 Revision = _state.Revision + 1,
                 Value = _state.Value + 1
             },
             _changes,
-            [sideEffect]);
-    }
+            _singleSideEffect);
 
     /// <summary>
     /// Measures creation of a successful mutation result with several side effects.
@@ -74,5 +70,5 @@ public class MutationResultCreationBenchmarks
                 Value = _state.Value + 1
             },
             _changes,
-            ResultsBenchmarkSupport.CreateSideEffects(4));
+            _multipleSideEffects);
 }
