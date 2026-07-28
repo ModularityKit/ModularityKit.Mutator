@@ -4,7 +4,7 @@ namespace ModularityKit.Mutator.Abstractions.Context;
 /// Defines the type of actor performing a mutation.
 /// Provides context for auditing, tracking, and governance of system changes.
 /// </summary>
-internal enum ActorType
+public enum ActorType
 {
     /// <summary>
     /// Unknown actor type.

@@ -39,7 +39,7 @@ public sealed record MutationContext
     /// <summary>
     /// Type of actor performing the mutation.
     /// </summary>
-    internal ActorType ActorType { get; init; } = ActorType.Unknown;
+    public ActorType ActorType { get; internal init; } = ActorType.Unknown;
 
     /// <summary>
     /// Reason for performing the mutation.
