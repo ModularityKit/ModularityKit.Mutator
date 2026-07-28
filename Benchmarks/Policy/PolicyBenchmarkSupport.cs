@@ -1,11 +1,14 @@
 using Microsoft.Extensions.DependencyInjection;
 using ModularityKit.Mutator.Abstractions;
+using ModularityKit.Mutator.Abstractions.Audit;
 using ModularityKit.Mutator.Abstractions.Changes;
 using ModularityKit.Mutator.Abstractions.Context;
 using ModularityKit.Mutator.Abstractions.Engine;
+using ModularityKit.Mutator.Abstractions.History;
 using ModularityKit.Mutator.Abstractions.Intent;
 using ModularityKit.Mutator.Abstractions.Policies;
 using ModularityKit.Mutator.Abstractions.Results;
+using ModularityKit.Mutator.Benchmarks.Diagnostics.Support;
 using ModularityKit.Mutator.Runtime;
 
 namespace ModularityKit.Mutator.Benchmarks.Policy;
@@ -21,6 +24,8 @@ internal static class PolicyBenchmarkSupport
     {
         var services = new ServiceCollection();
         services.AddMutators(MutationEngineOptions.Performance);
+        services.AddSingleton<IMutationAuditor>(new NoOpAuditor());
+        services.AddSingleton<IMutationHistoryStore>(new NoOpHistoryStore());
 
         var engine = services
             .BuildServiceProvider()
@@ -85,7 +90,15 @@ internal static class PolicyBenchmarkSupport
     /// </summary>
     public sealed class SyncAllowBenchmarkPolicy : IMutationPolicy<PolicyBenchmarkState>
     {
-        public SyncAllowBenchmarkPolicy(int priority) => Priority = priority;
+        private readonly PolicyDecision _decision;
+        private readonly Task<PolicyDecision> _decisionTask;
+
+        public SyncAllowBenchmarkPolicy(int priority)
+        {
+            Priority = priority;
+            _decision = PolicyDecision.Allow(Name, "Synchronous benchmark policy allowed the mutation.");
+            _decisionTask = Task.FromResult(_decision);
+        }
 
         public string Name => $"{nameof(SyncAllowBenchmarkPolicy)}_{Priority}";
 
@@ -94,7 +107,13 @@ internal static class PolicyBenchmarkSupport
         public string? Description => "Synchronous allow policy for benchmark measurements.";
 
         public PolicyDecision Evaluate(IMutation<PolicyBenchmarkState> mutation, PolicyBenchmarkState state)
-            => PolicyDecision.Allow(Name, "Synchronous benchmark policy allowed the mutation.");
+            => _decision;
+
+        public Task<PolicyDecision> EvaluateAsync(
+            IMutation<PolicyBenchmarkState> mutation,
+            PolicyBenchmarkState state,
+            CancellationToken cancellationToken = default)
+            => _decisionTask;
     }
 
     /// <summary>
@@ -102,7 +121,15 @@ internal static class PolicyBenchmarkSupport
     /// </summary>
     public sealed class AsyncAllowBenchmarkPolicy : IMutationPolicy<PolicyBenchmarkState>
     {
-        public AsyncAllowBenchmarkPolicy(int priority) => Priority = priority;
+        private readonly PolicyDecision _decision;
+        private readonly Task<PolicyDecision> _decisionTask;
+
+        public AsyncAllowBenchmarkPolicy(int priority)
+        {
+            Priority = priority;
+            _decision = PolicyDecision.Allow(Name, "Asynchronous benchmark policy allowed the mutation.");
+            _decisionTask = Task.FromResult(_decision);
+        }
 
         public string Name => $"{nameof(AsyncAllowBenchmarkPolicy)}_{Priority}";
 
@@ -110,15 +137,13 @@ internal static class PolicyBenchmarkSupport
 
         public string? Description => "Asynchronous allow policy for benchmark measurements.";
 
-        public async Task<PolicyDecision> EvaluateAsync(
+        public Task<PolicyDecision> EvaluateAsync(
             IMutation<PolicyBenchmarkState> mutation,
             PolicyBenchmarkState state,
             CancellationToken cancellationToken = default)
         {
-            await Task.CompletedTask;
             cancellationToken.ThrowIfCancellationRequested();
-
-            return PolicyDecision.Allow(Name, "Asynchronous benchmark policy allowed the mutation.");
+            return _decisionTask;
         }
     }
 }

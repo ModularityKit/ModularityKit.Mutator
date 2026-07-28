@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using ModularityKit.Mutator.Abstractions.Audit;
 using ModularityKit.Mutator.Abstractions.Context;
 using ModularityKit.Mutator.Abstractions.Engine;
@@ -64,7 +65,7 @@ internal sealed class MutationExecutionOutcomeProcessor(
             executionContext.Mutation,
             blockedResult,
             executionContext.ExecutionId,
-            executionContext.Stopwatch.Elapsed).ConfigureAwait(false);
+            Stopwatch.GetElapsedTime(executionContext.StartTimestamp)).ConfigureAwait(false);
 
         return await FinalizeResultAsync(executionContext, blockedResult).ConfigureAwait(false);
     }
@@ -88,7 +89,7 @@ internal sealed class MutationExecutionOutcomeProcessor(
             executionContext.Mutation,
             validationFailureResult,
             executionContext.ExecutionId,
-            executionContext.Stopwatch.Elapsed).ConfigureAwait(false);
+            Stopwatch.GetElapsedTime(executionContext.StartTimestamp)).ConfigureAwait(false);
 
         return await FinalizeResultAsync(executionContext, validationFailureResult).ConfigureAwait(false);
     }
@@ -113,7 +114,7 @@ internal sealed class MutationExecutionOutcomeProcessor(
         MutationResult<TState> mutationResult,
         PolicyDecision policyDecision)
     {
-        var totalElapsed = executionContext.Stopwatch.Elapsed;
+        var totalElapsed = Stopwatch.GetElapsedTime(executionContext.StartTimestamp);
         var finalizedMutationResult = PolicyModificationApplier.Apply(mutationResult, policyDecision.Modifications);
 
         await _interceptorPipeline.OnAfterMutationAsync(
@@ -153,20 +154,30 @@ internal sealed class MutationExecutionOutcomeProcessor(
     /// <param name="executionContext">The context containing execution timing and metrics information.</param>
     /// <param name="result">The mutation result to finalize.</param>
     /// <returns>The mutation result with finalized execution metrics.</returns>
-    public async Task<MutationResult<TState>> FinalizeResultAsync<TState>(
+    public Task<MutationResult<TState>> FinalizeResultAsync<TState>(
         MutationExecutionContext<TState> executionContext,
         MutationResult<TState> result)
     {
-        var totalElapsed = executionContext.Stopwatch.Elapsed;
+        var totalElapsed = Stopwatch.GetElapsedTime(executionContext.StartTimestamp);
         executionContext.MetricsScope?.RecordStateSize(StateSizeEstimator.Estimate(executionContext.State));
 
         if (executionContext.MetricsScope is not null)
         {
-            await _metricsCollector.RecordAsync(
-                executionContext.ExecutionId,
-                executionContext.MetricsScope.Build(),
-                executionContext.CancellationToken).ConfigureAwait(false);
+            return FinalizeWithMetricsAsync(executionContext, result, totalElapsed);
         }
+
+        return Task.FromResult(result);
+    }
+
+    private async Task<MutationResult<TState>> FinalizeWithMetricsAsync<TState>(
+        MutationExecutionContext<TState> executionContext,
+        MutationResult<TState> result,
+        TimeSpan totalElapsed)
+    {
+        await _metricsCollector.RecordAsync(
+            executionContext.ExecutionId,
+            executionContext.MetricsScope!.Build(),
+            executionContext.CancellationToken).ConfigureAwait(false);
 
         return result with
         {
