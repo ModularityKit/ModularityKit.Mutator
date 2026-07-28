@@ -1,37 +1,45 @@
 using BenchmarkDotNet.Attributes;
 using ModularityKit.Mutator.Abstractions.Audit;
+using ModularityKit.Mutator.Abstractions.Context;
+using ModularityKit.Mutator.Abstractions.Effects;
 using ModularityKit.Mutator.Abstractions.History;
+using ModularityKit.Mutator.Abstractions.Intent;
 using ModularityKit.Mutator.Abstractions.Results;
 using ModularityKit.Mutator.Benchmarks.Results.Support;
 
 namespace ModularityKit.Mutator.Benchmarks.Results;
 
-/// <summary>
-/// Benchmarks materialization of history and audit output from an executed mutation result.
-/// </summary>
 [BenchmarkCategory("Results")]
 [MemoryDiagnoser]
 [InProcess]
 public class MutationOutputMaterializationBenchmarks
 {
-    private MutationResult<ResultsBenchmarkSupport.ResultBenchmarkState> _result = null!;
+    private MutationResult<ResultsBenchmarkSupport.ResultBenchmarkState> _result = default!;
     private string _executionId = string.Empty;
     private TimeSpan _duration;
+    private IReadOnlyList<SideEffect> _sideEffectList = null!;
+    private MutationIntent _historyIntent = null!;
+    private MutationIntent _auditIntent = null!;
+    private MutationContext _historyContext = null!;
+    private MutationContext _auditContext = null!;
 
-    /// <summary>
-    /// Prepares a representative executed mutation result for output materialization benchmarks.
-    /// </summary>
     [GlobalSetup]
     public void Setup()
     {
         _result = ResultsBenchmarkSupport.CreateExecutedResult(sideEffectCount: 3, changeCount: 4);
         _executionId = "results-benchmark-execution";
         _duration = TimeSpan.FromMilliseconds(2);
+        _sideEffectList = _result.SideEffects.ToList();
+        _historyIntent = ResultsBenchmarkSupport.CreateIntent(
+            "ResultHistoryMaterialization",
+            "Materialize history output for benchmark results.");
+        _auditIntent = ResultsBenchmarkSupport.CreateIntent(
+            "ResultAuditMaterialization",
+            "Materialize audit output for benchmark results.");
+        _historyContext = ResultsBenchmarkSupport.CreateContext("history");
+        _auditContext = ResultsBenchmarkSupport.CreateContext("audit");
     }
 
-    /// <summary>
-    /// Measures materialization of the mutation history entry, including change and side effect copying.
-    /// </summary>
     [Benchmark(Baseline = true)]
     public MutationHistoryEntry HistoryEntry_Materialization()
     {
@@ -39,20 +47,15 @@ public class MutationOutputMaterializationBenchmarks
         {
             ExecutionId = _executionId,
             StateId = ResultsBenchmarkSupport.StateId,
-            Intent = ResultsBenchmarkSupport.CreateIntent(
-                "ResultHistoryMaterialization",
-                "Materialize history output for benchmark results."),
-            Context = ResultsBenchmarkSupport.CreateContext("history"),
+            Intent = _historyIntent,
+            Context = _historyContext,
             Changes = _result.Changes,
-            SideEffects = _result.SideEffects.ToList(),
+            SideEffects = _sideEffectList,
             Timestamp = DateTimeOffset.UtcNow,
             ExecutionTime = _duration
         };
     }
 
-    /// <summary>
-    /// Measures materialization of the audit entry produced from the same executed mutation result.
-    /// </summary>
     [Benchmark]
     public MutationAuditEntry AuditEntry_Materialization()
     {
@@ -60,11 +63,9 @@ public class MutationOutputMaterializationBenchmarks
         {
             ExecutionId = _executionId,
             StateId = ResultsBenchmarkSupport.StateId,
-            StateType = nameof(ResultsBenchmarkSupport.ResultBenchmarkState),
-            MutationIntent = ResultsBenchmarkSupport.CreateIntent(
-                "ResultAuditMaterialization",
-                "Materialize audit output for benchmark results."),
-            Context = ResultsBenchmarkSupport.CreateContext("audit"),
+            StateType = "ResultBenchmarkState",
+            MutationIntent = _auditIntent,
+            Context = _auditContext,
             Changes = _result.Changes,
             IsSuccess = _result.IsSuccess,
             ErrorMessage = null,

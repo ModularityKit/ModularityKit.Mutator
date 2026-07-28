@@ -119,12 +119,12 @@ public static class ResultsBenchmarkSupport
     /// </summary>
     /// <param name="Revision">The revision counter advanced on each benchmark mutation.</param>
     /// <param name="Value">The mutable numeric value exercised by the benchmark mutation.</param>
-    public sealed record ResultBenchmarkState(int Revision, int Value);
+    public readonly record struct ResultBenchmarkState(int Revision, int Value);
 
     /// <summary>
     /// Typed payload used to give side effects realistic materialization shape.
     /// </summary>
     /// <param name="Index">The ordinal of the side effect.</param>
     /// <param name="Token">A stable payload token.</param>
-    public sealed record SideEffectPayload(int Index, string Token);
+    public readonly record struct SideEffectPayload(int Index, string Token);
 }

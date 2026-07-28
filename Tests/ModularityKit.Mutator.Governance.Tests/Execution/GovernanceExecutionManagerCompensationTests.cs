@@ -73,7 +73,7 @@ public sealed partial class GovernanceExecutionManagerTests
         var compensationResult = await executionManager.ExecuteApproved(
             compensationRequest.RequestId,
             compensationMutation,
-            originalResult.MutationResult!.NewState!,
+            originalResult.MutationResult!.Value.NewState!,
             governanceContext: MutationContext.Service("governance-runtime", "Execute operator rollback"),
             strategy: VersionedRequestResolutionStrategy.RejectStale);
 
