@@ -1,11 +1,12 @@
 namespace ModularityKit.Mutator.Abstractions.Changes;
 
 /// <summary>
-/// Represents a collection of state changes introduced by a mutation.
-/// This is a **primary feature** of a mutation and not an optional addition.
+/// Represents collection of state changes introduced by a mutation.
+/// This is primary feature of mutation and not an optional addition.
 /// </summary>
 public sealed class ChangeSet
 {
+    private static readonly ChangeSet _empty = new();
     private readonly List<StateChange> _changes = [];
 
     /// <summary>
@@ -34,7 +35,7 @@ public sealed class ChangeSet
     public string? Checksum { get; init; }
 
     /// <summary>
-    /// Adds a new state change to the changeset.
+    /// Adds new state change to the changeset.
     /// </summary>
     /// <param name="change">The state change to add.</param>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="change"/> is null.</exception>
@@ -45,7 +46,7 @@ public sealed class ChangeSet
     }
 
     /// <summary>
-    /// Retrieves all changes corresponding to a specific path.
+    /// Retrieves all changes corresponding to specific path.
     /// </summary>
     /// <param name="path">The path to filter changes.</param>
     /// <returns>Enumerable of <see cref="StateChange"/> matching the path.</returns>
@@ -53,7 +54,7 @@ public sealed class ChangeSet
         => _changes.Where(c => c.Path == path);
 
     /// <summary>
-    /// Determines whether a specific path has been changed.
+    /// Determines whether specific path has been changed.
     /// </summary>
     /// <param name="path">The path to check.</param>
     /// <returns>True if the path has been changed; otherwise, false.</returns>
@@ -70,7 +71,7 @@ public sealed class ChangeSet
     /// <summary>
     /// Returns an empty changeset.
     /// </summary>
-    public static ChangeSet Empty => new();
+    public static ChangeSet Empty => _empty;
 
     /// <summary>
     /// Creates changeset containing single state change.

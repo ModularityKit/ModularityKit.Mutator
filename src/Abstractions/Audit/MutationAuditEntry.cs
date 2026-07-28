@@ -7,7 +7,7 @@ using ModularityKit.Mutator.Abstractions.Policies;
 namespace ModularityKit.Mutator.Abstractions.Audit;
 
 /// <summary>
-/// Represents a single audit record for a mutation operation.
+/// Represents single audit record for a mutation operation.
 /// Captures the intent, context, changes, policy decisions, and metadata of the mutation.
 /// </summary>
 /// <remarks>
@@ -15,12 +15,12 @@ namespace ModularityKit.Mutator.Abstractions.Audit;
 /// Each entry is immutable once created. Typical consumers include auditors, logging systems,
 /// or analytics pipelines.
 /// </remarks>
-public sealed class MutationAuditEntry
+public readonly record struct MutationAuditEntry
 {
     /// <summary>
     /// Unique execution identifier for this mutation.
     /// </summary>
-    public string ExecutionId { get; init; } = string.Empty;
+    public string ExecutionId { get; init; }
 
     /// <summary>
     /// Identifier of the state object that was mutated.
@@ -35,17 +35,17 @@ public sealed class MutationAuditEntry
     /// <summary>
     /// The intent describing what the mutation is trying to achieve.
     /// </summary>
-    public MutationIntent MutationIntent { get; init; } = null!;
+    public MutationIntent MutationIntent { get; init; }
 
     /// <summary>
     /// Context of the mutation (e.g., correlation data, user context).
     /// </summary>
-    public MutationContext Context { get; init; } = null!;
+    public MutationContext Context { get; init; }
 
     /// <summary>
     /// Changes applied by the mutation.
     /// </summary>
-    public ChangeSet Changes { get; init; } = ChangeSet.Empty;
+    public ChangeSet Changes { get; init; }
 
     /// <summary>
     /// Indicates whether the mutation was successful.
@@ -60,12 +60,12 @@ public sealed class MutationAuditEntry
     /// <summary>
     /// Decisions made by policies during the mutation evaluation.
     /// </summary>
-    public IReadOnlyList<PolicyDecision> PolicyDecisions { get; init; } = [];
+    public IReadOnlyList<PolicyDecision> PolicyDecisions { get; init; }
 
     /// <summary>
     /// Side effects produced during the mutation.
     /// </summary>
-    public IReadOnlyList<SideEffect> SideEffects { get; init; } = [];
+    public IReadOnlyList<SideEffect> SideEffects { get; init; }
 
     /// <summary>
     /// Timestamp when the mutation started.

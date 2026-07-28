@@ -13,9 +13,9 @@ namespace ModularityKit.Mutator.Runtime.Internal.Execution;
 /// </summary>
 /// <remarks>
 /// <para>
-/// The pipeline runs policy evaluation, validation, mode-specific execution, and
+/// The pipeline runs policy evaluation, validation, mode specific execution, and
 /// outcome processing in fixed order. Each stage can short circuit:
-/// a blocking policy decision skips execution; a validation failure skips execution;
+/// blocking policy decision skips execution validation failure skips execution;
 /// otherwise the mutation runs through the configured mode runner and the result
 /// is finalized by the outcome processor.
 /// </para>
@@ -81,9 +81,9 @@ internal sealed class MutationExecutionPipeline(
                 .ConfigureAwait(false);
 
         var validationFailureResult = ValidateIfRequired(executionContext);
-        if (validationFailureResult is not null)
+        if (validationFailureResult is MutationResult<TState> failure)
             return await _outcomeProcessor
-                .HandleValidationFailureAsync(executionContext, validationFailureResult)
+                .HandleValidationFailureAsync(executionContext, failure)
                 .ConfigureAwait(false);
 
         var mutationResult = await _modeRunner.ExecuteAsync(executionContext).ConfigureAwait(false);
